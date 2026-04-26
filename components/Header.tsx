@@ -13,13 +13,13 @@ export default function Header() {
           aria-label={`${site.name} home`}
         >
           <Image
-            src="/logo.png"
+            src="/logo-navbar.png"
             alt={site.name}
-            width={760}
-            height={200}
+            width={943}
+            height={250}
             priority
             sizes="(min-width: 768px) 220px, 160px"
-            className="h-auto w-[160px] max-h-12 object-contain md:w-[220px] md:max-h-14"
+            className="h-auto w-[160px] md:w-[220px]"
           />
         </Link>
 
