@@ -56,9 +56,13 @@ type Answers = {
   preventative: string;
   detective: string;
   corrective: string;
-  residualBand: RiskBand | "";
-  residualNote: string;
-  monitoringTrigger: string;
+  residualSeverity: number | null;
+  residualLikelihood: number | null;
+  residualRationale: string;
+  monitoringMetric: string;
+  triggerThreshold: string;
+  reviewFrequency: string;
+  capa: string;
   owner: string;
 };
 
@@ -71,9 +75,13 @@ const initialAnswers: Answers = {
   preventative: "",
   detective: "",
   corrective: "",
-  residualBand: "",
-  residualNote: "",
-  monitoringTrigger: "",
+  residualSeverity: null,
+  residualLikelihood: null,
+  residualRationale: "",
+  monitoringMetric: "",
+  triggerThreshold: "",
+  reviewFrequency: "",
+  capa: "",
   owner: "",
 };
 
@@ -82,6 +90,28 @@ const splitLines = (t: string): string[] =>
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
+
+function generateHazardId(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `HAZ-${y}${m}${day}-001`;
+}
+
+function acceptabilityFor(band: RiskBand | null): string {
+  switch (band) {
+    case "Low":
+      return "Acceptable";
+    case "Medium":
+      return "Acceptable with active monitoring";
+    case "High":
+      return "Not acceptable without further mitigation";
+    case "Extreme":
+      return "Not acceptable — escalate";
+    default:
+      return "Not assessed";
+  }
+}
 
 /* ------------------------------------------------------------------ */
 /* Main component                                                      */
@@ -133,7 +163,11 @@ export default function HazardLogSimulator({
           )
         );
       case 8:
-        return answers.residualBand !== "";
+        return (
+          answers.residualSeverity != null &&
+          answers.residualLikelihood != null &&
+          answers.owner.trim().length > 0
+        );
       default:
         return false;
     }
@@ -145,31 +179,80 @@ export default function HazardLogSimulator({
     setExportError(null);
   };
 
+  const residualRisk = useMemo(
+    () =>
+      calculateInitialRisk(answers.residualSeverity, answers.residualLikelihood),
+    [answers.residualSeverity, answers.residualLikelihood],
+  );
+  const residualBand = useMemo(() => bandForRisk(residualRisk), [residualRisk]);
+
   const handleExport = async () => {
     if (initialRisk == null || !initialBand) return;
     setExportError(null);
     setExporting(true);
     try {
+      const now = new Date();
+      const ownerStr = answers.owner.trim() || "(to be assigned)";
+      const controls = [
+        ...splitLines(answers.preventative).map((text) => ({
+          text,
+          type: "Preventative" as const,
+          owner: ownerStr,
+          status: "Pending implementation",
+        })),
+        ...splitLines(answers.detective).map((text) => ({
+          text,
+          type: "Detective" as const,
+          owner: ownerStr,
+          status: "Pending implementation",
+        })),
+        ...splitLines(answers.corrective).map((text) => ({
+          text,
+          type: "Corrective" as const,
+          owner: ownerStr,
+          status: "Pending implementation",
+        })),
+      ];
+
       const report: HazardLogReport = {
+        documentTitle: "Clinical Safety Hazard Log Report",
         scenarioName: scenario.name,
-        generatedAt: new Date(),
+        hazardId: generateHazardId(now),
+        version: "1.0",
+        dateCreated: now,
+        lastReviewed: now,
+        status: "Open",
+        owner: ownerStr,
+        reviewer: "",
+        approver: "",
         hazard: answers.hazard,
-        cause: answers.cause,
-        consequence: answers.consequence,
-        severity: answers.severity ?? 0,
-        likelihood: answers.likelihood ?? 0,
-        initialRisk,
-        riskBand: initialBand,
-        preventative: splitLines(answers.preventative),
-        detective: splitLines(answers.detective),
-        corrective: splitLines(answers.corrective),
-        residualRisk: answers.residualBand
-          ? `${answers.residualBand}${
-              answers.residualNote ? " — " + answers.residualNote : ""
-            }`
-          : "(not specified)",
-        monitoringTrigger: answers.monitoringTrigger || "(not specified)",
-        owner: answers.owner || "(not specified)",
+        causeFailureMode: answers.cause,
+        sequenceOfEvents: scenario.reference.sequenceOfEvents,
+        hazardousSituation: scenario.reference.hazardousSituation,
+        potentialHarm: scenario.reference.potentialHarm,
+        clinicalConsequence: answers.consequence,
+        initialSeverity: answers.severity ?? 0,
+        severityRationale: scenario.feedback.severity.rationale,
+        initialLikelihood: answers.likelihood ?? 0,
+        likelihoodRationale: scenario.feedback.likelihood.rationale,
+        initialRiskScore: initialRisk,
+        initialRiskBand: initialBand,
+        residualSeverity: answers.residualSeverity ?? 0,
+        residualLikelihood: answers.residualLikelihood ?? 0,
+        residualRationale:
+          answers.residualRationale.trim() ||
+          "(rationale to be added on review)",
+        residualRiskScore: residualRisk ?? 0,
+        residualRiskBand: residualBand ?? "Low",
+        overallAcceptability: acceptabilityFor(residualBand),
+        controls,
+        monitoringMetric:
+          answers.monitoringMetric.trim() || "(to be defined)",
+        triggerThreshold:
+          answers.triggerThreshold.trim() || "(to be defined)",
+        reviewFrequency:
+          answers.reviewFrequency.trim() || "(to be defined)",
+        capa: answers.capa.trim() || "(to be defined)",
       };
       await exportHazardLogPdf(report);
     } catch (err) {
@@ -260,12 +343,11 @@ export default function HazardLogSimulator({
         )}
         {step === 8 && (
           <ResidualStep
-            band={answers.residualBand}
-            note={answers.residualNote}
-            monitoringTrigger={answers.monitoringTrigger}
-            owner={answers.owner}
+            answers={answers}
             initialRisk={initialRisk}
             initialBand={initialBand}
+            residualRisk={residualRisk}
+            residualBand={residualBand}
             onChange={(field, v) => update(field, v)}
           />
         )}
@@ -275,6 +357,8 @@ export default function HazardLogSimulator({
             answers={answers}
             initialRisk={initialRisk}
             initialBand={initialBand}
+            residualRisk={residualRisk}
+            residualBand={residualBand}
             onExport={handleExport}
             onReset={handleReset}
             exporting={exporting}
@@ -337,7 +421,7 @@ function validationHint(step: number): string {
     case 7:
       return "Add at least one control.";
     case 8:
-      return "Pick a residual risk band.";
+      return "Score the residual risk and name an owner.";
     default:
       return "";
   }
@@ -598,11 +682,13 @@ function RiskBanner({
   likelihood,
   initialRisk,
   band,
+  label = "Initial risk score",
 }: {
   severity: number;
   likelihood: number;
   initialRisk: number;
   band: RiskBand;
+  label?: string;
 }) {
   const styles = bandStyles[band];
   return (
@@ -610,7 +696,7 @@ function RiskBanner({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-navy-500">
-            Initial risk score
+            {label}
           </p>
           <p className="mt-1 text-2xl font-semibold text-navy-950">
             {severity} <span className="text-navy-300">×</span> {likelihood}{" "}
@@ -711,98 +797,217 @@ function ControlField({
 }
 
 function ResidualStep({
-  band,
-  note,
-  monitoringTrigger,
-  owner,
+  answers,
   initialRisk,
   initialBand,
+  residualRisk,
+  residualBand,
   onChange,
 }: {
-  band: RiskBand | "";
-  note: string;
-  monitoringTrigger: string;
-  owner: string;
+  answers: Answers;
   initialRisk: number | null;
   initialBand: RiskBand | null;
+  residualRisk: number | null;
+  residualBand: RiskBand | null;
   onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
 }) {
-  const bands: RiskBand[] = ["Low", "Medium", "High", "Extreme"];
   return (
-    <div className="space-y-7">
-      {initialRisk != null && initialBand && (
-        <div className="rounded-lg border border-navy-100 bg-navy-50/40 p-4 text-sm text-navy-700">
-          Initial risk before controls:{" "}
-          <span className="font-semibold text-navy-950">{initialRisk}</span> ·{" "}
-          <span className="font-semibold text-navy-950">{initialBand}</span>.
-          What residual risk band do your controls leave you in?
-        </div>
-      )}
+    <div className="space-y-9">
+      {/* Section A — residual scoring */}
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Residual risk after controls
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            Re-score the hazard assuming your controls are in place. Severity
+            usually does not move — controls reduce <em>likelihood</em>.
+          </p>
+        </header>
 
-      <div>
-        <p className="text-sm font-semibold text-navy-900">
-          Residual risk band (after controls)
-        </p>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {bands.map((b) => {
-            const selected = band === b;
-            const styles = bandStyles[b];
-            return (
-              <button
-                key={b}
-                type="button"
-                onClick={() => onChange("residualBand", b)}
-                className={`rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${
-                  selected
-                    ? styles.chip + " ring-1 ring-clinical-500"
-                    : "border-navy-200 bg-white text-navy-700 hover:border-clinical-300"
-                }`}
-              >
-                {b}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+        {initialRisk != null && initialBand && (
+          <div className="rounded-lg border border-navy-100 bg-navy-50/40 px-4 py-3 text-sm text-navy-700">
+            Initial risk:{" "}
+            <span className="font-semibold text-navy-950">{initialRisk}</span> ·{" "}
+            <span className="font-semibold text-navy-950">{initialBand}</span>
+          </div>
+        )}
 
-      <FieldShell
-        label="Why this band?"
-        hint="One short sentence — what your controls reduce, and what they don't."
-      >
-        <textarea
-          value={note}
-          onChange={(e) => onChange("residualNote", e.target.value)}
-          rows={2}
-          className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-          placeholder="e.g. Medium after controls — not acceptable without active human review and ongoing monitoring."
-        />
-      </FieldShell>
+        <FieldShell label="Residual severity">
+          <CompactScale
+            value={answers.residualSeverity}
+            onChange={(n) => onChange("residualSeverity", n)}
+            labels={severityLabels}
+          />
+        </FieldShell>
 
-      <FieldShell
-        label="Monitoring trigger"
-        hint="What signal would tell you the hazard is occurring or that controls are failing?"
-      >
-        <input
-          value={monitoringTrigger}
-          onChange={(e) => onChange("monitoringTrigger", e.target.value)}
-          type="text"
-          className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-          placeholder="e.g. Confirmed delayed cancer diagnosis where AI assigned routine."
-        />
-      </FieldShell>
+        <FieldShell label="Residual likelihood">
+          <CompactScale
+            value={answers.residualLikelihood}
+            onChange={(n) => onChange("residualLikelihood", n)}
+            labels={likelihoodLabels}
+          />
+        </FieldShell>
 
-      <FieldShell
-        label="Owner / responsible team"
-        hint="Who is accountable for this hazard and the controls?"
-      >
-        <input
-          value={owner}
-          onChange={(e) => onChange("owner", e.target.value)}
-          type="text"
-          className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-          placeholder="e.g. Clinical Safety Officer + cancer pathway clinical lead."
-        />
-      </FieldShell>
+        {residualRisk != null && residualBand && (
+          <RiskBanner
+            severity={answers.residualSeverity ?? 0}
+            likelihood={answers.residualLikelihood ?? 0}
+            initialRisk={residualRisk}
+            band={residualBand}
+            label="Residual risk after controls"
+          />
+        )}
+
+        <FieldShell
+          label="Residual rationale"
+          hint="Why this position? What your controls reduce, and what they don't."
+        >
+          <textarea
+            value={answers.residualRationale}
+            onChange={(e) => onChange("residualRationale", e.target.value)}
+            rows={3}
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Severity unchanged — missed cancer is still catastrophic. Likelihood reduced by mandatory human review and explicit red-flag escalation, but not eliminated."
+          />
+        </FieldShell>
+      </section>
+
+      <hr className="border-navy-100" />
+
+      {/* Section B — monitoring & governance */}
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Monitoring &amp; governance
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            How will you know if the hazard is occurring, what triggers
+            escalation, and how often this entry is reviewed?
+          </p>
+        </header>
+
+        <FieldShell
+          label="Monitoring metric / KPI"
+          hint="What you measure on an ongoing basis."
+        >
+          <input
+            value={answers.monitoringMetric}
+            onChange={(e) => onChange("monitoringMetric", e.target.value)}
+            type="text"
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. False-negative rate on routine-ranked cases (audit sample)."
+          />
+        </FieldShell>
+
+        <FieldShell
+          label="Trigger threshold"
+          hint="The point at which the metric forces action."
+        >
+          <input
+            value={answers.triggerThreshold}
+            onChange={(e) => onChange("triggerThreshold", e.target.value)}
+            type="text"
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Any confirmed delayed cancer diagnosis where AI assigned routine, or false-negative rate > 1%."
+          />
+        </FieldShell>
+
+        <FieldShell
+          label="Review frequency"
+          hint="How often this hazard log entry is formally reviewed."
+        >
+          <input
+            value={answers.reviewFrequency}
+            onChange={(e) => onChange("reviewFrequency", e.target.value)}
+            type="text"
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Quarterly, or sooner if trigger fires."
+          />
+        </FieldShell>
+
+        <FieldShell
+          label="Actions required / CAPA"
+          hint="What happens if the trigger threshold is breached."
+        >
+          <textarea
+            value={answers.capa}
+            onChange={(e) => onChange("capa", e.target.value)}
+            rows={3}
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Pause AI tool for routine triage, notify clinical leadership, full audit of routine-ranked cases over the prior period, supplier engagement, post-event review."
+          />
+        </FieldShell>
+      </section>
+
+      <hr className="border-navy-100" />
+
+      {/* Section C — ownership */}
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Ownership
+          </h4>
+        </header>
+
+        <FieldShell
+          label="Owner / responsible team"
+          hint="Who is accountable for this hazard and its controls?"
+        >
+          <input
+            value={answers.owner}
+            onChange={(e) => onChange("owner", e.target.value)}
+            type="text"
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Clinical Safety Officer, supported by cancer pathway clinical lead."
+          />
+        </FieldShell>
+      </section>
+    </div>
+  );
+}
+
+function CompactScale({
+  value,
+  onChange,
+  labels,
+}: {
+  value: number | null;
+  onChange: (n: number) => void;
+  labels: Record<number, string>;
+}) {
+  return (
+    <div className="mt-2 grid grid-cols-5 gap-2">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const selected = value === n;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`flex flex-col items-center justify-center rounded-md border p-2 text-center transition-all ${
+              selected
+                ? "border-clinical-600 bg-clinical-50 ring-1 ring-clinical-600"
+                : "border-navy-100 bg-white hover:border-clinical-300 hover:bg-navy-50/60"
+            }`}
+          >
+            <span
+              className={`text-lg font-semibold ${
+                selected ? "text-clinical-700" : "text-navy-900"
+              }`}
+            >
+              {n}
+            </span>
+            <span
+              className={`mt-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                selected ? "text-clinical-700" : "text-navy-500"
+              }`}
+            >
+              {labels[n]}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -812,6 +1017,8 @@ function FeedbackStep({
   answers,
   initialRisk,
   initialBand,
+  residualRisk,
+  residualBand,
   onExport,
   onReset,
   exporting,
@@ -821,6 +1028,8 @@ function FeedbackStep({
   answers: Answers;
   initialRisk: number | null;
   initialBand: RiskBand | null;
+  residualRisk: number | null;
+  residualBand: RiskBand | null;
   onExport: () => void;
   onReset: () => void;
   exporting: boolean;
@@ -949,8 +1158,12 @@ function FeedbackStep({
               Your decision
             </p>
             <p className="mt-1 text-base text-navy-900">
-              {answers.residualBand || "—"}
-              {answers.residualNote ? ` — ${answers.residualNote}` : ""}
+              {residualBand && residualRisk != null
+                ? `${residualBand} (${residualRisk})`
+                : "—"}
+              {answers.residualRationale
+                ? ` — ${answers.residualRationale}`
+                : ""}
             </p>
           </div>
           <div>
@@ -971,6 +1184,8 @@ function FeedbackStep({
         answers={answers}
         initialRisk={initialRisk}
         initialBand={initialBand}
+        residualRisk={residualRisk}
+        residualBand={residualBand}
       />
 
       {/* Export & reset */}
@@ -1186,11 +1401,15 @@ function SummaryCard({
   answers,
   initialRisk,
   initialBand,
+  residualRisk,
+  residualBand,
 }: {
   scenario: Scenario;
   answers: Answers;
   initialRisk: number | null;
   initialBand: RiskBand | null;
+  residualRisk: number | null;
+  residualBand: RiskBand | null;
 }) {
   return (
     <div className="rounded-2xl border border-navy-200 bg-navy-950 p-6 text-white md:p-8">
@@ -1204,26 +1423,69 @@ function SummaryCard({
       </div>
       <dl className="mt-6 grid gap-x-8 gap-y-5 md:grid-cols-2">
         <SummaryField label="Hazard" value={answers.hazard} />
-        <SummaryField label="Cause" value={answers.cause} />
+        <SummaryField label="Cause / failure mode" value={answers.cause} />
         <SummaryField label="Clinical consequence" value={answers.consequence} />
+
         <div className="grid grid-cols-3 gap-4">
           <SummaryStat label="Severity" value={answers.severity} />
           <SummaryStat label="Likelihood" value={answers.likelihood} />
-          <SummaryStat label="Initial risk" value={initialRisk} extra={initialBand} />
+          <SummaryStat
+            label="Initial risk"
+            value={initialRisk}
+            extra={initialBand}
+          />
         </div>
-        <SummaryList label="Preventative controls" items={splitLines(answers.preventative)} />
-        <SummaryList label="Detective controls" items={splitLines(answers.detective)} />
-        <SummaryList label="Corrective controls" items={splitLines(answers.corrective)} />
-        <SummaryField
-          label="Residual risk"
-          value={
-            answers.residualBand
-              ? `${answers.residualBand}${answers.residualNote ? " — " + answers.residualNote : ""}`
-              : ""
-          }
+
+        <SummaryList
+          label="Preventative controls"
+          items={splitLines(answers.preventative)}
         />
-        <SummaryField label="Monitoring trigger" value={answers.monitoringTrigger} />
-        <SummaryField label="Owner / responsible team" value={answers.owner} />
+        <SummaryList
+          label="Detective controls"
+          items={splitLines(answers.detective)}
+        />
+        <SummaryList
+          label="Corrective controls"
+          items={splitLines(answers.corrective)}
+        />
+
+        <div className="grid grid-cols-3 gap-4">
+          <SummaryStat
+            label="Residual severity"
+            value={answers.residualSeverity}
+          />
+          <SummaryStat
+            label="Residual likelihood"
+            value={answers.residualLikelihood}
+          />
+          <SummaryStat
+            label="Residual risk"
+            value={residualRisk}
+            extra={residualBand}
+          />
+        </div>
+
+        <SummaryField
+          label="Residual rationale"
+          value={answers.residualRationale}
+        />
+        <SummaryField
+          label="Monitoring metric / KPI"
+          value={answers.monitoringMetric}
+        />
+        <SummaryField
+          label="Trigger threshold"
+          value={answers.triggerThreshold}
+        />
+        <SummaryField
+          label="Review frequency"
+          value={answers.reviewFrequency}
+        />
+        <SummaryField label="Actions / CAPA" value={answers.capa} />
+        <SummaryField
+          label="Owner / responsible team"
+          value={answers.owner}
+        />
       </dl>
     </div>
   );

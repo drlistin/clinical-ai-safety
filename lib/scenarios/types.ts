@@ -62,6 +62,16 @@ export type Scenario = {
   reference: {
     hazard: string;
     cause: string;
+    /**
+     * ISO 14971: the chain that runs from cause through hazardous situation
+     * to harm. Provides the canonical narrative for the formal hazard log
+     * entry — distinct from the user's own articulation of the hazard.
+     */
+    sequenceOfEvents: string;
+    /** ISO 14971: the circumstance in which a person is exposed to the hazard. */
+    hazardousSituation: string;
+    /** ISO 14971: the actual physical injury, damage to health, or other adverse outcome. */
+    potentialHarm: string;
     consequence: string;
     severity: SeverityScore;
     likelihood: LikelihoodScore;

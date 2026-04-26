@@ -22,6 +22,12 @@ export const cancerReferralTriage: Scenario = {
       "Delayed diagnosis of upper GI cancer due to incorrect AI triage prioritisation.",
     cause:
       "Fragmented clinical risk features across referral text, blood results and previous notes are not aggregated correctly by the AI model.",
+    sequenceOfEvents:
+      "Referral letter, blood results and prior clinic notes contain individual red-flag features (weight loss, anaemia, intermittent dysphagia). The AI model evaluates each data source in isolation and does not aggregate features across them. The referral is labelled routine. The patient enters the routine queue, where the next available appointment is significantly later than the urgent two-week pathway. The cancer progresses while the patient waits.",
+    hazardousSituation:
+      "A patient with red-flag features for upper GI cancer is placed in the routine assessment queue, exposing them to a clinically significant delay before specialist review.",
+    potentialHarm:
+      "Avoidable progression of upper GI cancer, delayed initiation of treatment, reduced treatment options at point of diagnosis, and in worst-credible case avoidable mortality.",
     consequence:
       "Delay in urgent specialist assessment, potential progression of malignancy, delayed treatment and possible avoidable harm.",
     severity: 5,
