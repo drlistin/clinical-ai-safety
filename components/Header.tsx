@@ -5,7 +5,7 @@ import Container from "./Container";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-[#e5e5e5] bg-[#f5f5f5]">
+    <header className="sticky top-0 z-40 border-b border-navy-100 bg-white">
       <Container className="flex h-16 items-center justify-between md:h-[72px]">
         <Link
           href="/"
@@ -19,7 +19,7 @@ export default function Header() {
             height={200}
             priority
             sizes="(min-width: 768px) 220px, 160px"
-            className="h-auto w-[160px] md:w-[220px]"
+            className="h-auto w-[160px] max-h-12 object-contain md:w-[220px] md:max-h-14"
           />
         </Link>
 
