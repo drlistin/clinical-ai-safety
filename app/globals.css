@@ -29,24 +29,27 @@
   }
 }
 
-/* Subtle "breathing" glow on the navbar shield icon.
- * 7 second cycle, eased — feels like a slow exhale rather than a pulse.
- * Drop-shadow follows the icon's alpha channel, so the glow traces the
- * shield silhouette rather than a rectangle.
+/* Soft teal/blue glow on the navbar shield icon.
+ * 4-second cycle, eased — visible but never insistent.
+ * Two stacked drop-shadows: a tighter teal highlight inside a wider clinical
+ * blue halo. Both filters operate on the icon's alpha channel, so the glow
+ * traces the shield silhouette rather than a rectangle.
  */
 @keyframes navlogo-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 0 rgba(50, 114, 178, 0));
+    filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0))
+            drop-shadow(0 0 0 rgba(50, 114, 178, 0));
   }
   50% {
-    filter: drop-shadow(0 0 8px rgba(50, 114, 178, 0.45));
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7))
+            drop-shadow(0 0 16px rgba(50, 114, 178, 0.55));
   }
 }
 
 @layer utilities {
   .navlogo-glow {
-    animation: navlogo-glow 7s ease-in-out infinite;
+    animation: navlogo-glow 4s ease-in-out infinite;
     will-change: filter;
   }
 }
