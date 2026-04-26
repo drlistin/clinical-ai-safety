@@ -6,7 +6,7 @@ import Container from "./Container";
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-navy-100 bg-white/90 backdrop-blur">
-      <Container className="flex h-20 items-center justify-between">
+      <Container className="flex h-16 items-center justify-between md:h-[72px]">
         <Link
           href="/"
           className="flex items-center"
@@ -18,8 +18,8 @@ export default function Header() {
             width={760}
             height={200}
             priority
-            sizes="(min-width: 768px) 180px, 140px"
-            className="h-auto w-[140px] md:w-[180px]"
+            sizes="(min-width: 768px) 220px, 160px"
+            className="h-auto w-[160px] md:w-[220px]"
           />
         </Link>
 
