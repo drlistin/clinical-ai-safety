@@ -6,6 +6,14 @@ const failureModes = [
   "Recognising AI-specific failure modes",
 ];
 
+const standards = ["DCB0129", "DCB0160", "DTAC"];
+
+const appliedPractice = [
+  "Hazard logs",
+  "Supplier challenge",
+  "AI failure modes",
+];
+
 export default function Problem() {
   return (
     <Section tone="light">
@@ -62,6 +70,90 @@ export default function Problem() {
             This platform bridges that gap through practical modules and
             simulation.
           </p>
+        </div>
+      </div>
+
+      {/* Transformation diagram — Standards → Applied practice */}
+      <div className="mt-16 md:mt-20">
+        <div className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr] md:gap-6">
+          {/* Standards */}
+          <div className="rounded-lg border border-navy-100 bg-white p-6">
+            <div className="flex items-center gap-2.5">
+              <span
+                aria-hidden
+                className="block h-px w-5 bg-clinical-600"
+              />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
+                Standards
+              </p>
+            </div>
+            <ul className="mt-5 space-y-2.5">
+              {standards.map((s) => (
+                <li
+                  key={s}
+                  className="text-sm font-semibold tracking-wide text-navy-900 md:text-base"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Connector arrow — horizontal on desktop, vertical on mobile */}
+          <div
+            aria-hidden
+            className="flex items-center justify-center md:px-1"
+          >
+            <svg
+              viewBox="0 0 40 12"
+              fill="none"
+              className="hidden h-3 w-10 text-clinical-500 md:block"
+            >
+              <path
+                d="M0 6 H32 M26 1 L32 6 L26 11"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 12 40"
+              fill="none"
+              className="h-10 w-3 text-clinical-500 md:hidden"
+            >
+              <path
+                d="M6 0 V32 M1 26 L6 32 L11 26"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
+          {/* Applied practice */}
+          <div className="rounded-lg border border-navy-100 bg-white p-6">
+            <div className="flex items-center gap-2.5">
+              <span
+                aria-hidden
+                className="block h-px w-5 bg-clinical-600"
+              />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
+                Applied practice
+              </p>
+            </div>
+            <ul className="mt-5 space-y-2.5">
+              {appliedPractice.map((p) => (
+                <li
+                  key={p}
+                  className="text-sm font-medium text-navy-900 md:text-base"
+                >
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </Section>
