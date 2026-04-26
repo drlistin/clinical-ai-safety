@@ -9,9 +9,9 @@ const failureModes = [
 const standards = ["DCB0129", "DCB0160", "DTAC"];
 
 const appliedPractice = [
-  "Hazard logs",
-  "Supplier challenge",
-  "AI failure modes",
+  "Hazard logging",
+  "Supplier safety review",
+  "AI failure recognition",
 ];
 
 export default function Problem() {
@@ -74,10 +74,10 @@ export default function Problem() {
       </div>
 
       {/* Transformation diagram — Standards → Applied practice */}
-      <div className="mt-16 md:mt-20">
+      <div className="mt-11 md:mt-14">
         <div className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr] md:gap-6">
           {/* Standards */}
-          <div className="rounded-lg border border-navy-100 bg-white p-6">
+          <div className="rounded-lg border border-navy-100 bg-white px-5 py-4">
             <div className="flex items-center gap-2.5">
               <span
                 aria-hidden
@@ -87,7 +87,7 @@ export default function Problem() {
                 Standards
               </p>
             </div>
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-3.5 space-y-1.5">
               {standards.map((s) => (
                 <li
                   key={s}
@@ -133,7 +133,7 @@ export default function Problem() {
           </div>
 
           {/* Applied practice */}
-          <div className="rounded-lg border border-navy-100 bg-white p-6">
+          <div className="rounded-lg border border-navy-100 bg-white px-5 py-4">
             <div className="flex items-center gap-2.5">
               <span
                 aria-hidden
@@ -143,7 +143,7 @@ export default function Problem() {
                 Applied practice
               </p>
             </div>
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-3.5 space-y-1.5">
               {appliedPractice.map((p) => (
                 <li
                   key={p}
