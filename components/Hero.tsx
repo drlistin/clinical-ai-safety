@@ -57,10 +57,10 @@ export default function Hero() {
                 Start training
               </Link>
               <Link
-                href="/simulators/hazard-log-builder"
+                href="/simulators/hazard-log-builder#run"
                 className="inline-flex items-center rounded-md border border-navy-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-navy-800"
               >
-                Try the simulator
+                Try the live simulator
               </Link>
             </div>
           </div>

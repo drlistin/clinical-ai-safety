@@ -1,67 +1,60 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Disclaimer from "@/components/Disclaimer";
+import HazardLogSimulator from "@/components/simulator/HazardLogSimulator";
+import { defaultScenario } from "@/lib/scenarios";
 
 export const metadata: Metadata = {
   title: "Hazard Log Builder",
   description:
-    "The launch simulator — work through a realistic NHS AI deployment scenario, identify hazards, apply controls, and export a DCB0129-aligned hazard log.",
+    "Work through a realistic clinical AI deployment scenario, identify hazards, apply controls, and export a DCB0129-aligned hazard log entry as a branded PDF.",
 };
 
 export default function HazardLogBuilderPage() {
   return (
     <>
       <PageHeader
-        kicker="Simulator 04 · Launch simulator"
+        kicker="Simulator 04 · Live"
         title="Hazard Log Builder."
-        lede="An interactive, feedback-driven rehearsal of the single most important artefact a Clinical Safety Officer produces. Launching with the first three curriculum modules."
+        lede="A nine-step rehearsal of the single most important artefact a Clinical Safety Officer produces. Realistic AI deployment scenario, structured feedback at every step, audit-ready PDF export."
       />
 
-      <Section tone="light">
-        <div className="grid gap-16 md:grid-cols-5">
-          <div className="md:col-span-3 space-y-6 text-lg leading-relaxed text-navy-700">
-            <p>
-              The Hazard Log Builder walks you through a realistic NHS AI
-              deployment scenario one decision at a time. You identify clinical
-              hazards, articulate them in language that survives audit,
-              quantify severity and likelihood, and specify controls that
-              actually control.
+      <Section tone="light" id="run">
+        <div className="grid gap-10 md:grid-cols-5 md:gap-16">
+          <div className="md:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-clinical-700">
+              Today&apos;s scenario
             </p>
-            <p>
-              Structured feedback at each step is modelled on the kind of
-              challenge an experienced CSO would bring to your first draft.
-              Nothing is graded; everything is interrogated. The output is an
-              exportable hazard log you can take back to your Trust and adapt.
+            <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tightish md:text-3xl">
+              AI Cancer Referral Prioritisation Tool.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-navy-700 md:text-base">
+              An AI tool reads referral text, blood results and prior notes,
+              and labels suspected upper GI cancer referrals as urgent, soon,
+              or routine. The simulator walks you through one defensible
+              hazard log entry for the failure mode that follows when those
+              data sources are not aggregated.
             </p>
-            <p>
-              This is the first of ten simulators. It pairs with Module 5
-              (Writing a Hazard Log That Actually Works) but stands alone.
-            </p>
+            <ul className="mt-6 space-y-2.5 text-sm text-navy-700">
+              <li className="flex items-start gap-3">
+                <Check />
+                <span>9 structured steps · ~10 minutes</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check />
+                <span>Reference answer with concept-level feedback</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check />
+                <span>Branded PDF export, audit-ready</span>
+              </li>
+            </ul>
           </div>
 
-          <aside className="md:col-span-2">
-            <div className="rounded-lg border border-navy-100 bg-navy-50 p-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-clinical-700">
-                Status
-              </p>
-              <p className="mt-3 text-xl font-semibold text-navy-900">
-                In development
-              </p>
-              <p className="mt-4 text-sm leading-relaxed text-navy-700">
-                The Hazard Log Builder is being built in parallel with Modules
-                5, 7 and 11. Join the waitlist on the homepage to hear when
-                it&apos;s available for the first round of CSO feedback.
-              </p>
-              <Link
-                href="/#launch-modules"
-                className="mt-6 inline-flex text-sm font-semibold text-clinical-700 underline-offset-4 hover:underline"
-              >
-                See the launch modules &rarr;
-              </Link>
-            </div>
-          </aside>
+          <div className="md:col-span-3">
+            <HazardLogSimulator scenario={defaultScenario} />
+          </div>
         </div>
       </Section>
 
@@ -123,5 +116,24 @@ export default function HazardLogBuilderPage() {
 
       <Disclaimer />
     </>
+  );
+}
+
+function Check() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      fill="none"
+      className="mt-[6px] h-3.5 w-3.5 flex-none text-clinical-600"
+    >
+      <path
+        d="M3 8.5l3 3 7-7"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
