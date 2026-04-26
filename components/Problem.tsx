@@ -21,25 +21,35 @@ export default function Problem() {
         </div>
 
         {/* Right: argument */}
-        <div className="max-w-xl space-y-12 md:col-span-3">
-          {/* Lead pair — light/medium contrast creates the "but" without saying it */}
+        <div className="max-w-xl md:col-span-3">
+          {/* Lead pair — light setup, weighted punchline */}
           <div className="space-y-2">
             <p className="text-xl font-light leading-snug text-navy-700 md:text-2xl">
               Most training teaches standards.
             </p>
-            <p className="text-xl font-medium leading-snug text-navy-900 md:text-2xl">
+            <p className="text-xl font-semibold leading-snug text-navy-950 md:text-2xl">
               Few teach application under deployment pressure.
             </p>
           </div>
 
-          {/* The three gaps */}
-          <ul className="space-y-3.5">
+          {/* The three gaps — premium tick markers */}
+          <ul className="mt-10 space-y-3.5">
             {failureModes.map((item) => (
-              <li key={item} className="flex items-start gap-4">
-                <span
+              <li key={item} className="flex items-start gap-3">
+                <svg
                   aria-hidden
-                  className="mt-[11px] block h-1.5 w-1.5 flex-none rounded-sm bg-clinical-600"
-                />
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="mt-[7px] h-3.5 w-3.5 flex-none text-clinical-600"
+                >
+                  <path
+                    d="M3 8.5l3 3 7-7"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
                 <span className="text-base font-medium text-navy-900 md:text-lg">
                   {item}
                 </span>
@@ -47,13 +57,11 @@ export default function Problem() {
             ))}
           </ul>
 
-          {/* Resolution — separated, calmer */}
-          <div className="border-t border-navy-100 pt-8">
-            <p className="text-base leading-relaxed text-navy-700 md:text-lg">
-              This platform bridges that gap through practical modules and
-              simulation.
-            </p>
-          </div>
+          {/* Resolution — tight to the list so it reads as the same thought */}
+          <p className="mt-6 text-base leading-relaxed text-navy-700 md:text-lg">
+            This platform bridges that gap through practical modules and
+            simulation.
+          </p>
         </div>
       </div>
     </Section>
