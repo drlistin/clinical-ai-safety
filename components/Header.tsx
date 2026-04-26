@@ -12,15 +12,26 @@ export default function Header() {
           className="flex items-center"
           aria-label={`${site.name} home`}
         >
-          <Image
-            src="/logo-navbar.png"
-            alt={site.name}
-            width={943}
-            height={250}
-            priority
-            sizes="(min-width: 768px) 220px, 160px"
-            className="h-auto w-[160px] md:w-[220px]"
-          />
+          <span className="flex items-center gap-1.5 md:gap-2">
+            <Image
+              src="/logo-icon.png"
+              alt=""
+              width={241}
+              height={250}
+              priority
+              sizes="(min-width: 768px) 56px, 40px"
+              className="navlogo-glow h-10 w-auto md:h-14"
+            />
+            <Image
+              src="/logo-wordmark.png"
+              alt=""
+              width={659}
+              height={250}
+              priority
+              sizes="(min-width: 768px) 154px, 112px"
+              className="h-10 w-auto md:h-14"
+            />
+          </span>
         </Link>
 
         <nav

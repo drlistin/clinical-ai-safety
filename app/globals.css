@@ -28,3 +28,32 @@
     @apply text-navy-700 leading-relaxed;
   }
 }
+
+/* Subtle "breathing" glow on the navbar shield icon.
+ * 7 second cycle, eased — feels like a slow exhale rather than a pulse.
+ * Drop-shadow follows the icon's alpha channel, so the glow traces the
+ * shield silhouette rather than a rectangle.
+ */
+@keyframes navlogo-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(50, 114, 178, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(50, 114, 178, 0.45));
+  }
+}
+
+@layer utilities {
+  .navlogo-glow {
+    animation: navlogo-glow 7s ease-in-out infinite;
+    will-change: filter;
+  }
+}
+
+/* Honour the user's OS-level motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  .navlogo-glow {
+    animation: none;
+  }
+}
