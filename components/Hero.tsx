@@ -15,16 +15,21 @@ export default function Hero() {
       <Container className="relative py-28 md:py-36">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-clinical-300">
-            For NHS Clinical Safety Officers
+            For Clinical Safety Officers
           </p>
           <h1 className="mt-6 text-4xl font-semibold leading-[1.1] tracking-tightish md:text-6xl">
-            Practical clinical safety training for NHS AI deployment.
+            AI can pass the guideline and still harm the patient.
           </h1>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-navy-100 md:text-xl">
-            DCB0129, DCB0160 and DTAC applied where they actually get applied —
-            on the ward, in procurement, under real deployment pressure.
-            Clinician-led. Independent. Built for the work, not the certificate.
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 md:text-lg">
+            Practical training and simulation for safe clinical AI deployment.
           </p>
+          <div className="mt-10 space-y-3 text-sm md:text-base">
+            <p className="text-navy-100">Grounded in real-world standards.</p>
+            <p className="font-medium tracking-wide text-clinical-300">
+              DCB0129. DCB0160. DTAC.
+            </p>
+            <p className="text-navy-100">Where policy meets practice.</p>
+          </div>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/modules"
