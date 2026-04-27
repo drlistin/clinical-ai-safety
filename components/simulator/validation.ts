@@ -282,16 +282,9 @@ export function runValidation(input: ValidationInput): ValidationResult {
     );
   }
 
-  // Rule 3. Unrealistic residual severity reduction.
-  if (
-    input.severity >= 4 &&
-    input.residualSeverity > 0 &&
-    input.residualSeverity <= input.severity - 2
-  ) {
-    safetyCritical.push(
-      `Residual severity ${input.residualSeverity} is implausibly low for an initial severity of ${input.severity}. Controls reduce likelihood, rarely severity.`,
-    );
-  }
+  // Rule 3 has been moved below the governance-adjusted scoring block so the
+  // residual plausibility check compares against `adjustedSeverity` rather
+  // than the user-entered value. See "Rule 3 (post-adjustment)" further down.
 
   // Rule 4. Unsupported low residual risk.
   const residualLow =
@@ -389,6 +382,29 @@ export function runValidation(input: ValidationInput): ValidationResult {
 
   const adjustedRiskScore = adjustedSeverity * adjustedLikelihood;
   const adjustedRiskBand = bandFor(adjustedRiskScore);
+
+  // Rule 3 (post-adjustment). Unrealistic residual severity reduction.
+  //
+  // Compared against the governance-adjusted severity, NOT the user-entered
+  // value. Rationale: when a user over-scores initial severity (e.g. Sev 5
+  // for "minor inconvenience"), the governance-correct severity is the
+  // inferred ceiling (Sev 2). A residual severity of 1 against an adjusted
+  // severity of 2 is plausible and must not raise a critical warning.
+  // Conversely, when the user under-scores, the adjusted severity adopts
+  // the reference, so a Sev 1 residual against an adjusted Sev 5 still
+  // correctly fires.
+  //
+  // The check is gated to adjustedSeverity >= 4 because controls don't
+  // typically reduce a credible high-severity outcome by more than one band.
+  if (
+    adjustedSeverity >= 4 &&
+    input.residualSeverity > 0 &&
+    input.residualSeverity <= adjustedSeverity - 2
+  ) {
+    safetyCritical.push(
+      `Residual severity ${input.residualSeverity} is implausibly low for a governance-adjusted severity of ${adjustedSeverity}. Controls reduce likelihood, rarely severity.`,
+    );
+  }
 
   // Overall direction discriminator for downstream UI styling.
   let scoreAdjustmentDirection: "upward" | "downward" | "mixed" | "none";
