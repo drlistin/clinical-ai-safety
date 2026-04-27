@@ -12,14 +12,13 @@ export const cancerReferralTriage: Scenario = {
       "A patient with weight loss, anaemia and intermittent dysphagia is labelled routine. The relevant red-flag features are present in the record but split across the referral letter, the blood results and the prior clinic notes. The model fails to aggregate them, so the case never reaches the urgent queue.",
     learningGoals: [
       "Distinguish a clinical hazard (patient-facing harm) from a failure mode (how the system went wrong).",
-      "Recognise AI-specific failure mechanisms — here, fragmented evidence across data sources.",
+      "Recognise AI-specific failure mechanisms, here, fragmented evidence across data sources.",
       "Build a control set that survives audit: prevention, detection, and correction.",
     ],
   },
 
   reference: {
-    hazard:
-      "Delayed diagnosis of upper GI cancer due to incorrect AI triage prioritisation.",
+    hazard: "Delayed diagnosis of upper GI cancer due to incorrect AI triage prioritisation.",
     cause:
       "Fragmented clinical risk features across referral text, blood results and previous notes are not aggregated correctly by the AI model.",
     sequenceOfEvents:
@@ -49,7 +48,7 @@ export const cancerReferralTriage: Scenario = {
     },
     residualRisk: "Medium",
     residualRiskNote:
-      "Medium after controls — not acceptable without active human review and ongoing monitoring.",
+      "Medium after controls, not acceptable without active human review and ongoing monitoring.",
     monitoringTrigger:
       "Any confirmed delayed cancer diagnosis where the AI assigned routine, or a false-negative rate above the agreed threshold on the audit sample.",
     owner:
@@ -61,14 +60,7 @@ export const cancerReferralTriage: Scenario = {
       groups: [
         {
           label: "patient-facing delay or missed diagnosis",
-          any: [
-            "delay",
-            "delayed",
-            "miss",
-            "missed",
-            "late",
-            "failure to diagnos",
-          ],
+          any: ["delay", "delayed", "miss", "missed", "late", "failure to diagnos"],
         },
         {
           label: "the clinical entity (cancer / malignancy)",
@@ -76,7 +68,7 @@ export const cancerReferralTriage: Scenario = {
         },
       ],
       shortInputHint:
-        "A hazard is a sentence about patient harm — what could happen to the patient. One short clause is rarely enough.",
+        "A hazard is a sentence about patient harm, what could happen to the patient. One short clause is rarely enough.",
       failureModeMarkers: [
         "ai misclassif",
         "model misclassif",
@@ -90,7 +82,7 @@ export const cancerReferralTriage: Scenario = {
         "misclassifies",
       ],
       failureModeHint:
-        "That describes the failure mode — how the AI behaved. The hazard is the patient-facing harm, such as delayed diagnosis of upper GI cancer.",
+        "That describes the failure mode, how the AI behaved. The hazard is the patient-facing harm, such as delayed diagnosis of upper GI cancer.",
     },
     cause: {
       groups: [
@@ -108,33 +100,17 @@ export const cancerReferralTriage: Scenario = {
         },
         {
           label: "failure to aggregate / combine signals",
-          any: [
-            "aggregat",
-            "combin",
-            "join",
-            "synthesis",
-            "synthesise",
-            "synthesize",
-            "integrate",
-          ],
+          any: ["aggregat", "combin", "join", "synthesis", "synthesise", "synthesize", "integrate"],
         },
       ],
       shortInputHint:
-        "Describe the mechanism — what the model did or didn't do, and why that produced the wrong label.",
+        "Describe the mechanism, what the model did or didn't do, and why that produced the wrong label.",
     },
     consequence: {
       groups: [
         {
           label: "delay to specialist assessment or treatment",
-          any: [
-            "delay",
-            "specialist",
-            "treatment",
-            "referral",
-            "two-week",
-            "2ww",
-            "urgent",
-          ],
+          any: ["delay", "specialist", "treatment", "referral", "two-week", "2ww", "urgent"],
         },
         {
           label: "disease progression / avoidable harm",
@@ -163,7 +139,7 @@ export const cancerReferralTriage: Scenario = {
       expected: 3,
       tolerance: 1,
       rationale:
-        "The fragmented-evidence pattern is plausible across a meaningful proportion of referrals where information is genuinely distributed across documents — moderate, not rare and not certain.",
+        "The fragmented-evidence pattern is plausible across a meaningful proportion of referrals where information is genuinely distributed across documents, moderate, not rare and not certain.",
     },
     controls: {
       preventative: [

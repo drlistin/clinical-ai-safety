@@ -17,6 +17,11 @@ import {
   severityLabels,
 } from "./feedback";
 import { exportHazardLogPdf, type HazardLogReport } from "./exportPdf";
+import type {
+  ActionEntry,
+  ControlEntry,
+} from "./pdf/types";
+import { runValidation } from "./validation";
 
 /* ------------------------------------------------------------------ */
 /* Types & static metadata                                            */
@@ -24,6 +29,7 @@ import { exportHazardLogPdf, type HazardLogReport } from "./exportPdf";
 
 type StepKey =
   | "briefing"
+  | "classification"
   | "hazard"
   | "cause"
   | "consequence"
@@ -37,44 +43,84 @@ type StepMeta = { id: number; key: StepKey; name: string };
 
 const STEPS: StepMeta[] = [
   { id: 1, key: "briefing", name: "Scenario briefing" },
-  { id: 2, key: "hazard", name: "Identify the hazard" },
-  { id: 3, key: "cause", name: "Cause / failure mechanism" },
-  { id: 4, key: "consequence", name: "Clinical consequence" },
-  { id: 5, key: "severity", name: "Score severity" },
-  { id: 6, key: "likelihood", name: "Score likelihood" },
-  { id: 7, key: "controls", name: "Specify controls" },
-  { id: 8, key: "residual", name: "Residual risk & ownership" },
-  { id: 9, key: "feedback", name: "Reference answer & feedback" },
+  { id: 2, key: "classification", name: "Classification & system context" },
+  { id: 3, key: "hazard", name: "Identify the hazard" },
+  { id: 4, key: "cause", name: "Cause / failure mechanism" },
+  { id: 5, key: "consequence", name: "Clinical consequence" },
+  { id: 6, key: "severity", name: "Score severity" },
+  { id: 7, key: "likelihood", name: "Score likelihood" },
+  { id: 8, key: "controls", name: "Existing & proposed controls" },
+  { id: 9, key: "residual", name: "Residual risk, monitoring, ownership" },
+  { id: 10, key: "feedback", name: "Reference answer & feedback" },
 ];
 
 type Answers = {
+  // Classification & system context
+  hazardClassifications: string[];
+  systemName: string;
+  systemVersion: string;
+  workflowStep: string;
+  safetyRequirement: string;
+  benefitJustification: string;
+
+  // Hazard log entry (user-articulated)
   hazard: string;
   cause: string;
   consequence: string;
+
+  // Initial risk
   severity: number | null;
+  severityEvidence: string[];
   likelihood: number | null;
-  preventative: string;
-  detective: string;
-  corrective: string;
+  likelihoodEvidence: string[];
+
+  // Controls (existing vs proposed, P/D/C)
+  existingPreventative: string;
+  existingDetective: string;
+  existingCorrective: string;
+  proposedPreventative: string;
+  proposedDetective: string;
+  proposedCorrective: string;
+
+  // Residual risk
   residualSeverity: number | null;
   residualLikelihood: number | null;
   residualRationale: string;
+
+  // Monitoring & governance
   monitoringMetric: string;
   triggerThreshold: string;
   reviewFrequency: string;
   capa: string;
+
+  // Stakeholders & assumptions
+  stakeholders: string;
+  assumptions: string;
+
+  // Ownership
   owner: string;
 };
 
 const initialAnswers: Answers = {
+  hazardClassifications: [],
+  systemName: "",
+  systemVersion: "",
+  workflowStep: "",
+  safetyRequirement: "",
+  benefitJustification: "",
   hazard: "",
   cause: "",
   consequence: "",
   severity: null,
+  severityEvidence: [],
   likelihood: null,
-  preventative: "",
-  detective: "",
-  corrective: "",
+  likelihoodEvidence: [],
+  existingPreventative: "",
+  existingDetective: "",
+  existingCorrective: "",
+  proposedPreventative: "",
+  proposedDetective: "",
+  proposedCorrective: "",
   residualSeverity: null,
   residualLikelihood: null,
   residualRationale: "",
@@ -82,8 +128,27 @@ const initialAnswers: Answers = {
   triggerThreshold: "",
   reviewFrequency: "",
   capa: "",
+  stakeholders: "",
+  assumptions: "",
   owner: "",
 };
+
+export const HAZARD_CLASSIFICATION_TAGS = [
+  "Clinical",
+  "Technical",
+  "Workflow",
+  "AI-specific",
+  "Interoperability",
+  "Data quality",
+] as const;
+
+export const EVIDENCE_BASIS_TAGS = [
+  "Incident data",
+  "Pilot / audit data",
+  "Supplier evidence",
+  "Expert judgement",
+  "Assumption only",
+] as const;
 
 const splitLines = (t: string): string[] =>
   t
@@ -107,10 +172,249 @@ function acceptabilityFor(band: RiskBand | null): string {
     case "High":
       return "Not acceptable without further mitigation";
     case "Extreme":
-      return "Not acceptable — escalate";
+      return "Not acceptable, escalate immediately";
     default:
       return "Not assessed";
   }
+}
+
+function buildControlsList(
+  answers: Answers,
+  ownerStr: string,
+): ControlEntry[] {
+  const entries: ControlEntry[] = [];
+  const groups: Array<{
+    src: string;
+    type: ControlEntry["type"];
+    origin: ControlEntry["origin"];
+    impl: ControlEntry["implementationStatus"];
+    ver: ControlEntry["verificationStatus"];
+  }> = [
+    {
+      src: answers.existingPreventative,
+      type: "Preventative",
+      origin: "Existing",
+      impl: "Implemented",
+      ver: "Verified",
+    },
+    {
+      src: answers.existingDetective,
+      type: "Detective",
+      origin: "Existing",
+      impl: "Implemented",
+      ver: "Verified",
+    },
+    {
+      src: answers.existingCorrective,
+      type: "Corrective",
+      origin: "Existing",
+      impl: "Implemented",
+      ver: "Verified",
+    },
+    {
+      src: answers.proposedPreventative,
+      type: "Preventative",
+      origin: "Proposed",
+      impl: "Planned",
+      ver: "Not verified",
+    },
+    {
+      src: answers.proposedDetective,
+      type: "Detective",
+      origin: "Proposed",
+      impl: "Planned",
+      ver: "Not verified",
+    },
+    {
+      src: answers.proposedCorrective,
+      type: "Corrective",
+      origin: "Proposed",
+      impl: "Planned",
+      ver: "Not verified",
+    },
+  ];
+  for (const g of groups) {
+    for (const text of splitLines(g.src)) {
+      entries.push({
+        text,
+        type: g.type,
+        origin: g.origin,
+        owner: ownerStr,
+        implementationStatus: g.impl,
+        verificationStatus: g.ver,
+      });
+    }
+  }
+  return entries;
+}
+
+function generateActions(
+  controls: ControlEntry[],
+  answers: Answers,
+  ownerStr: string,
+): ActionEntry[] {
+  const actions: ActionEntry[] = [];
+  const proposed = controls.filter((c) => c.origin === "Proposed");
+  const unverified = controls.filter(
+    (c) => c.verificationStatus !== "Verified",
+  );
+
+  if (proposed.length > 0) {
+    actions.push({
+      action: `Implement proposed controls (${proposed.length} entr${proposed.length === 1 ? "y" : "ies"})`,
+      owner: ownerStr,
+      dueDate: "Next safety review cycle",
+      status: "Planned",
+    });
+  }
+  if (unverified.length > 0) {
+    actions.push({
+      action: `Verify ${unverified.length} control${unverified.length === 1 ? "" : "s"} against operational evidence`,
+      owner: ownerStr,
+      dueDate: answers.reviewFrequency || "Within next review cycle",
+      status: "Planned",
+    });
+  }
+  if (answers.monitoringMetric.trim()) {
+    actions.push({
+      action: `Operationalise monitoring metric: ${answers.monitoringMetric.trim()}`,
+      owner: ownerStr,
+      dueDate: answers.reviewFrequency || "Before go-live",
+      status: "Planned",
+    });
+  }
+  if (answers.capa.trim()) {
+    actions.push({
+      action: "Document CAPA pathway and rehearse trigger response",
+      owner: ownerStr,
+      dueDate: "Before go-live",
+      status: "Planned",
+    });
+  }
+  if (actions.length === 0) {
+    actions.push({
+      action: "Complete entry and resubmit for governance review",
+      owner: ownerStr,
+      dueDate: "Before next governance meeting",
+      status: "Planned",
+    });
+  }
+  return actions;
+}
+
+type BuildArgs = {
+  scenario: Scenario;
+  answers: Answers;
+  initialRisk: number;
+  initialBand: RiskBand;
+  residualRisk: number | null;
+  residualBand: RiskBand | null;
+};
+
+function buildHazardLogReport(args: BuildArgs): HazardLogReport {
+  const { scenario, answers } = args;
+  const now = new Date();
+  const reviewDate = new Date(now);
+  reviewDate.setMonth(reviewDate.getMonth() + 3);
+
+  const ownerStr = answers.owner.trim() || "(to be assigned)";
+  const controls = buildControlsList(answers, ownerStr);
+
+  const validation = runValidation({
+    scenario,
+    hazard: answers.hazard,
+    cause: answers.cause,
+    consequence: answers.consequence,
+    severity: answers.severity ?? 0,
+    likelihood: answers.likelihood ?? 0,
+    residualSeverity: answers.residualSeverity ?? 0,
+    residualLikelihood: answers.residualLikelihood ?? 0,
+    residualRationale: answers.residualRationale,
+    preventativeControls: [
+      ...splitLines(answers.existingPreventative),
+      ...splitLines(answers.proposedPreventative),
+    ],
+    detectiveControls: [
+      ...splitLines(answers.existingDetective),
+      ...splitLines(answers.proposedDetective),
+    ],
+    correctiveControls: [
+      ...splitLines(answers.existingCorrective),
+      ...splitLines(answers.proposedCorrective),
+    ],
+    monitoringMetric: answers.monitoringMetric,
+    triggerThreshold: answers.triggerThreshold,
+    reviewFrequency: answers.reviewFrequency,
+    capa: answers.capa,
+    owner: answers.owner,
+    severityEvidence: answers.severityEvidence,
+    likelihoodEvidence: answers.likelihoodEvidence,
+  });
+
+  const actions = generateActions(controls, answers, ownerStr);
+
+  return {
+    documentTitle: "Clinical Safety Hazard Log Report",
+    scenarioName: scenario.name,
+    hazardId: generateHazardId(now),
+    version: "1.0",
+    dateCreated: now,
+    lastReviewed: now,
+    reviewDate,
+    status: "Open",
+    author: ownerStr,
+    approver: "",
+    reviewer: "",
+    owner: ownerStr,
+    hazardClassifications: answers.hazardClassifications,
+    systemName: answers.systemName.trim() || "(not specified)",
+    systemVersion: answers.systemVersion.trim(),
+    workflowStep: answers.workflowStep.trim(),
+    safetyRequirement:
+      answers.safetyRequirement.trim() || "(not specified)",
+    benefitJustification:
+      answers.benefitJustification.trim() || "(not specified)",
+    hazard: answers.hazard,
+    causeFailureMode: answers.cause,
+    sequenceOfEvents: scenario.reference.sequenceOfEvents,
+    hazardousSituation: scenario.reference.hazardousSituation,
+    potentialHarm: scenario.reference.potentialHarm,
+    clinicalConsequence: answers.consequence,
+    initialSeverity: answers.severity ?? 0,
+    severityRationale: scenario.feedback.severity.rationale,
+    severityEvidence: answers.severityEvidence,
+    initialLikelihood: answers.likelihood ?? 0,
+    likelihoodRationale: scenario.feedback.likelihood.rationale,
+    likelihoodEvidence: answers.likelihoodEvidence,
+    initialRiskScore: args.initialRisk,
+    initialRiskBand: args.initialBand,
+    residualSeverity: answers.residualSeverity ?? 0,
+    residualLikelihood: answers.residualLikelihood ?? 0,
+    residualRationale:
+      answers.residualRationale.trim() ||
+      "Rationale to be added on review.",
+    residualRiskScore: args.residualRisk ?? 0,
+    residualRiskBand: args.residualBand ?? "Low",
+    overallAcceptability: acceptabilityFor(args.residualBand),
+    governanceConcern: validation.governanceConcern,
+    governanceConcernRationale: validation.governanceConcernRationale,
+    controls,
+    monitoringMetric:
+      answers.monitoringMetric.trim() || "(to be defined)",
+    triggerThreshold:
+      answers.triggerThreshold.trim() || "(to be defined)",
+    reviewFrequency:
+      answers.reviewFrequency.trim() || "(to be defined)",
+    capa: answers.capa.trim() || "(to be defined)",
+    stakeholders: answers.stakeholders.trim(),
+    assumptions: answers.assumptions.trim(),
+    governanceStatus: validation.status,
+    criticalWarnings: validation.criticalWarnings,
+    requiredImprovements: validation.requiredImprovements,
+    actions,
+    recommendation: validation.recommendation,
+    recommendationNote: validation.recommendationNote,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -147,22 +451,32 @@ export default function HazardLogSimulator({
       case 1:
         return true;
       case 2:
-        return answers.hazard.trim().length >= 12;
-      case 3:
-        return answers.cause.trim().length >= 12;
-      case 4:
-        return answers.consequence.trim().length >= 12;
-      case 5:
-        return answers.severity != null;
-      case 6:
-        return answers.likelihood != null;
-      case 7:
         return (
-          [answers.preventative, answers.detective, answers.corrective].some(
-            (t) => t.trim().length > 0,
-          )
+          answers.hazardClassifications.length > 0 &&
+          answers.systemName.trim().length > 0 &&
+          answers.safetyRequirement.trim().length >= 8 &&
+          answers.benefitJustification.trim().length >= 8
         );
+      case 3:
+        return answers.hazard.trim().length >= 12;
+      case 4:
+        return answers.cause.trim().length >= 12;
+      case 5:
+        return answers.consequence.trim().length >= 12;
+      case 6:
+        return answers.severity != null;
+      case 7:
+        return answers.likelihood != null;
       case 8:
+        return [
+          answers.existingPreventative,
+          answers.existingDetective,
+          answers.existingCorrective,
+          answers.proposedPreventative,
+          answers.proposedDetective,
+          answers.proposedCorrective,
+        ].some((t) => t.trim().length > 0);
+      case 9:
         return (
           answers.residualSeverity != null &&
           answers.residualLikelihood != null &&
@@ -191,69 +505,14 @@ export default function HazardLogSimulator({
     setExportError(null);
     setExporting(true);
     try {
-      const now = new Date();
-      const ownerStr = answers.owner.trim() || "(to be assigned)";
-      const controls = [
-        ...splitLines(answers.preventative).map((text) => ({
-          text,
-          type: "Preventative" as const,
-          owner: ownerStr,
-          status: "Pending implementation",
-        })),
-        ...splitLines(answers.detective).map((text) => ({
-          text,
-          type: "Detective" as const,
-          owner: ownerStr,
-          status: "Pending implementation",
-        })),
-        ...splitLines(answers.corrective).map((text) => ({
-          text,
-          type: "Corrective" as const,
-          owner: ownerStr,
-          status: "Pending implementation",
-        })),
-      ];
-
-      const report: HazardLogReport = {
-        documentTitle: "Clinical Safety Hazard Log Report",
-        scenarioName: scenario.name,
-        hazardId: generateHazardId(now),
-        version: "1.0",
-        dateCreated: now,
-        lastReviewed: now,
-        status: "Open",
-        owner: ownerStr,
-        reviewer: "",
-        approver: "",
-        hazard: answers.hazard,
-        causeFailureMode: answers.cause,
-        sequenceOfEvents: scenario.reference.sequenceOfEvents,
-        hazardousSituation: scenario.reference.hazardousSituation,
-        potentialHarm: scenario.reference.potentialHarm,
-        clinicalConsequence: answers.consequence,
-        initialSeverity: answers.severity ?? 0,
-        severityRationale: scenario.feedback.severity.rationale,
-        initialLikelihood: answers.likelihood ?? 0,
-        likelihoodRationale: scenario.feedback.likelihood.rationale,
-        initialRiskScore: initialRisk,
-        initialRiskBand: initialBand,
-        residualSeverity: answers.residualSeverity ?? 0,
-        residualLikelihood: answers.residualLikelihood ?? 0,
-        residualRationale:
-          answers.residualRationale.trim() ||
-          "(rationale to be added on review)",
-        residualRiskScore: residualRisk ?? 0,
-        residualRiskBand: residualBand ?? "Low",
-        overallAcceptability: acceptabilityFor(residualBand),
-        controls,
-        monitoringMetric:
-          answers.monitoringMetric.trim() || "(to be defined)",
-        triggerThreshold:
-          answers.triggerThreshold.trim() || "(to be defined)",
-        reviewFrequency:
-          answers.reviewFrequency.trim() || "(to be defined)",
-        capa: answers.capa.trim() || "(to be defined)",
-      };
+      const report = buildHazardLogReport({
+        scenario,
+        answers,
+        initialRisk,
+        initialBand,
+        residualRisk,
+        residualBand,
+      });
       await exportHazardLogPdf(report);
     } catch (err) {
       console.error(err);
@@ -267,7 +526,7 @@ export default function HazardLogSimulator({
 
   const current = STEPS[step - 1];
   const isFirst = step === 1;
-  const isFinal = step === 9;
+  const isFinal = step === 10;
 
   return (
     <div
@@ -288,13 +547,19 @@ export default function HazardLogSimulator({
       <div className="px-6 py-8 md:px-10 md:py-10">
         {step === 1 && <BriefingStep scenario={scenario} />}
         {step === 2 && (
+          <ClassificationStep
+            answers={answers}
+            onChange={(field, v) => update(field, v)}
+          />
+        )}
+        {step === 3 && (
           <HazardStep
             value={answers.hazard}
             onChange={(v) => update("hazard", v)}
             scenario={scenario}
           />
         )}
-        {step === 3 && (
+        {step === 4 && (
           <TextStep
             value={answers.cause}
             onChange={(v) => update("cause", v)}
@@ -305,7 +570,7 @@ export default function HazardLogSimulator({
             placeholder="e.g. Risk features were split across the referral letter, blood results and prior notes; the model did not aggregate them and treated each in isolation."
           />
         )}
-        {step === 4 && (
+        {step === 5 && (
           <TextStep
             value={answers.consequence}
             onChange={(v) => update("consequence", v)}
@@ -316,14 +581,16 @@ export default function HazardLogSimulator({
             placeholder="e.g. Delay to specialist assessment, possible disease progression, delayed treatment and avoidable harm."
           />
         )}
-        {step === 5 && (
+        {step === 6 && (
           <ScaleStep
             kind="severity"
             value={answers.severity}
             onChange={(v) => update("severity", v)}
+            evidence={answers.severityEvidence}
+            onEvidenceChange={(v) => update("severityEvidence", v)}
           />
         )}
-        {step === 6 && (
+        {step === 7 && (
           <ScaleStep
             kind="likelihood"
             value={answers.likelihood}
@@ -331,17 +598,17 @@ export default function HazardLogSimulator({
             initialRisk={initialRisk}
             initialBand={initialBand}
             severity={answers.severity}
-          />
-        )}
-        {step === 7 && (
-          <ControlsStep
-            preventative={answers.preventative}
-            detective={answers.detective}
-            corrective={answers.corrective}
-            onChange={(field, v) => update(field, v)}
+            evidence={answers.likelihoodEvidence}
+            onEvidenceChange={(v) => update("likelihoodEvidence", v)}
           />
         )}
         {step === 8 && (
+          <ControlsStep
+            answers={answers}
+            onChange={(field, v) => update(field, v)}
+          />
+        )}
+        {step === 9 && (
           <ResidualStep
             answers={answers}
             initialRisk={initialRisk}
@@ -351,7 +618,7 @@ export default function HazardLogSimulator({
             onChange={(field, v) => update(field, v)}
           />
         )}
-        {step === 9 && (
+        {step === 10 && (
           <FeedbackStep
             scenario={scenario}
             answers={answers}
@@ -389,7 +656,7 @@ export default function HazardLogSimulator({
               onClick={() => setStep((s) => Math.min(STEPS.length, s + 1))}
               className="inline-flex items-center rounded-md bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-800 disabled:cursor-not-allowed disabled:bg-navy-300"
             >
-              {isFirst ? "Begin exercise" : step === 8 ? "Review answers" : "Next"}
+              {isFirst ? "Begin exercise" : step === 9 ? "Review answers" : "Next"}
             </button>
           </div>
         </div>
@@ -411,16 +678,18 @@ export default function HazardLogSimulator({
 function validationHint(step: number): string {
   switch (step) {
     case 2:
+      return "Pick at least one classification, a system name, a safety requirement, and a benefit justification.";
     case 3:
     case 4:
-      return "Please write at least one clear sentence.";
     case 5:
-      return "Pick a severity score.";
+      return "Please write at least one clear sentence.";
     case 6:
-      return "Pick a likelihood score.";
+      return "Pick a severity score.";
     case 7:
-      return "Add at least one control.";
+      return "Pick a likelihood score.";
     case 8:
+      return "Add at least one control, existing or proposed.";
+    case 9:
       return "Score the residual risk and name an owner.";
     default:
       return "";
@@ -445,7 +714,7 @@ function ProgressIndicator({ step }: { step: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="mt-3 hidden grid-cols-9 gap-1 pb-3 text-[10px] font-medium uppercase tracking-wider md:grid">
+      <div className="mt-3 hidden grid-cols-10 gap-1 pb-3 text-[10px] font-medium uppercase tracking-wider md:grid">
         {STEPS.map((s) => (
           <div
             key={s.id}
@@ -511,6 +780,142 @@ function BriefingStep({ scenario }: { scenario: Scenario }) {
   );
 }
 
+function ClassificationStep({
+  answers,
+  onChange,
+}: {
+  answers: Answers;
+  onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
+}) {
+  const toggleClassification = (tag: string) => {
+    const next = answers.hazardClassifications.includes(tag)
+      ? answers.hazardClassifications.filter((t) => t !== tag)
+      : [...answers.hazardClassifications, tag];
+    onChange("hazardClassifications", next);
+  };
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-4">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Hazard classification
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            Pick every classification that applies. Most AI deployments touch
+            more than one.
+          </p>
+        </header>
+        <div className="flex flex-wrap gap-2">
+          {HAZARD_CLASSIFICATION_TAGS.map((tag) => {
+            const selected = answers.hazardClassifications.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleClassification(tag)}
+                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  selected
+                    ? "border-clinical-600 bg-clinical-50 text-clinical-800"
+                    : "border-navy-200 bg-white text-navy-700 hover:border-clinical-300"
+                }`}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <hr className="border-navy-100" />
+
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Affected system or component
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            Identify the deployed system the hazard relates to.
+          </p>
+        </header>
+        <FieldShell label="System / module name">
+          <input
+            type="text"
+            value={answers.systemName}
+            onChange={(e) => onChange("systemName", e.target.value)}
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Upper GI cancer referral triage tool"
+          />
+        </FieldShell>
+        <div className="grid gap-5 md:grid-cols-2">
+          <FieldShell
+            label="Software version"
+            hint="Optional. Useful when a model update changes safety behaviour."
+          >
+            <input
+              type="text"
+              value={answers.systemVersion}
+              onChange={(e) => onChange("systemVersion", e.target.value)}
+              className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+              placeholder="e.g. v2.3"
+            />
+          </FieldShell>
+          <FieldShell
+            label="Workflow step affected"
+            hint="Optional. Where in the clinical pathway the hazard sits."
+          >
+            <input
+              type="text"
+              value={answers.workflowStep}
+              onChange={(e) => onChange("workflowStep", e.target.value)}
+              className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+              placeholder="e.g. Initial referral triage"
+            />
+          </FieldShell>
+        </div>
+      </section>
+
+      <hr className="border-navy-100" />
+
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Clinical safety requirement
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            What must always be true for this deployment to be safe?
+          </p>
+        </header>
+        <textarea
+          value={answers.safetyRequirement}
+          onChange={(e) => onChange("safetyRequirement", e.target.value)}
+          rows={3}
+          className="w-full rounded-md border border-navy-200 bg-white px-4 py-3 text-base text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+          placeholder="e.g. No referral with a documented red-flag combination is downgraded below urgent without clinician review."
+        />
+      </section>
+
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Benefit / benefit-risk justification
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            What benefit justifies use despite residual risk?
+          </p>
+        </header>
+        <textarea
+          value={answers.benefitJustification}
+          onChange={(e) => onChange("benefitJustification", e.target.value)}
+          rows={3}
+          className="w-full rounded-md border border-navy-200 bg-white px-4 py-3 text-base text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+          placeholder="e.g. Faster triage of urgent referrals, reduced clinician backlog, earlier specialist assessment for high-risk patients."
+        />
+      </section>
+    </div>
+  );
+}
+
 function HazardStep({
   value,
   onChange,
@@ -530,7 +935,7 @@ function HazardStep({
           What is the clinical hazard?
         </h4>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-700 md:text-base">
-          A hazard is the patient-facing harm that could occur — not the
+          A hazard is the patient-facing harm that could occur, not the
           mechanism by which the system goes wrong. Describe what could happen
           to the patient, in clinical terms.
         </p>
@@ -599,6 +1004,8 @@ function ScaleStep({
   initialRisk,
   initialBand,
   severity,
+  evidence,
+  onEvidenceChange,
 }: {
   kind: "severity" | "likelihood";
   value: number | null;
@@ -606,6 +1013,8 @@ function ScaleStep({
   initialRisk?: number | null;
   initialBand?: RiskBand | null;
   severity?: number | null;
+  evidence: string[];
+  onEvidenceChange: (tags: string[]) => void;
 }) {
   const labels = kind === "severity" ? severityLabels : likelihoodLabels;
   const heading =
@@ -661,6 +1070,12 @@ function ScaleStep({
         })}
       </div>
 
+      <EvidenceBasisPicker
+        value={evidence}
+        onChange={onEvidenceChange}
+        label="Evidence basis for this score"
+      />
+
       {kind === "likelihood" &&
         severity != null &&
         value != null &&
@@ -673,6 +1088,54 @@ function ScaleStep({
             band={initialBand}
           />
         )}
+    </div>
+  );
+}
+
+function EvidenceBasisPicker({
+  value,
+  onChange,
+  label,
+}: {
+  value: string[];
+  onChange: (tags: string[]) => void;
+  label: string;
+}) {
+  const toggle = (tag: string) => {
+    if (value.includes(tag)) {
+      onChange(value.filter((t) => t !== tag));
+    } else {
+      onChange([...value, tag]);
+    }
+  };
+  return (
+    <div className="rounded-lg border border-navy-100 bg-navy-50/30 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-clinical-700">
+        {label}
+      </p>
+      <p className="mt-1.5 text-xs text-navy-600">
+        Pick every evidence type that supports this score. Selecting only
+        Assumption flags the score for governance review.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {EVIDENCE_BASIS_TAGS.map((tag) => {
+          const selected = value.includes(tag);
+          return (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggle(tag)}
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                selected
+                  ? "border-clinical-600 bg-clinical-50 text-clinical-800"
+                  : "border-navy-200 bg-white text-navy-700 hover:border-clinical-300"
+              }`}
+            >
+              {tag}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -715,54 +1178,89 @@ function RiskBanner({
 }
 
 function ControlsStep({
-  preventative,
-  detective,
-  corrective,
+  answers,
   onChange,
 }: {
-  preventative: string;
-  detective: string;
-  corrective: string;
-  onChange: (
-    field: "preventative" | "detective" | "corrective",
-    v: string,
-  ) => void;
+  answers: Answers;
+  onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
 }) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-9">
       <div>
         <h4 className="text-base font-semibold text-navy-950 md:text-lg">
-          What controls will manage this hazard?
+          Existing and proposed controls
         </h4>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-700 md:text-base">
-          One control per line. Group them by what they do —{" "}
-          <span className="font-semibold text-navy-900">prevent</span> the
-          hazard,{" "}
-          <span className="font-semibold text-navy-900">detect</span> it after
-          the fact, or{" "}
-          <span className="font-semibold text-navy-900">correct</span> the harm
-          and feed learning back.
+          One control per line. Separate what is already in place from what
+          you propose to add. Each is grouped by purpose: prevent, detect,
+          or correct.
+        </p>
+        <p className="mt-2 text-xs text-navy-500">
+          Existing entries default to Implemented and Verified. Proposed
+          entries default to Planned and Not verified.
         </p>
       </div>
 
-      <ControlField
-        label="Preventative controls"
-        hint="Stop the hazard occurring (e.g. mandatory human review before downgrade)."
-        value={preventative}
-        onChange={(v) => onChange("preventative", v)}
-      />
-      <ControlField
-        label="Detective controls"
-        hint="Spot the hazard after it occurs (e.g. audit sample, drift monitoring)."
-        value={detective}
-        onChange={(v) => onChange("detective", v)}
-      />
-      <ControlField
-        label="Corrective controls"
-        hint="Limit harm and learn (e.g. clinician override, incident reporting)."
-        value={corrective}
-        onChange={(v) => onChange("corrective", v)}
-      />
+      <section className="space-y-5">
+        <header>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-clinical-700">
+            Existing controls
+          </p>
+          <p className="mt-1 text-xs text-navy-600">
+            Already in place and operational.
+          </p>
+        </header>
+        <ControlField
+          label="Preventative (existing)"
+          hint="Stops the hazard occurring."
+          value={answers.existingPreventative}
+          onChange={(v) => onChange("existingPreventative", v)}
+        />
+        <ControlField
+          label="Detective (existing)"
+          hint="Spots the hazard after it occurs."
+          value={answers.existingDetective}
+          onChange={(v) => onChange("existingDetective", v)}
+        />
+        <ControlField
+          label="Corrective (existing)"
+          hint="Limits harm and feeds learning back."
+          value={answers.existingCorrective}
+          onChange={(v) => onChange("existingCorrective", v)}
+        />
+      </section>
+
+      <hr className="border-navy-100" />
+
+      <section className="space-y-5">
+        <header>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-clinical-700">
+            Proposed additional controls
+          </p>
+          <p className="mt-1 text-xs text-navy-600">
+            New controls required to bring residual risk to an acceptable
+            level.
+          </p>
+        </header>
+        <ControlField
+          label="Preventative (proposed)"
+          hint="e.g. mandatory clinician review before downgrade."
+          value={answers.proposedPreventative}
+          onChange={(v) => onChange("proposedPreventative", v)}
+        />
+        <ControlField
+          label="Detective (proposed)"
+          hint="e.g. quarterly audit of routine-ranked cases."
+          value={answers.proposedDetective}
+          onChange={(v) => onChange("proposedDetective", v)}
+        />
+        <ControlField
+          label="Corrective (proposed)"
+          hint="e.g. clinician override pathway, incident reporting route."
+          value={answers.proposedCorrective}
+          onChange={(v) => onChange("proposedCorrective", v)}
+        />
+      </section>
     </div>
   );
 }
@@ -813,7 +1311,7 @@ function ResidualStep({
 }) {
   return (
     <div className="space-y-9">
-      {/* Section A — residual scoring */}
+      {/* Section A: residual scoring */}
       <section className="space-y-5">
         <header>
           <h4 className="text-base font-semibold text-navy-950 md:text-lg">
@@ -821,7 +1319,7 @@ function ResidualStep({
           </h4>
           <p className="mt-1 text-sm leading-relaxed text-navy-700">
             Re-score the hazard assuming your controls are in place. Severity
-            usually does not move — controls reduce <em>likelihood</em>.
+            usually does not move. Controls reduce <em>likelihood</em>.
           </p>
         </header>
 
@@ -868,18 +1366,18 @@ function ResidualStep({
             onChange={(e) => onChange("residualRationale", e.target.value)}
             rows={3}
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-            placeholder="e.g. Severity unchanged — missed cancer is still catastrophic. Likelihood reduced by mandatory human review and explicit red-flag escalation, but not eliminated."
+            placeholder="e.g. Severity unchanged, missed cancer is still catastrophic. Likelihood reduced by mandatory human review and explicit red-flag escalation, not removed."
           />
         </FieldShell>
       </section>
 
       <hr className="border-navy-100" />
 
-      {/* Section B — monitoring & governance */}
+      {/* Section B: monitoring and governance */}
       <section className="space-y-5">
         <header>
           <h4 className="text-base font-semibold text-navy-950 md:text-lg">
-            Monitoring &amp; governance
+            Monitoring and governance
           </h4>
           <p className="mt-1 text-sm leading-relaxed text-navy-700">
             How will you know if the hazard is occurring, what triggers
@@ -889,7 +1387,7 @@ function ResidualStep({
 
         <FieldShell
           label="Monitoring metric / KPI"
-          hint="What you measure on an ongoing basis."
+                hint="What you measure on an ongoing basis."
         >
           <input
             value={answers.monitoringMetric}
@@ -909,7 +1407,7 @@ function ResidualStep({
             onChange={(e) => onChange("triggerThreshold", e.target.value)}
             type="text"
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-            placeholder="e.g. Any confirmed delayed cancer diagnosis where AI assigned routine, or false-negative rate > 1%."
+            placeholder="e.g. Any confirmed delayed cancer diagnosis where AI assigned routine, or false-negative rate above 1%."
           />
         </FieldShell>
 
@@ -942,24 +1440,67 @@ function ResidualStep({
 
       <hr className="border-navy-100" />
 
-      {/* Section C — ownership */}
+      <section className="space-y-5">
+        <header>
+          <h4 className="text-base font-semibold text-navy-950 md:text-lg">
+            Stakeholders and assumptions
+          </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            Optional but recommended for board-level review.
+          </p>
+        </header>
+
+        <FieldShell
+          label="Stakeholders / impacted users"
+          hint="Who is affected, and who needs to be consulted on changes?"
+        >
+          <input
+            type="text"
+            value={answers.stakeholders}
+            onChange={(e) => onChange("stakeholders", e.target.value)}
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. GPs, secondary care triage clinicians, cancer pathway team, patients."
+          />
+        </FieldShell>
+
+        <FieldShell
+          label="Assumptions and limitations"
+          hint="Optional. Note any assumptions the safety case relies on."
+        >
+          <textarea
+            value={answers.assumptions}
+            onChange={(e) => onChange("assumptions", e.target.value)}
+            rows={3}
+            className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
+            placeholder="e.g. Audit sample is representative of routine-ranked volume. Override pathway reaches the supplier within 24 hours."
+          />
+        </FieldShell>
+      </section>
+
+      <hr className="border-navy-100" />
+
       <section className="space-y-5">
         <header>
           <h4 className="text-base font-semibold text-navy-950 md:text-lg">
             Ownership
           </h4>
+          <p className="mt-1 text-sm leading-relaxed text-navy-700">
+            Clinical accountability is required. Suggested combination:
+            Clinical Safety Officer, pathway clinical lead, and product or
+            AI owner.
+          </p>
         </header>
 
         <FieldShell
           label="Owner / responsible team"
-          hint="Who is accountable for this hazard and its controls?"
+          hint="Name a clinical owner. Entries that read as IT only will be flagged on review."
         >
           <input
             value={answers.owner}
             onChange={(e) => onChange("owner", e.target.value)}
             type="text"
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-            placeholder="e.g. Clinical Safety Officer, supported by cancer pathway clinical lead."
+            placeholder="e.g. Clinical Safety Officer, supported by cancer pathway clinical lead and AI product owner."
           />
         </FieldShell>
       </section>
@@ -991,18 +1532,10 @@ function CompactScale({
                 : "border-navy-100 bg-white hover:border-clinical-300 hover:bg-navy-50/60"
             }`}
           >
-            <span
-              className={`text-lg font-semibold ${
-                selected ? "text-clinical-700" : "text-navy-900"
-              }`}
-            >
+            <span className={`text-lg font-semibold ${selected ? "text-clinical-700" : "text-navy-900"}`}>
               {n}
             </span>
-            <span
-              className={`mt-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                selected ? "text-clinical-700" : "text-navy-500"
-              }`}
-            >
+            <span className={`mt-0.5 text-[10px] font-medium uppercase tracking-wider ${selected ? "text-clinical-700" : "text-navy-500"}`}>
               {labels[n]}
             </span>
           </button>
@@ -1037,30 +1570,24 @@ function FeedbackStep({
 }) {
   const hazardEval = evaluateTextStep(answers.hazard, scenario.feedback.hazard);
   const causeEval = evaluateTextStep(answers.cause, scenario.feedback.cause);
-  const consequenceEval = evaluateTextStep(
-    answers.consequence,
-    scenario.feedback.consequence,
-  );
-  const severityResult = evaluateScore(
-    answers.severity ?? 0,
-    scenario.feedback.severity,
-  );
-  const likelihoodResult = evaluateScore(
-    answers.likelihood ?? 0,
-    scenario.feedback.likelihood,
-  );
-  const preventativeEval = evaluateControls(
-    splitLines(answers.preventative),
-    scenario.feedback.controls.preventative,
-  );
-  const detectiveEval = evaluateControls(
-    splitLines(answers.detective),
-    scenario.feedback.controls.detective,
-  );
-  const correctiveEval = evaluateControls(
-    splitLines(answers.corrective),
-    scenario.feedback.controls.corrective,
-  );
+  const consequenceEval = evaluateTextStep(answers.consequence, scenario.feedback.consequence);
+  const severityResult = evaluateScore(answers.severity ?? 0, scenario.feedback.severity);
+  const likelihoodResult = evaluateScore(answers.likelihood ?? 0, scenario.feedback.likelihood);
+  const allPreventative = [
+    ...splitLines(answers.existingPreventative),
+    ...splitLines(answers.proposedPreventative),
+  ];
+  const allDetective = [
+    ...splitLines(answers.existingDetective),
+    ...splitLines(answers.proposedDetective),
+  ];
+  const allCorrective = [
+    ...splitLines(answers.existingCorrective),
+    ...splitLines(answers.proposedCorrective),
+  ];
+  const preventativeEval = evaluateControls(allPreventative, scenario.feedback.controls.preventative);
+  const detectiveEval = evaluateControls(allDetective, scenario.feedback.controls.detective);
+  const correctiveEval = evaluateControls(allCorrective, scenario.feedback.controls.corrective);
 
   return (
     <div className="space-y-12">
@@ -1072,24 +1599,17 @@ function FeedbackStep({
           How your hazard log compares.
         </h4>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-navy-700">
-          The reference is one defensible answer, not the only answer. Your
-          framing may differ — what matters is whether the right concepts are
-          present.
+          The reference is one defensible answer, not the only answer. Your framing may differ, what matters is whether the right concepts are present.
         </p>
       </section>
 
-      {/* Text-step comparisons */}
       <ComparisonCard
         title="Hazard"
         userValue={answers.hazard}
         referenceValue={scenario.reference.hazard}
         matched={hazardEval.matched}
         missed={hazardEval.missed}
-        extraNote={
-          hazardEval.describesFailureMode
-            ? scenario.feedback.hazard.failureModeHint
-            : null
-        }
+        extraNote={hazardEval.describesFailureMode ? scenario.feedback.hazard.failureModeHint : null}
       />
       <ComparisonCard
         title="Cause / failure mechanism"
@@ -1106,7 +1626,6 @@ function FeedbackStep({
         missed={consequenceEval.missed}
       />
 
-      {/* Score comparisons */}
       <ScoreComparisonCard
         title="Severity"
         userValue={answers.severity}
@@ -1124,61 +1643,49 @@ function FeedbackStep({
         rationale={scenario.feedback.likelihood.rationale}
       />
 
-      {/* Controls comparisons */}
       <ControlsComparisonCard
         title="Preventative controls"
-        userLines={splitLines(answers.preventative)}
+        userLines={allPreventative}
         referenceLines={scenario.reference.controls.preventative}
         matched={preventativeEval.matched}
         missed={preventativeEval.missed}
       />
       <ControlsComparisonCard
         title="Detective controls"
-        userLines={splitLines(answers.detective)}
+        userLines={allDetective}
         referenceLines={scenario.reference.controls.detective}
         matched={detectiveEval.matched}
         missed={detectiveEval.missed}
       />
       <ControlsComparisonCard
         title="Corrective controls"
-        userLines={splitLines(answers.corrective)}
+        userLines={allCorrective}
         referenceLines={scenario.reference.controls.corrective}
         matched={correctiveEval.matched}
         missed={correctiveEval.missed}
       />
 
-      {/* Residual */}
       <div className="rounded-lg border border-navy-100 bg-navy-50/30 p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
           Residual risk
         </p>
         <div className="mt-3 grid gap-6 md:grid-cols-2">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-              Your decision
-            </p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Your decision</p>
             <p className="mt-1 text-base text-navy-900">
-              {residualBand && residualRisk != null
-                ? `${residualBand} (${residualRisk})`
-                : "—"}
-              {answers.residualRationale
-                ? ` — ${answers.residualRationale}`
-                : ""}
+              {residualBand && residualRisk != null ? `${residualBand} (${residualRisk})` : "-"}
+              {answers.residualRationale ? `, ${answers.residualRationale}` : ""}
             </p>
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-              Reference
-            </p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Reference</p>
             <p className="mt-1 text-base text-navy-900">
-              {scenario.reference.residualRisk} —{" "}
-              {scenario.reference.residualRiskNote}
+              {scenario.reference.residualRisk}, {scenario.reference.residualRiskNote}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Audit-ready summary */}
       <SummaryCard
         scenario={scenario}
         answers={answers}
@@ -1188,7 +1695,6 @@ function FeedbackStep({
         residualBand={residualBand}
       />
 
-      {/* Export & reset */}
       <div className="flex flex-wrap items-center gap-4 border-t border-navy-100 pt-8">
         <button
           type="button"
@@ -1196,7 +1702,7 @@ function FeedbackStep({
           disabled={exporting}
           className="inline-flex items-center rounded-md bg-navy-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-navy-800 disabled:cursor-not-allowed disabled:bg-navy-300"
         >
-          {exporting ? "Generating PDF…" : "Export Hazard Log (PDF)"}
+          {exporting ? "Generating PDF..." : "Export Hazard Log (PDF)"}
         </button>
         <button
           type="button"
@@ -1205,17 +1711,11 @@ function FeedbackStep({
         >
           Start over
         </button>
-        {exportError && (
-          <span className="text-sm text-rose-700">{exportError}</span>
-        )}
+        {exportError && <span className="text-sm text-rose-700">{exportError}</span>}
       </div>
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Feedback sub-components                                             */
-/* ------------------------------------------------------------------ */
 
 function ComparisonCard({
   title,
@@ -1234,34 +1734,20 @@ function ComparisonCard({
 }) {
   return (
     <div className="rounded-lg border border-navy-100 bg-white p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
-        {title}
-      </p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">{title}</p>
       <div className="mt-4 grid gap-6 md:grid-cols-2">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            Your answer
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Your answer</p>
           <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-navy-900">
             {userValue || <span className="italic text-navy-400">(empty)</span>}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            Reference
-          </p>
-          <p className="mt-1 text-sm leading-relaxed text-navy-900">
-            {referenceValue}
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Reference</p>
+          <p className="mt-1 text-sm leading-relaxed text-navy-900">{referenceValue}</p>
         </div>
       </div>
-
-      {extraNote && (
-        <InlineHint tone="warning" className="mt-5">
-          {extraNote}
-        </InlineHint>
-      )}
-
+      {extraNote && <InlineHint tone="warning" className="mt-5">{extraNote}</InlineHint>}
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <ConceptList tone="positive" label="Concepts you captured" items={matched} />
         <ConceptList tone="missing" label="Concepts you missed" items={missed} />
@@ -1285,48 +1771,30 @@ function ScoreComparisonCard({
   labels: Record<number, string>;
   rationale: string;
 }) {
-  const tone =
-    result === "match"
-      ? "positive"
-      : result === "close"
-      ? "neutral"
-      : "warning";
+  const tone = result === "match" ? "positive" : result === "close" ? "neutral" : "warning";
   const summary =
     result === "match"
       ? "Your score matches the reference."
       : result === "close"
       ? "Your score is close to the reference."
       : "Your score differs from the reference.";
-
   return (
     <div className="rounded-lg border border-navy-100 bg-white p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
-        {title}
-      </p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">{title}</p>
       <div className="mt-4 flex flex-wrap items-center gap-6">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            You
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">You</p>
           <p className="mt-1 text-2xl font-semibold text-navy-950">
-            {userValue ?? "—"}
-            {userValue ? (
-              <span className="ml-2 text-xs font-medium text-navy-500">
-                {labels[userValue]}
-              </span>
-            ) : null}
+            {userValue ?? "-"}
+            {userValue ? <span className="ml-2 text-xs font-medium text-navy-500">{labels[userValue]}</span> : null}
           </p>
         </div>
-        <div className="text-navy-300">→</div>
+        <div className="text-navy-300">{">"}</div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            Reference
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Reference</p>
           <p className="mt-1 text-2xl font-semibold text-clinical-700">
             {referenceValue}
-            <span className="ml-2 text-xs font-medium text-navy-500">
-              {labels[referenceValue]}
-            </span>
+            <span className="ml-2 text-xs font-medium text-navy-500">{labels[referenceValue]}</span>
           </p>
         </div>
       </div>
@@ -1352,38 +1820,25 @@ function ControlsComparisonCard({
 }) {
   return (
     <div className="rounded-lg border border-navy-100 bg-white p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
-        {title}
-      </p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">{title}</p>
       <div className="mt-4 grid gap-6 md:grid-cols-2">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            Your controls
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Your controls</p>
           {userLines.length === 0 ? (
             <p className="mt-1 text-sm italic text-navy-400">(none entered)</p>
           ) : (
             <ul className="mt-2 space-y-1.5">
               {userLines.map((l, i) => (
-                <li
-                  key={i}
-                  className="text-sm leading-relaxed text-navy-900"
-                >
-                  • {l}
-                </li>
+                <li key={i} className="text-sm leading-relaxed text-navy-900">- {l}</li>
               ))}
             </ul>
           )}
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-            Reference
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">Reference</p>
           <ul className="mt-2 space-y-1.5">
             {referenceLines.map((l, i) => (
-              <li key={i} className="text-sm leading-relaxed text-navy-900">
-                • {l}
-              </li>
+              <li key={i} className="text-sm leading-relaxed text-navy-900">- {l}</li>
             ))}
           </ul>
         </div>
@@ -1417,9 +1872,7 @@ function SummaryCard({
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
           Audit-ready hazard log entry
         </p>
-        <p className="text-[11px] uppercase tracking-widest text-navy-300">
-          {scenario.shortName}
-        </p>
+        <p className="text-[11px] uppercase tracking-widest text-navy-300">{scenario.shortName}</p>
       </div>
       <dl className="mt-6 grid gap-x-8 gap-y-5 md:grid-cols-2">
         <SummaryField label="Hazard" value={answers.hazard} />
@@ -1429,63 +1882,34 @@ function SummaryCard({
         <div className="grid grid-cols-3 gap-4">
           <SummaryStat label="Severity" value={answers.severity} />
           <SummaryStat label="Likelihood" value={answers.likelihood} />
-          <SummaryStat
-            label="Initial risk"
-            value={initialRisk}
-            extra={initialBand}
-          />
+          <SummaryStat label="Initial risk" value={initialRisk} extra={initialBand} />
         </div>
 
         <SummaryList
           label="Preventative controls"
-          items={splitLines(answers.preventative)}
+          items={[...splitLines(answers.existingPreventative), ...splitLines(answers.proposedPreventative)]}
         />
         <SummaryList
           label="Detective controls"
-          items={splitLines(answers.detective)}
+          items={[...splitLines(answers.existingDetective), ...splitLines(answers.proposedDetective)]}
         />
         <SummaryList
           label="Corrective controls"
-          items={splitLines(answers.corrective)}
+          items={[...splitLines(answers.existingCorrective), ...splitLines(answers.proposedCorrective)]}
         />
 
         <div className="grid grid-cols-3 gap-4">
-          <SummaryStat
-            label="Residual severity"
-            value={answers.residualSeverity}
-          />
-          <SummaryStat
-            label="Residual likelihood"
-            value={answers.residualLikelihood}
-          />
-          <SummaryStat
-            label="Residual risk"
-            value={residualRisk}
-            extra={residualBand}
-          />
+          <SummaryStat label="Residual severity" value={answers.residualSeverity} />
+          <SummaryStat label="Residual likelihood" value={answers.residualLikelihood} />
+          <SummaryStat label="Residual risk" value={residualRisk} extra={residualBand} />
         </div>
 
-        <SummaryField
-          label="Residual rationale"
-          value={answers.residualRationale}
-        />
-        <SummaryField
-          label="Monitoring metric / KPI"
-          value={answers.monitoringMetric}
-        />
-        <SummaryField
-          label="Trigger threshold"
-          value={answers.triggerThreshold}
-        />
-        <SummaryField
-          label="Review frequency"
-          value={answers.reviewFrequency}
-        />
+        <SummaryField label="Residual rationale" value={answers.residualRationale} />
+        <SummaryField label="Monitoring metric / KPI" value={answers.monitoringMetric} />
+        <SummaryField label="Trigger threshold" value={answers.triggerThreshold} />
+        <SummaryField label="Review frequency" value={answers.reviewFrequency} />
         <SummaryField label="Actions / CAPA" value={answers.capa} />
-        <SummaryField
-          label="Owner / responsible team"
-          value={answers.owner}
-        />
+        <SummaryField label="Owner / responsible team" value={answers.owner} />
       </dl>
     </div>
   );
@@ -1494,9 +1918,7 @@ function SummaryCard({
 function SummaryField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
-        {label}
-      </dt>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1.5 text-sm leading-relaxed text-navy-50">
         {value || <span className="italic text-navy-400">(not provided)</span>}
       </dd>
@@ -1504,27 +1926,13 @@ function SummaryField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SummaryStat({
-  label,
-  value,
-  extra,
-}: {
-  label: string;
-  value: number | null;
-  extra?: string | null;
-}) {
+function SummaryStat({ label, value, extra }: { label: string; value: number | null; extra?: string | null }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
-        {label}
-      </dt>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-white">
-        {value ?? "—"}
-        {extra ? (
-          <span className="ml-1.5 text-xs font-medium text-navy-200">
-            {extra}
-          </span>
-        ) : null}
+        {value ?? "-"}
+        {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
       </dd>
     </div>
   );
@@ -1533,21 +1941,14 @@ function SummaryStat({
 function SummaryList({ label, items }: { label: string; items: string[] }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
-        {label}
-      </dt>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1.5">
         {items.length === 0 ? (
           <span className="text-sm italic text-navy-400">(none)</span>
         ) : (
           <ul className="space-y-1.5">
             {items.map((it, i) => (
-              <li
-                key={i}
-                className="text-sm leading-relaxed text-navy-50"
-              >
-                • {it}
-              </li>
+              <li key={i} className="text-sm leading-relaxed text-navy-50">- {it}</li>
             ))}
           </ul>
         )}
@@ -1556,21 +1957,11 @@ function SummaryList({ label, items }: { label: string; items: string[] }) {
   );
 }
 
-function ConceptList({
-  tone,
-  label,
-  items,
-}: {
-  tone: "positive" | "missing";
-  label: string;
-  items: KeywordGroup[];
-}) {
+function ConceptList({ tone, label, items }: { tone: "positive" | "missing"; label: string; items: KeywordGroup[] }) {
   if (items.length === 0) {
     return (
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-          {label}
-        </p>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">{label}</p>
         <p className="mt-2 text-xs italic text-navy-400">none</p>
       </div>
     );
@@ -1581,15 +1972,10 @@ function ConceptList({
       : "border-amber-200 bg-amber-50 text-amber-800";
   return (
     <div>
-      <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">
-        {label}
-      </p>
+      <p className="text-[11px] font-medium uppercase tracking-wider text-navy-500">{label}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {items.map((g) => (
-          <span
-            key={g.label}
-            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${chipClass}`}
-          >
+          <span key={g.label} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${chipClass}`}>
             {g.label}
           </span>
         ))}
@@ -1597,10 +1983,6 @@ function ConceptList({
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Primitives                                                          */
-/* ------------------------------------------------------------------ */
 
 function Textarea({
   value,
@@ -1624,15 +2006,7 @@ function Textarea({
   );
 }
 
-function FieldShell({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
+function FieldShell({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="text-sm font-semibold text-navy-900">{label}</label>
@@ -1645,11 +2019,7 @@ function FieldShell({
 function CharCount({ value, min }: { value: string; min: number }) {
   const len = value.trim().length;
   return (
-    <p
-      className={`text-[11px] ${
-        len >= min ? "text-navy-500" : "text-navy-400"
-      }`}
-    >
+    <p className={`text-[11px] ${len >= min ? "text-navy-500" : "text-navy-400"}`}>
       {len < min ? `Add at least ${min - len} more characters.` : `${len} characters.`}
     </p>
   );
@@ -1673,11 +2043,7 @@ function InlineHint({
       ? "border-navy-200 bg-navy-50 text-navy-800"
       : "border-clinical-200 bg-clinical-50 text-clinical-900";
   return (
-    <div
-      className={`rounded-md border px-4 py-3 text-sm leading-relaxed ${styles} ${
-        className ?? ""
-      }`}
-    >
+    <div className={`rounded-md border px-4 py-3 text-sm leading-relaxed ${styles} ${className ?? ""}`}>
       {children}
     </div>
   );
@@ -1691,13 +2057,7 @@ function CheckIcon({ className = "" }: { className?: string }) {
       fill="none"
       className={`h-3.5 w-3.5 flex-none text-clinical-600 ${className}`}
     >
-      <path
-        d="M3 8.5l3 3 7-7"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
