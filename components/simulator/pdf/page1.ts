@@ -205,8 +205,12 @@ function drawRiskSummary(b: PdfBuilder) {
       value: report.governanceConcern,
       sub:
         dir === "downward"
-          ? "follows credible-impact severity"
-          : "follows worst-credible severity",
+          ? "follows credible workflow impact"
+          : dir === "upward"
+            ? "follows worst-credible severity"
+            : dir === "mixed"
+              ? "follows governance-corrected severity"
+              : "follows submitted severity",
       band: report.governanceConcern,
     },
     {

@@ -380,9 +380,15 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
     systemName: answers.systemName.trim() || "(not specified)",
     systemVersion: answers.systemVersion.trim(),
     workflowStep: answers.workflowStep.trim(),
+    // Defaults are intentionally NEUTRAL placeholders. The previous
+    // cancer-pathway default ("Urgent referrals meeting defined red-flag
+    // criteria...") leaked oncology-pathway wording onto Page 2 of every
+    // unrelated entry that left this field empty. If the user has not
+    // entered a safety requirement we render a generic placeholder; never
+    // a scenario-template phrase.
     safetyRequirement:
       answers.safetyRequirement.trim() ||
-      "Urgent referrals meeting defined red-flag criteria must not be downgraded without clinician review.",
+      "(to be defined during clinical safety review)",
     benefitJustification:
       answers.benefitJustification.trim() || "(not specified)",
     hazard: answers.hazard,
@@ -403,10 +409,18 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
       "(to be documented during clinical safety review)",
     clinicalConsequence: answers.consequence,
     initialSeverity: answers.severity ?? 0,
-    severityRationale: scenario.feedback.severity.rationale,
+    // Severity / likelihood rationales render on Page 3 score panels. They
+    // MUST NOT be sourced from scenario.feedback.*.rationale because those
+    // are hard-coded to the cancer-pathway frame ("Missed or significantly
+    // delayed cancer diagnosis is a catastrophic patient outcome..." etc.)
+    // and would contaminate every non-cancer entry. Use the validation
+    // engine's text-aware derived rationales instead - these branch on
+    // direction (over / under / honest) and reference the user's entered
+    // hazard text rather than the scenario template.
+    severityRationale: validation.derivedSeverityRationale,
     severityEvidence: answers.severityEvidence,
     initialLikelihood: answers.likelihood ?? 0,
-    likelihoodRationale: scenario.feedback.likelihood.rationale,
+    likelihoodRationale: validation.derivedLikelihoodRationale,
     likelihoodEvidence: answers.likelihoodEvidence,
     initialRiskScore: args.initialRisk,
     initialRiskBand: args.initialBand,

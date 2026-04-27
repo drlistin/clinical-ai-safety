@@ -80,6 +80,15 @@ export type ValidationResult = {
    * overall acceptability string. Triggered by any critical warning.
    */
   overallAcceptabilityOverride: string;
+  /**
+   * Text-aware rationales that REPLACE the scenario-template rationales
+   * downstream. Required because scenario.feedback.*.rationale is hard-coded
+   * to the cancer-pathway frame and must never appear on a non-cancer hazard.
+   * Generated from the user's described hazard text, the scoring direction
+   * and the user-entered score.
+   */
+  derivedSeverityRationale: string;
+  derivedLikelihoodRationale: string;
 };
 
 // Phrases that indicate a "soft" control rather than a real one.
@@ -131,7 +140,7 @@ const IT_ONLY_PATTERNS = [/^\s*it\s+team\s*$/i, /^\s*it\s*$/i, /^\s*technology\s
 // Phrases that imply a credible severity ceiling around 1-2 (minor / admin /
 // non-urgent / no clinical impact). Used to detect over-scored severity.
 const LOW_SEVERITY_TEXT_MARKERS = [
-  /\bminor\s+(inconvenience|delay|disruption|impact|issue|nuisance)\b/i,
+  /\bminor\s+(inconvenience|delay|disruption|impact|issue|nuisance|wait)\b/i,
   /\badministrative\s+(delay|impact|burden|only|issue)\b/i,
   /\bnon[\s-]?urgent\b/i,
   /\bno\s+(clinical|patient)\s+(impact|harm|consequence)\b/i,
@@ -139,12 +148,30 @@ const LOW_SEVERITY_TEXT_MARKERS = [
   /\bslight\s+delay\b/i,
   /\bbrief\s+delay\b/i,
   /\boutpatient\s+follow[\s-]?up\b/i,
+  /\bfollow[\s-]?up\s+appointment\b/i,
   /\blow[\s-]?acuity\b/i,
   /\bpatient\s+inconvenience\b/i,
+  /\binconvenience\s+to\s+(the\s+)?patient\b/i,
   /\bnon[\s-]?clinical\b/i,
   /\bschedul(e|ing|ed)\s+delay\b/i,
   /\brebooked?\b/i,
   /\breschedul(e|ed|ing)\b/i,
+  /\bextended\s+wait\b/i,
+  /\bappointment\s+delay\b/i,
+  /\broutine\s+(appointment|booking|review)\b/i,
+];
+
+// Wording that is a positive signal of CREDIBLE high severity (5). Used to
+// distinguish a deliberate Sev 5 from an over-scored Sev 5. If any of these
+// fire AND a low-severity marker also fires, we treat the entry as ambiguous
+// and let the low-severity ceiling apply (the described workflow impact
+// dominates).
+const HIGH_SEVERITY_TEXT_MARKERS = [
+  /\b(death|mortality|fatal|fatality)\b/i,
+  /\b(catastrophic|life[\s-]?threatening)\b/i,
+  /\b(permanent|lasting|irreversible)\s+(harm|disability|injury|damage)\b/i,
+  /\bsevere\s+harm\b/i,
+  /\b(missed|delayed)\s+(diagnosis|treatment)\b/i,
 ];
 
 // Phrases that imply a credible likelihood ceiling around 1-2 (rare /
@@ -372,15 +399,19 @@ export function runValidation(input: ValidationInput): ValidationResult {
   else if (anyDown) scoreAdjustmentDirection = "downward";
   else scoreAdjustmentDirection = "none";
 
-  // Governance concern follows the governance-adjusted severity (which is
-  // already the reference when under-scored, or the inferred ceiling when
-  // over-scored, or the user value when honest). This means concern reflects
-  // the ACTUAL described hazard - over-scoring no longer inflates concern.
-  const worstCredibleSeverity = Math.max(
-    adjustedSeverity,
-    input.residualSeverity,
-    0,
-  );
+  // Governance concern follows the governance-adjusted severity ALONE. This
+  // value is already the reference when under-scored, or the inferred ceiling
+  // when over-scored, or the user value when honest. Residual severity is
+  // intentionally NOT included in the worst-credible calc because:
+  //   1. In the over-scored case (e.g. Sev 5/Lik 5 with "minor inconvenience"),
+  //      users typically also over-score residual to the same value, which
+  //      would re-inflate concern via Math.max and defeat the downward
+  //      correction. The actual worst credible severity is the adjusted
+  //      ceiling, not the residual the user happened to type.
+  //   2. Residual severity by definition cannot exceed initial severity in a
+  //      coherent risk assessment (controls reduce risk, they don't add to
+  //      it), so it cannot legitimately raise the worst-credible ceiling.
+  const worstCredibleSeverity = adjustedSeverity;
   let concern = governanceConcernFor(worstCredibleSeverity);
 
   // Combine criticals. Safety-direction criticals (under-scoring, missing
@@ -416,6 +447,29 @@ export function runValidation(input: ValidationInput): ValidationResult {
     scoringText,
   );
 
+  // Text-aware rationales that REPLACE the scenario-template rationales.
+  // These are what Page 3's score panels and any in-app score-comparison view
+  // should use; the scenario.feedback rationales are cancer-frame specific
+  // and must never appear on a non-cancer hazard text.
+  const derivedSeverityRationale = deriveSeverityRationale({
+    scenario: input.scenario,
+    userSeverity: input.severity,
+    refSeverity,
+    sevCeiling,
+    severityUnderstated,
+    severityOverstated,
+    scoringText,
+  });
+  const derivedLikelihoodRationale = deriveLikelihoodRationale({
+    scenario: input.scenario,
+    userLikelihood: input.likelihood,
+    refLikelihood,
+    likCeiling,
+    likelihoodUnderstated,
+    likelihoodOverstated,
+    scoringText,
+  });
+
   // Recommendation derives from status.
   let recommendation: Recommendation;
   let recommendationNote: string;
@@ -441,7 +495,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     overallAcceptabilityOverride = "Requires mitigation before sign-off";
   }
 
-  return {
+  const result: ValidationResult = {
     status,
     governanceConcern: concern,
     governanceConcernRationale: concernRationale,
@@ -461,7 +515,40 @@ export function runValidation(input: ValidationInput): ValidationResult {
     adjustedRiskBand,
     scoreAdjustmentDirection,
     overallAcceptabilityOverride,
+    derivedSeverityRationale,
+    derivedLikelihoodRationale,
   };
+
+  // Dev-mode diagnostic: log the validation summary so reviewers can verify
+  // the over/under-scoring branches fired against their actual hazard text
+  // without rebuilding. Prefixed so it is easy to filter in DevTools.
+  if (
+    typeof window !== "undefined" &&
+    process.env.NODE_ENV !== "production"
+  ) {
+    // eslint-disable-next-line no-console
+    console.debug("[hazard-log/validation]", {
+      scoringText,
+      sevCeiling,
+      likCeiling,
+      userSeverity: input.severity,
+      userLikelihood: input.likelihood,
+      refSeverity,
+      refLikelihood,
+      severityUnderstated,
+      severityOverstated,
+      likelihoodUnderstated,
+      likelihoodOverstated,
+      adjustedSeverity,
+      adjustedLikelihood,
+      adjustedRiskScore,
+      adjustedRiskBand,
+      scoreAdjustmentDirection,
+      concern: result.governanceConcern,
+    });
+  }
+
+  return result;
 }
 
 function bandFor(score: number): "Low" | "Medium" | "High" | "Extreme" {
@@ -541,7 +628,7 @@ function describeWorstOutcomeFor(scenario: Scenario, scoringText: string): strin
 
 /** Short fragment used inside an over-scored severity critical warning. */
 function describeLowSeverityFrame(scoringText: string): string {
-  if (/\b(minor\s+inconvenience|patient\s+inconvenience)\b/i.test(scoringText)) {
+  if (/\b(minor\s+inconvenience|patient\s+inconvenience|inconvenience\s+to\s+(the\s+)?patient)\b/i.test(scoringText)) {
     return "a minor inconvenience";
   }
   if (/\badministrative\b/i.test(scoringText)) {
@@ -550,8 +637,68 @@ function describeLowSeverityFrame(scoringText: string): string {
   if (/\bnon[\s-]?urgent\b/i.test(scoringText)) {
     return "a non-urgent workflow impact";
   }
-  if (/\bschedul/i.test(scoringText)) {
+  if (/\bschedul|\brebook|\breschedul/i.test(scoringText)) {
     return "a scheduling-only impact";
   }
+  if (/\boutpatient\s+follow[\s-]?up\b|\bfollow[\s-]?up\s+appointment\b/i.test(scoringText)) {
+    return "a routine follow-up workflow impact";
+  }
   return "a low-impact workflow event";
+}
+
+/**
+ * Builds a text-aware severity rationale that REPLACES
+ * scenario.feedback.severity.rationale downstream. Branches on direction so
+ * the wording matches what actually happened to the score, never paraphrases
+ * a scenario worst-outcome that doesn't fit the described hazard.
+ */
+function deriveSeverityRationale(args: {
+  scenario: Scenario;
+  userSeverity: number;
+  refSeverity: number;
+  sevCeiling: number | null;
+  severityUnderstated: boolean;
+  severityOverstated: boolean;
+  scoringText: string;
+}): string {
+  const { scenario, userSeverity, refSeverity, sevCeiling, severityUnderstated, severityOverstated, scoringText } = args;
+  if (severityOverstated && sevCeiling != null) {
+    return `Submitted severity of ${userSeverity} overestimates the credible severity for the described hazard, which reads as ${describeLowSeverityFrame(scoringText)}. Governance position is severity ${sevCeiling}, taken from the credible workflow impact implied by the entered text.`;
+  }
+  if (severityUnderstated) {
+    return `Submitted severity of ${userSeverity} underestimates the credible worst-case outcome (${describeWorstOutcomeFor(scenario, scoringText)}). Governance position is severity ${refSeverity}, taken from the worst-credible outcome for this scenario.`;
+  }
+  // Honest scoring or no signal in either direction. Describe the user
+  // value in neutral terms; do not paraphrase the scenario template.
+  if (userSeverity > 0) {
+    return `Submitted severity of ${userSeverity} is consistent with the described hazard. No governance correction applied.`;
+  }
+  return "Severity has not been scored.";
+}
+
+/**
+ * Builds a text-aware likelihood rationale that REPLACES
+ * scenario.feedback.likelihood.rationale downstream.
+ */
+function deriveLikelihoodRationale(args: {
+  scenario: Scenario;
+  userLikelihood: number;
+  refLikelihood: number;
+  likCeiling: number | null;
+  likelihoodUnderstated: boolean;
+  likelihoodOverstated: boolean;
+  scoringText: string;
+}): string {
+  const { userLikelihood, refLikelihood, likCeiling, likelihoodUnderstated, likelihoodOverstated, scoringText } = args;
+  void scoringText;
+  if (likelihoodOverstated && likCeiling != null) {
+    return `Submitted likelihood of ${userLikelihood} overestimates the credible frequency for the described hazard, which reads as isolated, occasional or infrequent. Governance position is likelihood ${likCeiling}.`;
+  }
+  if (likelihoodUnderstated) {
+    return `Submitted likelihood of ${userLikelihood} appears optimistic relative to deployment volume for this scenario. Governance position is likelihood ${refLikelihood}, cross-checked against incident or pilot evidence.`;
+  }
+  if (userLikelihood > 0) {
+    return `Submitted likelihood of ${userLikelihood} is consistent with the described frequency of the event. No governance correction applied.`;
+  }
+  return "Likelihood has not been scored.";
 }
