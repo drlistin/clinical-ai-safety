@@ -62,6 +62,32 @@ export type HazardLogReport = {
   initialRiskScore: number;
   initialRiskBand: string;
 
+  // Governance-adjusted view of the initial risk. When the user has
+  // materially under- OR over-scored severity or likelihood, these fields
+  // use the governance-correct values instead. They are shown alongside the
+  // user-entered values so reviewers see both.
+  //
+  // - severityChallenged / likelihoodChallenged: true in EITHER direction
+  // - severityOverstated / likelihoodOverstated: true only when user value
+  //   exceeded the credible value implied by the described hazard text
+  //   (downward correction). When both flags are false but Challenged is
+  //   true, the dimension was under-scored (upward correction).
+  // - adjustedSeverity / adjustedLikelihood: the single governance-correct
+  //   value, regardless of direction.
+  // - scoreAdjustmentDirection: overall summary of the adjustment so the
+  //   UI can pick wording / styling without re-deriving.
+  referenceSeverity: number;
+  referenceLikelihood: number;
+  severityChallenged: boolean;
+  likelihoodChallenged: boolean;
+  severityOverstated: boolean;
+  likelihoodOverstated: boolean;
+  adjustedSeverity: number;
+  adjustedLikelihood: number;
+  adjustedRiskScore: number;
+  adjustedRiskBand: string;
+  scoreAdjustmentDirection: "upward" | "downward" | "mixed" | "none";
+
   residualSeverity: number;
   residualLikelihood: number;
   residualRationale: string;
@@ -111,7 +137,6 @@ export type BandPalette = { bg: RGB; fg: RGB; border: RGB };
 export const BAND_PALETTES: Record<string, BandPalette> = {
   Low: { bg: [232, 245, 233], fg: [27, 94, 32], border: [165, 214, 167] },
   Moderate: { bg: [255, 248, 225], fg: [121, 85, 0], border: [255, 213, 79] },
-  Medium: { bg: [255, 248, 225], fg: [121, 85, 0], border: [255, 213, 79] },
   High: { bg: [255, 234, 222], fg: [191, 70, 36], border: [255, 171, 145] },
   Severe: { bg: [255, 235, 238], fg: [156, 28, 60], border: [244, 143, 177] },
   Extreme: { bg: [255, 235, 238], fg: [156, 28, 60], border: [244, 143, 177] },

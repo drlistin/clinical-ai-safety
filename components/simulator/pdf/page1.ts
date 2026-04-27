@@ -142,54 +142,147 @@ function drawIssueList(b: PdfBuilder, label: string, items: string[], accent: [n
 
 function drawRiskSummary(b: PdfBuilder) {
   const { doc, MARGIN, CONTENT_W, report } = b;
-  const cards = [
-    { label: "Initial risk score", value: String(report.initialRiskScore), sub: "Severity " + report.initialSeverity + " x Likelihood " + report.initialLikelihood, band: report.initialRiskBand },
-    { label: "Residual risk score", value: String(report.residualRiskScore), sub: "Severity " + report.residualSeverity + " x Likelihood " + report.residualLikelihood, band: report.residualRiskBand },
-    { label: "Governance concern", value: report.governanceConcern, sub: "follows worst-credible severity", band: report.governanceConcern },
-    { label: "Overall acceptability", value: report.overallAcceptability, sub: "" },
+
+  // Row of 5 cards: user-entered initial, governance-adjusted initial,
+  // residual, governance concern, overall acceptability.
+  const userScoreSub =
+    "Severity " +
+    report.initialSeverity +
+    " x Likelihood " +
+    report.initialLikelihood;
+  // Adjusted-score sub-text reflects WHICH direction the correction went so
+  // a reviewer can see at a glance whether the user under- or over-scored.
+  const dir = report.scoreAdjustmentDirection;
+  const adjustedSuffix =
+    dir === "upward"
+      ? " (reference values applied, upward correction)"
+      : dir === "downward"
+        ? " (credible-impact ceiling applied, downward correction)"
+        : dir === "mixed"
+          ? " (governance correction applied)"
+          : "";
+  const adjustedSub =
+    "Severity " +
+    report.adjustedSeverity +
+    " x Likelihood " +
+    report.adjustedLikelihood +
+    adjustedSuffix;
+  const challenged =
+    report.severityChallenged || report.likelihoodChallenged;
+
+  const cards: Array<{
+    label: string;
+    value: string;
+    sub: string;
+    band?: string;
+    challenged?: boolean;
+  }> = [
+    {
+      label: "User-entered risk score",
+      value: String(report.initialRiskScore),
+      sub: userScoreSub,
+      band: report.initialRiskBand,
+      challenged,
+    },
+    {
+      label: "Governance-adjusted score",
+      value: String(report.adjustedRiskScore),
+      sub: adjustedSub,
+      band: report.adjustedRiskBand,
+    },
+    {
+      label: "Residual risk score",
+      value: String(report.residualRiskScore),
+      sub:
+        "Severity " +
+        report.residualSeverity +
+        " x Likelihood " +
+        report.residualLikelihood,
+      band: report.residualRiskBand,
+    },
+    {
+      label: "Governance concern",
+      value: report.governanceConcern,
+      sub:
+        dir === "downward"
+          ? "follows credible-impact severity"
+          : "follows worst-credible severity",
+      band: report.governanceConcern,
+    },
+    {
+      label: "Overall acceptability",
+      value: report.overallAcceptability,
+      sub: "",
+    },
   ];
-  const cellGap = 8;
-  const cellW = (CONTENT_W - cellGap * 3) / 4;
-  const cellH = 80;
+
+  const cellGap = 6;
+  const cellW = (CONTENT_W - cellGap * (cards.length - 1)) / cards.length;
+  const cellH = 88;
   b.ensureRoom(cellH + 8);
   for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
     const x = MARGIN + i * (cellW + cellGap);
     b.stroke(NAVY_LIGHT);
     doc.setLineWidth(0.5);
     b.fill(WHITE);
     doc.roundedRect(x, b.y, cellW, cellH, 4, 4, "FD");
-    b.fill(CLINICAL);
+    if (card.challenged) {
+      b.fill([156, 28, 60]);
+    } else {
+      b.fill(CLINICAL);
+    }
     doc.rect(x, b.y, 3, cellH, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    b.ink(CLINICAL);
-    doc.text(cards[i].label.toUpperCase(), x + 12, b.y + 16, { charSpace: 1.2 });
 
-    if (cards[i].label === "Governance concern") {
-      b.bandChip(cards[i].value, x + 12, b.y + 44, 10, 10, 5);
-    } else if (cards[i].label === "Overall acceptability") {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.8);
+    b.ink(CLINICAL);
+    const labelLines = doc.splitTextToSize(
+      card.label.toUpperCase(),
+      cellW - 18,
+    );
+    doc.text(labelLines.slice(0, 2), x + 10, b.y + 14, { charSpace: 1.1 });
+
+    if (card.label === "Governance concern") {
+      b.bandChip(card.value, x + 10, b.y + 50, 9, 9, 4);
+    } else if (card.label === "Overall acceptability") {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       b.ink(NAVY);
-      const lines = doc.splitTextToSize(cards[i].value, cellW - 24);
-      doc.text(lines.slice(0, 3), x + 12, b.y + 36);
+      const lines = doc.splitTextToSize(card.value, cellW - 18);
+      doc.text(lines.slice(0, 3), x + 10, b.y + 40);
     } else {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
+      doc.setFontSize(18);
       b.ink(NAVY);
-      doc.text(cards[i].value, x + 12, b.y + 44);
-      const band = cards[i].band;
+      doc.text(card.value, x + 10, b.y + 50);
+      const band = card.band;
       if (band) {
-        const numW = doc.getTextWidth(cards[i].value);
-        b.bandChip(band, x + 12 + numW + 8, b.y + 42, 7, 6, 3);
+        const numW = doc.getTextWidth(card.value);
+        b.bandChip(band, x + 10 + numW + 6, b.y + 48, 6.5, 5, 3);
+      }
+      if (card.challenged) {
+        const badgeX = x + 10;
+        const badgeY = b.y + 56;
+        const badgeText = "CHALLENGED";
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6);
+        const tw = doc.getTextWidth(badgeText);
+        b.fill([255, 235, 238]);
+        b.stroke([244, 143, 177]);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(badgeX, badgeY, tw + 8, 9, 2, 2, "FD");
+        b.ink([156, 28, 60]);
+        doc.text(badgeText, badgeX + 4, badgeY + 6.5, { charSpace: 0.6 });
       }
     }
-    if (cards[i].sub) {
+
+    if (card.sub) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       b.ink(NAVY_MID);
-      const subLines = doc.splitTextToSize(cards[i].sub, cellW - 24);
-      doc.text(subLines.slice(0, 2), x + 12, b.y + cellH - 12);
+      const subLines = doc.splitTextToSize(card.sub, cellW - 16);
+      doc.text(subLines.slice(0, 3), x + 10, b.y + cellH - 18);
     }
   }
   b.y += cellH + 16;

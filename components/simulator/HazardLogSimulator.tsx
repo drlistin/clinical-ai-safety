@@ -320,6 +320,16 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
   const ownerStr = answers.owner.trim() || "(to be assigned)";
   const controls = buildControlsList(answers, ownerStr);
 
+  // Author defaults to the named clinical owner if one was supplied. If the
+  // user named only IT or left ownership blank, default to the standard
+  // clinical role title rather than a non-clinical placeholder.
+  const ownerLooksClinical = /clinical|clinician|cso|safety officer|pathway|caldicott|medical director/i.test(
+    answers.owner,
+  );
+  const authorStr = answers.owner.trim() && ownerLooksClinical
+    ? answers.owner.trim()
+    : "Clinical Safety Officer / Product Safety Lead";
+
   const validation = runValidation({
     scenario,
     hazard: answers.hazard,
@@ -362,7 +372,7 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
     lastReviewed: now,
     reviewDate,
     status: "Open",
-    author: ownerStr,
+    author: authorStr,
     approver: "",
     reviewer: "",
     owner: ownerStr,
@@ -371,14 +381,26 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
     systemVersion: answers.systemVersion.trim(),
     workflowStep: answers.workflowStep.trim(),
     safetyRequirement:
-      answers.safetyRequirement.trim() || "(not specified)",
+      answers.safetyRequirement.trim() ||
+      "Urgent referrals meeting defined red-flag criteria must not be downgraded without clinician review.",
     benefitJustification:
       answers.benefitJustification.trim() || "(not specified)",
     hazard: answers.hazard,
     causeFailureMode: answers.cause,
-    sequenceOfEvents: scenario.reference.sequenceOfEvents,
-    hazardousSituation: scenario.reference.hazardousSituation,
-    potentialHarm: scenario.reference.potentialHarm,
+    // Narrative fields are derived ONLY from the user's current scenario
+    // inputs. They MUST NOT be sourced from scenario.reference, otherwise
+    // the previous scenario's wording (e.g. cancer pathway language) will
+    // contaminate an unrelated entry. When user input is empty we fall
+    // back to a neutral placeholder, never to scenario.reference content.
+    sequenceOfEvents:
+      answers.cause.trim() ||
+      "(to be documented during clinical safety review)",
+    hazardousSituation:
+      answers.hazard.trim() ||
+      "(to be documented during clinical safety review)",
+    potentialHarm:
+      answers.consequence.trim() ||
+      "(to be documented during clinical safety review)",
     clinicalConsequence: answers.consequence,
     initialSeverity: answers.severity ?? 0,
     severityRationale: scenario.feedback.severity.rationale,
@@ -388,6 +410,17 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
     likelihoodEvidence: answers.likelihoodEvidence,
     initialRiskScore: args.initialRisk,
     initialRiskBand: args.initialBand,
+    referenceSeverity: validation.referenceSeverity,
+    referenceLikelihood: validation.referenceLikelihood,
+    severityChallenged: validation.severityChallenged,
+    likelihoodChallenged: validation.likelihoodChallenged,
+    severityOverstated: validation.severityOverstated,
+    likelihoodOverstated: validation.likelihoodOverstated,
+    adjustedSeverity: validation.adjustedSeverity,
+    adjustedLikelihood: validation.adjustedLikelihood,
+    adjustedRiskScore: validation.adjustedRiskScore,
+    adjustedRiskBand: validation.adjustedRiskBand,
+    scoreAdjustmentDirection: validation.scoreAdjustmentDirection,
     residualSeverity: answers.residualSeverity ?? 0,
     residualLikelihood: answers.residualLikelihood ?? 0,
     residualRationale:
@@ -395,7 +428,9 @@ function buildHazardLogReport(args: BuildArgs): HazardLogReport {
       "Rationale to be added on review.",
     residualRiskScore: args.residualRisk ?? 0,
     residualRiskBand: args.residualBand ?? "Low",
-    overallAcceptability: acceptabilityFor(args.residualBand),
+    overallAcceptability:
+      validation.overallAcceptabilityOverride ||
+      acceptabilityFor(args.residualBand),
     governanceConcern: validation.governanceConcern,
     governanceConcernRationale: validation.governanceConcernRationale,
     controls,
@@ -891,7 +926,7 @@ function ClassificationStep({
           onChange={(e) => onChange("safetyRequirement", e.target.value)}
           rows={3}
           className="w-full rounded-md border border-navy-200 bg-white px-4 py-3 text-base text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
-          placeholder="e.g. No referral with a documented red-flag combination is downgraded below urgent without clinician review."
+          placeholder="e.g. Urgent referrals meeting defined red-flag criteria must not be downgraded without clinician review."
         />
       </section>
 
@@ -1851,6 +1886,15 @@ function ControlsComparisonCard({
   );
 }
 
+// Mirrors validation.ts text-marker logic so the dark client-side card
+// agrees with the validation engine when detecting OVER-scoring. Kept
+// minimal - the source of truth remains validation.ts; this is a preview
+// helper that runs before the user has triggered PDF export.
+const LOW_SEVERITY_PREVIEW_RE =
+  /\bminor\s+(inconvenience|delay|disruption|impact|issue|nuisance)\b|\badministrative\s+(delay|impact|burden|only|issue)\b|\bnon[\s-]?urgent\b|\bno\s+(clinical|patient)\s+(impact|harm|consequence)\b|\bsmall\s+delay\b|\bslight\s+delay\b|\bbrief\s+delay\b|\boutpatient\s+follow[\s-]?up\b|\blow[\s-]?acuity\b|\bpatient\s+inconvenience\b|\bnon[\s-]?clinical\b|\bschedul(e|ing|ed)\s+delay\b|\brebooked?\b|\breschedul(e|ed|ing)\b/i;
+const RARE_LIKELIHOOD_PREVIEW_RE =
+  /\bisolated\s+(incident|case|event|occurrence)\b|\brarely?\b|\boccasional(ly)?\b|\buncommon\b|\bone[\s-]?off\b|\bedge[\s-]?case\b|\bexceptional\b|\binfrequent(ly)?\b|\bvery\s+rare\b|\bseldom\b/i;
+
 function SummaryCard({
   scenario,
   answers,
@@ -1866,6 +1910,57 @@ function SummaryCard({
   residualRisk: number | null;
   residualBand: RiskBand | null;
 }) {
+  // Bidirectional governance challenge. Under-scoring uses scenario reference
+  // values; over-scoring uses the inferred ceiling implied by the described
+  // hazard text. Both directions surface as "Challenged" in the UI; the
+  // Governance-adjusted line reflects the corrected score either way.
+  const refSeverity = scenario.feedback.severity.expected;
+  const refLikelihood = scenario.feedback.likelihood.expected;
+  const scoringText = `${answers.hazard} ${answers.cause} ${answers.consequence}`.toLowerCase();
+  const sevCeiling = LOW_SEVERITY_PREVIEW_RE.test(scoringText) ? 2 : null;
+  const likCeiling = RARE_LIKELIHOOD_PREVIEW_RE.test(scoringText) ? 2 : null;
+
+  const severityUnderstated =
+    answers.severity != null && answers.severity > 0 && answers.severity < refSeverity;
+  const severityOverstated =
+    sevCeiling != null && answers.severity != null && answers.severity > sevCeiling;
+  const likelihoodUnderstated =
+    answers.likelihood != null && answers.likelihood > 0 && answers.likelihood < refLikelihood;
+  const likelihoodOverstated =
+    likCeiling != null && answers.likelihood != null && answers.likelihood > likCeiling;
+
+  const severityChallenged = severityUnderstated || severityOverstated;
+  const likelihoodChallenged = likelihoodUnderstated || likelihoodOverstated;
+
+  let adjustedSeverity = answers.severity ?? 0;
+  if (severityOverstated && sevCeiling != null) adjustedSeverity = sevCeiling;
+  else if (severityUnderstated) adjustedSeverity = refSeverity;
+
+  let adjustedLikelihood = answers.likelihood ?? 0;
+  if (likelihoodOverstated && likCeiling != null) adjustedLikelihood = likCeiling;
+  else if (likelihoodUnderstated) adjustedLikelihood = refLikelihood;
+
+  const adjustedRisk =
+    adjustedSeverity > 0 && adjustedLikelihood > 0
+      ? adjustedSeverity * adjustedLikelihood
+      : null;
+  const adjustedBand = bandForRisk(adjustedRisk);
+  const showChallenged = severityChallenged || likelihoodChallenged;
+  const anyOver = severityOverstated || likelihoodOverstated;
+  const anyUnder = severityUnderstated || likelihoodUnderstated;
+  const directionLabel =
+    anyOver && anyUnder
+      ? "governance correction applied"
+      : anyOver
+        ? "downward correction"
+        : "upward correction";
+  const bannerText =
+    anyOver && !anyUnder
+      ? "One or more scores overestimate the credible severity or likelihood compared with the described hazard."
+      : anyOver && anyUnder
+        ? "Submitted scores are governance-incorrect in both directions for the described hazard."
+        : "One or more scores underestimate the credible severity or likelihood.";
+
   return (
     <div className="rounded-2xl border border-navy-200 bg-navy-950 p-6 text-white md:p-8">
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -1874,15 +1969,47 @@ function SummaryCard({
         </p>
         <p className="text-[11px] uppercase tracking-widest text-navy-300">{scenario.shortName}</p>
       </div>
+      {showChallenged && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-md border border-rose-400/40 bg-rose-500/10 px-4 py-3">
+          <span className="inline-flex items-center rounded-full border border-rose-300/50 bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-100">
+            Challenged
+          </span>
+          <p className="text-xs leading-relaxed text-rose-50">
+            {bannerText} Governance-adjusted score ({directionLabel}):{" "}
+            <strong className="font-semibold">
+              {adjustedSeverity} × {adjustedLikelihood} = {adjustedRisk ?? "-"}
+              {adjustedBand ? ` (${adjustedBand})` : ""}
+            </strong>
+            .
+          </p>
+        </div>
+      )}
       <dl className="mt-6 grid gap-x-8 gap-y-5 md:grid-cols-2">
         <SummaryField label="Hazard" value={answers.hazard} />
         <SummaryField label="Cause / failure mode" value={answers.cause} />
         <SummaryField label="Clinical consequence" value={answers.consequence} />
 
         <div className="grid grid-cols-3 gap-4">
-          <SummaryStat label="Severity" value={answers.severity} />
-          <SummaryStat label="Likelihood" value={answers.likelihood} />
-          <SummaryStat label="Initial risk" value={initialRisk} extra={initialBand} />
+          <SummaryStat
+            label="Severity"
+            value={answers.severity}
+            challenged={severityChallenged}
+            adjusted={severityChallenged ? adjustedSeverity : null}
+          />
+          <SummaryStat
+            label="Likelihood"
+            value={answers.likelihood}
+            challenged={likelihoodChallenged}
+            adjusted={likelihoodChallenged ? adjustedLikelihood : null}
+          />
+          <SummaryStat
+            label="Initial risk"
+            value={initialRisk}
+            extra={initialBand}
+            challenged={showChallenged}
+            adjusted={showChallenged ? adjustedRisk : null}
+            adjustedExtra={showChallenged ? adjustedBand : null}
+          />
         </div>
 
         <SummaryList
@@ -1926,14 +2053,39 @@ function SummaryField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SummaryStat({ label, value, extra }: { label: string; value: number | null; extra?: string | null }) {
+function SummaryStat({
+  label,
+  value,
+  extra,
+  challenged,
+  adjusted,
+  adjustedExtra,
+}: {
+  label: string;
+  value: number | null;
+  extra?: string | null;
+  challenged?: boolean;
+  adjusted?: number | null;
+  adjustedExtra?: string | null;
+}) {
   return (
     <div>
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-white">
         {value ?? "-"}
         {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
+        {challenged ? (
+          <span className="ml-2 inline-flex items-center rounded-full border border-rose-300/60 bg-rose-500/20 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-rose-100">
+            Challenged
+          </span>
+        ) : null}
       </dd>
+      {challenged && adjusted != null ? (
+        <p className="mt-1 text-[11px] font-medium text-rose-200">
+          Governance-adjusted: {adjusted}
+          {adjustedExtra ? ` (${adjustedExtra})` : ""}
+        </p>
+      ) : null}
     </div>
   );
 }
