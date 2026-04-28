@@ -153,13 +153,6 @@ function evaluateControlQuality(controls) {
   return issues;
 }
 
-// Tests do not exercise the missing-essentials path (no scenario.essentialControls
-// passed). Stub returns []; if a future test wants to exercise it, port the
-// keyword-group matcher over.
-function evaluateMissingEssentials() {
-  return [];
-}
-
 function tokeniseSubstantive(text) {
   const out = new Set();
   if (!text) return out;
@@ -181,11 +174,9 @@ function controlStrengthSignal(args) {
   const controlQuality = evaluateControlQuality(allEntries);
   const hasNonControl = controlQuality.some((i) => i.level === "non-control");
   const hasVague = controlQuality.some((i) => i.level === "vague");
-  const missingEssentials = evaluateMissingEssentials();
 
   if (hasNonControl) return "weak";
   if (allEntries.length < 2) return "weak";
-  if (missingEssentials.length > 0) return "weak";
   if (!hasVague && allEntries.length >= 2) return "strong";
   return "neither";
 }
@@ -666,6 +657,31 @@ const cases = [
       "capa-severity-mismatch",
       "ownership-severity-mismatch",
     ],
+  },
+
+  // ---- Regression: user-reported case from production ----
+  // Strong Step 8 controls + residualLikelihood=5 must surface
+  // controls-residual-mismatch. Earlier bug: controlStrengthSignal was
+  // counting essentialControls coverage as part of "strong" determination,
+  // which downgraded otherwise-strong wording to "weak" and silenced this
+  // check whenever the user's strong wording happened not to lexically
+  // match every essentialControls KeywordGroup.
+  {
+    name: "Regression: strong controls + residualSev=4 + residualLik=5 + strong governance fires controls-residual-mismatch",
+    input: withBase({
+      preventativeControls: STRONG_PREV,
+      detectiveControls: STRONG_DET,
+      correctiveControls: STRONG_CORR,
+      residualSeverity: 4,
+      residualLikelihood: 5,
+      residualRationale: "Severity unchanged: missed cancer is still catastrophic. Likelihood reduced by mandatory clinician review and red-flag escalation, not eliminated.",
+      monitoringMetric: "False-negative rate on routine-ranked cases",
+      triggerThreshold: "False-negative rate above 1% over rolling quarter",
+      capa: "Pause AI tool, notify Clinical Safety Officer, full audit of routine-ranked cases.",
+      owner: "Clinical Safety Officer, supported by cancer pathway clinical lead and AI product owner.",
+      adjustedSeverity: 5,
+    }),
+    expectKinds: ["controls-residual-mismatch"],
   },
 
   // ---- Anti-regression: fully strong baseline ----

@@ -1259,18 +1259,27 @@ function tokeniseSubstantive(text: string): Set<string> {
 }
 
 /**
- * Strength-of-controls signal used by checks 1 and 2. Returns:
+ * Strength-of-controls signal used by checks 1 and 2. PURELY about the
+ * user's wording quality and quantity — does NOT consider scenario-specific
+ * essentialControls coverage. Scenario coverage is a different concern,
+ * already surfaced by the Missing Critical Controls engine and the Phase
+ * 4A scenario-aware engine. Conflating the two here was the original
+ * Phase 4B bug: a user with eight strong measurable controls that happened
+ * to miss one scenario keyword group was being downgraded to "weak", which
+ * silenced the controls-residual-mismatch check on otherwise-clear high-
+ * residual cases.
+ *
+ * Returns:
  *   - "strong"  : ≥ 2 non-empty entries across the three buckets AND zero
- *                 vague/non-control flags from evaluateControlQuality AND no
- *                 missing-essential-control findings (when the scenario
- *                 declares essentialControls).
- *   - "weak"    : ANY non-control flag, OR fewer than 2 entries in total,
- *                 OR any missing-essential-control finding.
- *   - "neither" : in between (e.g. exactly 2 entries with one vague but no
- *                 non-control). Neither check fires — avoids noisy mid-cases.
+ *                 vague AND zero non-control flags from
+ *                 evaluateControlQuality.
+ *   - "weak"    : ANY non-control flag, OR fewer than 2 entries in total.
+ *   - "neither" : in between (e.g. 2+ entries with at least one vague but
+ *                 no non-control). Deliberately silent middle ground —
+ *                 neither check fires so the engine doesn't argue with
+ *                 itself on partially-improved drafts.
  */
 function controlStrengthSignal(args: {
-  scenario: Scenario;
   preventativeControls: string[];
   detectiveControls: string[];
   correctiveControls: string[];
@@ -1283,27 +1292,18 @@ function controlStrengthSignal(args: {
   const controlQuality = evaluateControlQuality(allEntries);
   const hasNonControl = controlQuality.some((i) => i.level === "non-control");
   const hasVague = controlQuality.some((i) => i.level === "vague");
-  const missingEssentials = evaluateMissingEssentials({
-    scenario: args.scenario,
-    preventativeControls: args.preventativeControls,
-    detectiveControls: args.detectiveControls,
-    correctiveControls: args.correctiveControls,
-  });
 
-  // Weak: any non-control wording, fewer than 2 entries, or any missing
-  // essential. These are independently sufficient — a single non-control
-  // sinks the lot.
+  // Weak: any non-control wording, OR fewer than 2 entries. Both are
+  // independently sufficient — a single non-control sinks the lot,
+  // because a non-control entry is not a barrier at all.
   if (hasNonControl) return "weak";
   if (allEntries.length < 2) return "weak";
-  if (missingEssentials.length > 0) return "weak";
 
-  // Strong: at least 2 entries, zero quality issues of either flavour, no
-  // missing essentials.
+  // Strong: at least 2 entries, zero quality issues of either flavour.
   if (!hasVague && allEntries.length >= 2) return "strong";
 
-  // Neither: e.g. 2+ entries, no missing essentials, but at least one vague.
-  // This is a deliberate "no fire" zone to keep the consistency engine quiet
-  // when the situation is ambiguous.
+  // Neither: 2+ entries, no non-controls, but at least one vague entry.
+  // Deliberate "no fire" zone — the user is mid-rewrite, no need to argue.
   return "neither";
 }
 
@@ -1331,7 +1331,6 @@ function controlStrengthSignal(args: {
  *     AND owner field to have content AND no clinical-chain match.
  */
 export function evaluateLogicalConsistency(args: {
-  scenario: Scenario;
   preventativeControls: string[];
   detectiveControls: string[];
   correctiveControls: string[];
@@ -1358,7 +1357,6 @@ export function evaluateLogicalConsistency(args: {
     args.correctiveControls.some((c) => c.trim());
   if (anyControlEntered && args.residualLikelihood > 0) {
     const strength = controlStrengthSignal({
-      scenario: args.scenario,
       preventativeControls: args.preventativeControls,
       detectiveControls: args.detectiveControls,
       correctiveControls: args.correctiveControls,
@@ -1796,7 +1794,6 @@ export function runValidation(input: ValidationInput): ValidationResult {
   // flag generic ownership against the TRUE worst-credible severity, not
   // the user-typed value.
   const consistencyFindings = evaluateLogicalConsistency({
-    scenario: input.scenario,
     preventativeControls: input.preventativeControls,
     detectiveControls: input.detectiveControls,
     correctiveControls: input.correctiveControls,

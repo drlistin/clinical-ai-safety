@@ -1901,7 +1901,6 @@ function ResidualStep({
   const consistencyFindings = useMemo(
     () =>
       evaluateLogicalConsistency({
-        scenario,
         preventativeControls: [
           ...splitLines(answers.existingPreventative),
           ...splitLines(answers.proposedPreventative),
@@ -1924,7 +1923,6 @@ function ResidualStep({
         adjustedSeverity,
       }),
     [
-      scenario,
       answers.existingPreventative,
       answers.existingDetective,
       answers.existingCorrective,
