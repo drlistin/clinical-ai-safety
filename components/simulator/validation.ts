@@ -394,15 +394,37 @@ const MISSING_ESSENTIAL_TAILS: Record<ControlType, string> = {
 };
 
 /**
+ * Defensive Unicode normalisation applied inside the keyword matcher so
+ * that smart quotes / em-dashes / non-breaking spaces pasted from word
+ * processors don't silently break a substring match against the ASCII
+ * synonym banks. Matches the simulator-side `normaliseInputText` helper but
+ * is duplicated here so any direct caller of evaluateMissingEssentials /
+ * evaluateScenarioExpectations (e.g. test code, future surfaces) gets the
+ * same robust behaviour without having to pre-normalise.
+ */
+function normaliseForKeywordMatch(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[  ​]/g, " ")
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/[–—―]/g, "-");
+}
+
+/**
  * Test whether ANY of a keyword group's synonyms appears in the joined,
- * lower-cased user text. Word-boundary aware to avoid false positives like
- * "report" matching the substring "reporter".
+ * lower-cased user text. Substring match (not word-boundary regex) so a
+ * synonym like "clinician review" matches inside "clinician review before
+ * downgrade". Both haystack and needle are normalised through
+ * `normaliseForKeywordMatch` first, so typographic punctuation / NBSP /
+ * accent forms don't cause false negatives.
  */
 function keywordGroupCovered(group: KeywordGroup, joinedLower: string): boolean {
+  const normalisedHaystack = normaliseForKeywordMatch(joinedLower);
   for (const kw of group.any) {
-    const needle = kw.toLowerCase().trim();
+    const needle = normaliseForKeywordMatch(kw.toLowerCase()).trim();
     if (!needle) continue;
-    if (joinedLower.includes(needle)) return true;
+    if (normalisedHaystack.includes(needle)) return true;
   }
   return false;
 }

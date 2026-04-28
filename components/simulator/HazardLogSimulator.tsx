@@ -158,8 +158,33 @@ export const EVIDENCE_BASIS_TAGS = [
   "Assumption only",
 ] as const;
 
-const splitLines = (t: string): string[] =>
+/**
+ * Defensive normalisation for textarea input. Some browsers / clipboards /
+ * autocorrect paths swap straight quotes and dashes for typographic
+ * variants, and very rarely a non-breaking space sneaks in. Normalising
+ * these into ASCII equivalents BEFORE matching means the missing-controls
+ * engines (which substring-match against ASCII synonym banks) don't miss a
+ * line just because the user typed a smart quote. Also Unicode-NFC
+ * normalises composed/decomposed accent forms.
+ *
+ * Substitutions:
+ *   U+00A0  NBSP                       → regular space
+ *   U+202F  narrow no-break space      → regular space
+ *   U+200B  zero-width space           → regular space
+ *   U+2018-201B  smart single quotes   → '
+ *   U+201C-201F  smart double quotes   → "
+ *   U+2013-2015  en/em/horizontal dash → -
+ */
+const normaliseInputText = (t: string): string =>
   t
+    .normalize("NFC")
+    .replace(/[   ]/g, " ") // various non-breaking spaces
+    .replace(/[‘’‚‛]/g, "'") // smart single quotes
+    .replace(/[“”„‟]/g, '"') // smart double quotes
+    .replace(/[–—―]/g, "-"); // en/em dashes
+
+const splitLines = (t: string): string[] =>
+  normaliseInputText(t)
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -1382,7 +1407,7 @@ function ScenarioControlsPanel({
       ...splitLines(answers.existingCorrective),
       ...splitLines(answers.proposedCorrective),
     ];
-    return evaluateScenarioExpectations({
+    const result = evaluateScenarioExpectations({
       scenario,
       preventativeControls: preventative,
       detectiveControls: detective,
@@ -1395,6 +1420,19 @@ function ScenarioControlsPanel({
       reviewFrequency: "",
       owner: "",
     }).filter((f) => f.kind === "missing-expected-control");
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      // eslint-disable-next-line no-console
+      console.debug("[hazard-log/scenario-controls-panel]", {
+        preventative,
+        detective,
+        corrective,
+        missing: result.map((f) => `${f.controlType}/${f.label}`),
+      });
+    }
+    return result;
   }, [
     scenario,
     answers.existingPreventative,
@@ -1525,12 +1563,25 @@ function MissingEssentialsPanel({
       ...splitLines(answers.existingCorrective),
       ...splitLines(answers.proposedCorrective),
     ];
-    return evaluateMissingEssentials({
+    const result = evaluateMissingEssentials({
       scenario,
       preventativeControls: preventative,
       detectiveControls: detective,
       correctiveControls: corrective,
     });
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      // eslint-disable-next-line no-console
+      console.debug("[hazard-log/missing-essentials-panel]", {
+        preventative,
+        detective,
+        corrective,
+        missing: result.map((f) => `${f.type}/${f.label}`),
+      });
+    }
+    return result;
   }, [
     scenario,
     answers.existingPreventative,
