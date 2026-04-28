@@ -24,9 +24,11 @@ import type {
 import {
   evaluateControlQuality,
   evaluateGovernanceQuality,
+  evaluateLogicalConsistency,
   evaluateMissingEssentials,
   evaluateScenarioExpectations,
   runValidation,
+  type ConsistencyFinding,
   type GovernanceQualityIssue,
   type ScenarioExpectationFinding,
 } from "./validation";
@@ -699,6 +701,7 @@ export default function HazardLogSimulator({
             initialBand={initialBand}
             residualRisk={residualRisk}
             residualBand={residualBand}
+            adjustedSeverity={validation.adjustedSeverity}
             onChange={(field, v) => update(field, v)}
           />
         )}
@@ -1751,6 +1754,7 @@ function ResidualStep({
   initialBand,
   residualRisk,
   residualBand,
+  adjustedSeverity,
   onChange,
 }: {
   scenario: Scenario;
@@ -1759,6 +1763,14 @@ function ResidualStep({
   initialBand: RiskBand | null;
   residualRisk: number | null;
   residualBand: RiskBand | null;
+  /**
+   * Governance-adjusted severity from the parent's runValidation output.
+   * Used by the Phase 4B Logical Consistency engine to compare against
+   * ownership wording (a high-severity hazard demands a clinical owner
+   * regardless of what the user typed in Step 6, so this needs the
+   * adjusted value, not answers.severity).
+   */
+  adjustedSeverity: number;
   onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
 }) {
   // Live Governance & Monitoring Engine output. Re-runs every keystroke so
@@ -1835,6 +1847,57 @@ function ResidualStep({
       ),
     }),
     [scenarioFindings],
+  );
+
+  // Phase 4B Logical Consistency findings. Re-runs the same engine that
+  // runValidation uses, so the panel wording is identical to the PDF.
+  // Pulls all live Step 8 + Step 9 inputs plus the parent's adjusted
+  // severity (the consistency engine compares ownership against the
+  // governance-correct severity, not the user-typed value, so an under-
+  // scored hazard still flags generic ownership). Empty when no
+  // inconsistencies are present.
+  const consistencyFindings = useMemo(
+    () =>
+      evaluateLogicalConsistency({
+        scenario,
+        preventativeControls: [
+          ...splitLines(answers.existingPreventative),
+          ...splitLines(answers.proposedPreventative),
+        ],
+        detectiveControls: [
+          ...splitLines(answers.existingDetective),
+          ...splitLines(answers.proposedDetective),
+        ],
+        correctiveControls: [
+          ...splitLines(answers.existingCorrective),
+          ...splitLines(answers.proposedCorrective),
+        ],
+        residualSeverity: answers.residualSeverity ?? 0,
+        residualLikelihood: answers.residualLikelihood ?? 0,
+        residualRationale: answers.residualRationale,
+        monitoringMetric: answers.monitoringMetric,
+        triggerThreshold: answers.triggerThreshold,
+        capa: answers.capa,
+        owner: answers.owner,
+        adjustedSeverity,
+      }),
+    [
+      scenario,
+      answers.existingPreventative,
+      answers.existingDetective,
+      answers.existingCorrective,
+      answers.proposedPreventative,
+      answers.proposedDetective,
+      answers.proposedCorrective,
+      answers.residualSeverity,
+      answers.residualLikelihood,
+      answers.residualRationale,
+      answers.monitoringMetric,
+      answers.triggerThreshold,
+      answers.capa,
+      answers.owner,
+      adjustedSeverity,
+    ],
   );
 
   return (
@@ -2048,8 +2111,126 @@ function ResidualStep({
           />
         </FieldShell>
       </section>
+
+      {/* Phase 4B — Logical Consistency findings panel. Cross-field
+          contradictions across the user's risk argument as a whole. Hidden
+          when no inconsistencies are present. */}
+      <ConsistencyFindingsPanel findings={consistencyFindings} />
     </div>
   );
+}
+
+/**
+ * Phase 4B — live Logical Consistency findings panel. Renders one card per
+ * cross-field contradiction surfaced by `evaluateLogicalConsistency`. Critical
+ * findings use rose styling (matching Phase 3 critical chips and the Step 8
+ * scenario-controls panel). Warning findings use amber styling. Hidden when
+ * the array is empty so the panel does not appear on a clean draft.
+ *
+ * The wording is identical to what the PDF surfaces because both consume
+ * `evaluateLogicalConsistency` — any wording change is made once, in
+ * validation.ts, and propagates everywhere.
+ */
+function ConsistencyFindingsPanel({
+  findings,
+}: {
+  findings: ConsistencyFinding[];
+}) {
+  if (findings.length === 0) return null;
+  const criticals = findings.filter((f) => f.level === "critical");
+  const warnings = findings.filter((f) => f.level === "warning");
+  const headerTone = criticals.length > 0 ? "critical" : "warning";
+  const wrapperClass =
+    headerTone === "critical"
+      ? "rounded-lg border border-rose-200 bg-rose-50/60 p-5"
+      : "rounded-lg border border-amber-200 bg-amber-50/60 p-5";
+  const headerLabelClass =
+    headerTone === "critical"
+      ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800"
+      : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-900";
+  const headerTitleClass =
+    headerTone === "critical"
+      ? "text-sm font-semibold text-rose-900"
+      : "text-sm font-semibold text-amber-900";
+  const headerSubtleClass =
+    headerTone === "critical" ? "mt-1.5 text-xs text-rose-800" : "mt-1.5 text-xs text-amber-900";
+
+  return (
+    <div className={wrapperClass}>
+      <div className="flex items-center gap-2">
+        <span className={headerLabelClass}>
+          {criticals.length > 0 ? "Critical" : "Warning"}
+        </span>
+        <h5 className={headerTitleClass}>
+          Consistency findings across this risk argument
+        </h5>
+      </div>
+      <p className={headerSubtleClass}>
+        These items flag where parts of the entry contradict each other or
+        where reasoning across the answers is weak. Resolve them so the
+        argument holds together end-to-end.
+      </p>
+      <ul className="mt-4 space-y-2">
+        {findings.map((finding, i) => {
+          const isCritical = finding.level === "critical";
+          const itemClass = isCritical
+            ? "rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
+            : "rounded-md border border-amber-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-amber-900";
+          const labelClass = isCritical
+            ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
+            : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+          return (
+            <li
+              key={`consistency-${finding.kind}-${i}`}
+              className={itemClass}
+            >
+              <div className="flex items-center gap-2">
+                <span className={labelClass}>
+                  {isCritical ? "Critical" : "Warning"}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                  {consistencyFindingTitle(finding.kind)}
+                </span>
+              </div>
+              <p className="mt-1 text-[12px]">{finding.message}</p>
+            </li>
+          );
+        })}
+      </ul>
+      {/* Footer summary helps a reviewer scanning the panel see the count
+          breakdown without re-counting items. */}
+      {(criticals.length > 0 && warnings.length > 0) && (
+        <p className="mt-3 text-[11px] text-navy-700">
+          {criticals.length} critical · {warnings.length} warning
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Short uppercase title for each consistency finding kind, surfaced as the
+ * row badge so reviewers can identify the failure class at a glance without
+ * reading the full sentence. Wording mirrors the engine kind in
+ * validation.ts.
+ */
+function consistencyFindingTitle(kind: ConsistencyFinding["kind"]): string {
+  switch (kind) {
+    case "controls-residual-mismatch":
+      return "Controls vs residual";
+    case "weak-controls-low-residual":
+      return "Residual under-rated";
+    case "elimination-wording-mismatch":
+      return "Elimination wording";
+    case "elimination-score-mismatch":
+      return "Elimination score";
+    case "kpi-threshold-mismatch":
+      return "KPI vs threshold";
+    case "capa-severity-mismatch":
+      return "CAPA vs trigger";
+    case "ownership-severity-mismatch":
+      return "Ownership vs severity";
+  }
 }
 
 /**

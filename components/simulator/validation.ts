@@ -186,6 +186,60 @@ export type ScenarioExpectationFinding = {
   message: string;
 };
 
+/**
+ * Phase 4B — Logical Consistency Engine output.
+ *
+ * Per-finding output from `evaluateLogicalConsistency`. Each finding represents
+ * a contradiction or weak reasoning step across the user's answers as a whole
+ * risk argument. Scenario-AGNOSTIC by design — the engine reasons about the
+ * coherence of the user's own entries against each other, not against any
+ * scenario reference.
+ *
+ * Finding kinds:
+ *   - controls-residual-mismatch        (warning) — strong controls listed but
+ *       residual likelihood remains 4–5. Either reduce residual or justify why
+ *       risk remains high despite strong controls.
+ *   - weak-controls-low-residual        (critical) — controls are weak/missing
+ *       but residual likelihood is 1. Residual likely under-rated.
+ *   - elimination-wording-mismatch      (warning) — residual rationale uses
+ *       elimination/zero-risk language but residual score is non-zero.
+ *   - elimination-score-mismatch        (warning) — residual score is 1×1=1
+ *       (near-elimination) but rationale explicitly states risk remains.
+ *   - kpi-threshold-mismatch            (warning) — KPI signal and trigger
+ *       threshold share zero substantive tokens. Threshold likely not aligned
+ *       to the KPI being monitored.
+ *   - capa-severity-mismatch            (critical) — a measurable trigger
+ *       threshold has been defined but the CAPA action is passive / deferred /
+ *       informal. No effective escalation route on threshold breach.
+ *   - ownership-severity-mismatch       (critical) — adjusted severity is
+ *       high (≥ 4) but the owner field names no clinical accountability
+ *       holder. Generic IT/admin/operational ownership is insufficient for
+ *       a high-severity hazard.
+ *
+ * Routing in runValidation mirrors the existing pattern: critical findings
+ * feed safetyCritical (floor concern to High, force "Not governance-ready"),
+ * warning findings feed `improvements`. The same engine output is also
+ * exposed on ValidationResult so the live Step 9 UI can render the
+ * Consistency Findings panel with identical wording.
+ */
+export type ConsistencyFindingKind =
+  | "controls-residual-mismatch"
+  | "weak-controls-low-residual"
+  | "elimination-wording-mismatch"
+  | "elimination-score-mismatch"
+  | "kpi-threshold-mismatch"
+  | "capa-severity-mismatch"
+  | "ownership-severity-mismatch";
+
+export type ConsistencyFindingLevel = "warning" | "critical";
+
+export type ConsistencyFinding = {
+  kind: ConsistencyFindingKind;
+  level: ConsistencyFindingLevel;
+  /** Verbatim user-facing message. Identical between PDF and live UI. */
+  message: string;
+};
+
 export type ValidationResult = {
   status: GovernanceStatus;
   governanceConcern: GovernanceConcern;
@@ -217,6 +271,16 @@ export type ValidationResult = {
    * scenario-accountability chips, and also drives PDF criticals/improvements.
    */
   scenarioExpectations: ScenarioExpectationFinding[];
+  /**
+   * Phase 4B — Logical Consistency findings. Cross-field contradictions or
+   * weak reasoning steps in the user's risk argument (e.g. strong controls
+   * but high residual, eliminated language with non-zero score, KPI / threshold
+   * signal mismatch, CAPA insufficient for a measurable threshold, generic
+   * ownership for a high-severity hazard). Scenario-agnostic — empty when no
+   * inconsistencies are detected. Powers the Step 9 ConsistencyFindingsPanel
+   * and also drives PDF criticals/improvements.
+   */
+  consistencyFindings: ConsistencyFinding[];
   recommendation: Recommendation;
   recommendationNote: string;
   /** Reference values used to compute the governance-adjusted score. */
@@ -965,6 +1029,469 @@ function formatGovernanceIssueForPdf(issue: GovernanceQualityIssue): string {
   return `${fieldLabel}: "${issue.text}" — ${issue.message}`;
 }
 
+/* ------------------------------------------------------------------ */
+/* Logical Consistency Engine (Phase 4B)                               */
+/*                                                                     */
+/* Scenario-AGNOSTIC. Reasons about contradictions in the user's own   */
+/* answers as a coherent risk argument: control strength vs residual   */
+/* score, residual rationale wording vs residual score, KPI vs trigger */
+/* threshold alignment, trigger severity vs CAPA strength, hazard      */
+/* severity vs ownership chain. None of these checks read the scenario */
+/* reference values or any scenario-specific keyword bank — they fire  */
+/* only on internal inconsistencies in the user's draft.               */
+/*                                                                     */
+/* Severity routing (matches Phase 4A pattern):                        */
+/*   - critical findings (weak-controls-low-residual,                  */
+/*     capa-severity-mismatch, ownership-severity-mismatch) feed the   */
+/*     SAFETY-direction critical bucket so they floor governance       */
+/*     concern to High and force "Not governance-ready" status.        */
+/*   - warning findings (controls-residual-mismatch,                   */
+/*     elimination-wording-mismatch, elimination-score-mismatch,       */
+/*     kpi-threshold-mismatch) feed `improvements`.                    */
+/*                                                                     */
+/* Same engine output is exposed on ValidationResult so the Step 9 UI  */
+/* renders identical wording to the PDF.                               */
+/* ------------------------------------------------------------------ */
+
+const CONSISTENCY_LEVELS: Record<ConsistencyFindingKind, ConsistencyFindingLevel> = {
+  "controls-residual-mismatch": "warning",
+  "weak-controls-low-residual": "critical",
+  "elimination-wording-mismatch": "warning",
+  "elimination-score-mismatch": "warning",
+  "kpi-threshold-mismatch": "warning",
+  "capa-severity-mismatch": "critical",
+  "ownership-severity-mismatch": "critical",
+};
+
+// Wording that explicitly states risk has NOT been eliminated. Used as the
+// inverse signal for the elimination-score-mismatch check. Tighter than the
+// existing ELIMINATED_PATTERNS bank to avoid false positives on incidental
+// uses of "still" / "remains" in unrelated rationale wording.
+const NOT_ELIMINATED_PATTERNS: RegExp[] = [
+  /\bnot\s+eliminat(ed|e|ing)\b/i,
+  /\bcannot\s+be\s+eliminat(ed|e|ing)\b/i,
+  /\bcan\s*['']?t\s+be\s+eliminat(ed|e|ing)\b/i,
+  /\brisk\s+remains?\b/i,
+  /\brisk\s+(is\s+)?still\s+(present|there)\b/i,
+  /\bresidual\s+risk\s+remains?\b/i,
+  /\bresidual\s+risk\s+(is\s+)?still\b/i,
+  /\bsome\s+risk\s+remains?\b/i,
+  /\bnever\s+fully\s+(removed|eliminated|prevented)\b/i,
+  /\bnot\s+fully\s+(removed|eliminated|prevented)\b/i,
+];
+
+// Passive / deferred / informal CAPA wording. A trigger threshold that has
+// been defined implies the user knows escalation is needed; matching CAPA
+// against this bank means the proposed action is not a real escalation.
+// Patterns deliberately tight so a legitimate "review at the next monthly
+// CSG meeting" is NOT flagged (specific cadence + named forum).
+const WEAK_CAPA_PATTERNS: RegExp[] = [
+  /\breview\s+later\b/i,
+  /\breview\s+if\s+(needed|required|necessary)\b/i,
+  /\breview\s+as\s+(needed|required|necessary)\b/i,
+  /\bdiscuss\s+internal(ly)?\b/i,
+  /\binformal\s+review\b/i,
+  /\bnote\s+(it\s+)?for\s+later\b/i,
+  /\bconsider\s+action\b/i,
+  /\bmonitor\s+going\s+forward\b/i,
+  /\bcontinue\s+to\s+monitor\b/i,
+  /\bwait\s+and\s+see\b/i,
+  /^\s*(tbd|tbc|to\s+be\s+(defined|determined|confirmed))\s*$/i,
+  /\bif\s+needed\b/i,
+  /\bif\s+required\b/i,
+  /\bas\s+(and\s+when\s+)?required\b/i,
+];
+
+// Stopwords / common units stripped from KPI and threshold token sets before
+// computing overlap. Includes generic measurement nouns that are too common
+// to discriminate (rate / number / percentage / count / level / value),
+// English function words, and threshold-shape words (above / below / over /
+// under / exceeds / breach). Also drops pure numerals at tokenisation time.
+const KPI_THRESHOLD_STOPWORDS: Set<string> = new Set([
+  "a",
+  "an",
+  "the",
+  "of",
+  "in",
+  "on",
+  "at",
+  "by",
+  "for",
+  "to",
+  "from",
+  "with",
+  "without",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "being",
+  "and",
+  "or",
+  "any",
+  "all",
+  "no",
+  "not",
+  "if",
+  "when",
+  "where",
+  "than",
+  "as",
+  "per",
+  "into",
+  "across",
+  "between",
+  "more",
+  "less",
+  "many",
+  "few",
+  "some",
+  "rate",
+  "rates",
+  "number",
+  "numbers",
+  "count",
+  "counts",
+  "percentage",
+  "percent",
+  "percentages",
+  "value",
+  "values",
+  "level",
+  "levels",
+  "amount",
+  "amounts",
+  "total",
+  "totals",
+  "sum",
+  "score",
+  "scores",
+  "metric",
+  "metrics",
+  "measure",
+  "measures",
+  "measured",
+  "ongoing",
+  "above",
+  "below",
+  "over",
+  "under",
+  "exceeds",
+  "exceed",
+  "exceeding",
+  "exceeded",
+  "breach",
+  "breaches",
+  "breached",
+  "threshold",
+  "thresholds",
+  "trigger",
+  "triggers",
+  "triggered",
+  "triggering",
+  "monitor",
+  "monitored",
+  "monitoring",
+  "audit",
+  "audited",
+  "auditing",
+  "sample",
+  "samples",
+  "case",
+  "cases",
+  "month",
+  "months",
+  "monthly",
+  "quarter",
+  "quarters",
+  "quarterly",
+  "year",
+  "years",
+  "yearly",
+  "annually",
+  "annual",
+  "week",
+  "weeks",
+  "weekly",
+  "day",
+  "days",
+  "daily",
+  "rolling",
+  "ongoing",
+  "any",
+  "each",
+  "every",
+  "during",
+  "since",
+  "this",
+  "that",
+  "these",
+  "those",
+  "it",
+  "its",
+  "them",
+  "they",
+  "their",
+]);
+
+/**
+ * Tokenise a free-text field into a Set of substantive lower-cased tokens.
+ * Strips punctuation, digits, and KPI_THRESHOLD_STOPWORDS. Pure numerals are
+ * dropped (so "1%" tokenises to nothing useful and doesn't artificially
+ * inflate overlap). Hyphenated terms split on hyphen so "false-negative" and
+ * "false negative" tokenise identically.
+ */
+function tokeniseSubstantive(text: string): Set<string> {
+  const out = new Set<string>();
+  if (!text) return out;
+  const cleaned = text.toLowerCase().replace(/[‘’‚‛]/g, "'").replace(/[“”„‟]/g, '"');
+  // Split on any non-letter character so hyphens, slashes, punctuation,
+  // digits all separate tokens. This collapses "false-negative" → ["false",
+  // "negative"] and "1%" → [].
+  const tokens = cleaned.split(/[^a-z]+/).filter((t) => t.length > 1);
+  for (const t of tokens) {
+    if (KPI_THRESHOLD_STOPWORDS.has(t)) continue;
+    out.add(t);
+  }
+  return out;
+}
+
+/**
+ * Strength-of-controls signal used by checks 1 and 2. Returns:
+ *   - "strong"  : ≥ 2 non-empty entries across the three buckets AND zero
+ *                 vague/non-control flags from evaluateControlQuality AND no
+ *                 missing-essential-control findings (when the scenario
+ *                 declares essentialControls).
+ *   - "weak"    : ANY non-control flag, OR fewer than 2 entries in total,
+ *                 OR any missing-essential-control finding.
+ *   - "neither" : in between (e.g. exactly 2 entries with one vague but no
+ *                 non-control). Neither check fires — avoids noisy mid-cases.
+ */
+function controlStrengthSignal(args: {
+  scenario: Scenario;
+  preventativeControls: string[];
+  detectiveControls: string[];
+  correctiveControls: string[];
+}): "strong" | "weak" | "neither" {
+  const allEntries = [
+    ...args.preventativeControls,
+    ...args.detectiveControls,
+    ...args.correctiveControls,
+  ].filter((c) => c.trim().length > 0);
+  const controlQuality = evaluateControlQuality(allEntries);
+  const hasNonControl = controlQuality.some((i) => i.level === "non-control");
+  const hasVague = controlQuality.some((i) => i.level === "vague");
+  const missingEssentials = evaluateMissingEssentials({
+    scenario: args.scenario,
+    preventativeControls: args.preventativeControls,
+    detectiveControls: args.detectiveControls,
+    correctiveControls: args.correctiveControls,
+  });
+
+  // Weak: any non-control wording, fewer than 2 entries, or any missing
+  // essential. These are independently sufficient — a single non-control
+  // sinks the lot.
+  if (hasNonControl) return "weak";
+  if (allEntries.length < 2) return "weak";
+  if (missingEssentials.length > 0) return "weak";
+
+  // Strong: at least 2 entries, zero quality issues of either flavour, no
+  // missing essentials.
+  if (!hasVague && allEntries.length >= 2) return "strong";
+
+  // Neither: e.g. 2+ entries, no missing essentials, but at least one vague.
+  // This is a deliberate "no fire" zone to keep the consistency engine quiet
+  // when the situation is ambiguous.
+  return "neither";
+}
+
+/**
+ * Run the Phase 4B Logical Consistency engine. Pure function — does not
+ * read scenario reference values, does not mutate inputs.
+ *
+ * Suppression behaviour (chosen so the panel never spams an empty form):
+ *   - Checks 1 and 2 require BOTH residual likelihood AND at least one
+ *     control entry to have content; on a blank Step 8 / Step 9 the engine
+ *     stays silent.
+ *   - Check 3 (elimination-wording-mismatch) requires residualRationale to
+ *     have content and residualSeverity * residualLikelihood ≥ 1 (any
+ *     non-zero score).
+ *   - Check 3b (elimination-score-mismatch) requires residualSeverity = 1
+ *     AND residualLikelihood = 1 AND a "not eliminated" wording in rationale.
+ *   - Check 4 (kpi-threshold-mismatch) requires both KPI and threshold to
+ *     have content AND each to have ≥ 1 substantive token after stopwording
+ *     (avoids firing on "monitor incidents" + "if needed" where both
+ *     tokenise to empty).
+ *   - Check 5 (capa-severity-mismatch) requires triggerThreshold to have
+ *     content AND CAPA to match a weak pattern. Empty CAPA is handled
+ *     separately by Phase 1 placeholder logic.
+ *   - Check 6 (ownership-severity-mismatch) requires adjustedSeverity ≥ 4
+ *     AND owner field to have content AND no clinical-chain match.
+ */
+export function evaluateLogicalConsistency(args: {
+  scenario: Scenario;
+  preventativeControls: string[];
+  detectiveControls: string[];
+  correctiveControls: string[];
+  residualSeverity: number;
+  residualLikelihood: number;
+  residualRationale: string;
+  monitoringMetric: string;
+  triggerThreshold: string;
+  capa: string;
+  owner: string;
+  adjustedSeverity: number;
+}): ConsistencyFinding[] {
+  const findings: ConsistencyFinding[] = [];
+  const push = (kind: ConsistencyFindingKind, message: string) => {
+    findings.push({ kind, level: CONSISTENCY_LEVELS[kind], message });
+  };
+
+  // ------------------------------------------------------------------
+  // Check 1 / Check 2: control strength vs residual likelihood.
+  // ------------------------------------------------------------------
+  const anyControlEntered =
+    args.preventativeControls.some((c) => c.trim()) ||
+    args.detectiveControls.some((c) => c.trim()) ||
+    args.correctiveControls.some((c) => c.trim());
+  if (anyControlEntered && args.residualLikelihood > 0) {
+    const strength = controlStrengthSignal({
+      scenario: args.scenario,
+      preventativeControls: args.preventativeControls,
+      detectiveControls: args.detectiveControls,
+      correctiveControls: args.correctiveControls,
+    });
+    if (strength === "strong" && args.residualLikelihood >= 4) {
+      push(
+        "controls-residual-mismatch",
+        `Residual likelihood (${args.residualLikelihood}) appears high relative to the strength of controls listed. Reassess controls or justify why risk remains high.`,
+      );
+    }
+    if (strength === "weak" && args.residualLikelihood === 1) {
+      push(
+        "weak-controls-low-residual",
+        `Residual likelihood (1) may be underestimated given missing or weak controls. Reassess residual or strengthen controls before claiming near-elimination.`,
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Check 3: elimination wording mismatch.
+  // Rationale claims zero/eliminated risk but the residual score is
+  // non-zero — pick the stronger phrasing of the two.
+  // ------------------------------------------------------------------
+  const rationale = args.residualRationale.trim();
+  const residualScore =
+    args.residualSeverity > 0 && args.residualLikelihood > 0
+      ? args.residualSeverity * args.residualLikelihood
+      : 0;
+  // The disclaimer "not eliminated" / "cannot be eliminated" / "risk
+  // remains" is a CORRECT acknowledgement that residual risk is non-zero.
+  // ELIMINATED_PATTERNS would otherwise match "eliminated" inside "not
+  // eliminated" and false-positive — we suppress when any disclaimer
+  // pattern also fires.
+  if (
+    rationale &&
+    residualScore > 0 &&
+    anyMatches(rationale, ELIMINATED_PATTERNS) &&
+    !anyMatches(rationale, NOT_ELIMINATED_PATTERNS)
+  ) {
+    push(
+      "elimination-wording-mismatch",
+      `Residual rationale uses elimination or zero-risk language but the residual score is non-zero (${args.residualSeverity}×${args.residualLikelihood}=${residualScore}). Either restate the rationale to acknowledge remaining risk, or reassess the score.`,
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Check 3b: elimination score mismatch.
+  // Score is 1×1=1 (near-elimination by the math) but the rationale
+  // explicitly says risk remains / cannot be eliminated.
+  // ------------------------------------------------------------------
+  if (
+    rationale &&
+    args.residualSeverity === 1 &&
+    args.residualLikelihood === 1 &&
+    anyMatches(rationale, NOT_ELIMINATED_PATTERNS)
+  ) {
+    push(
+      "elimination-score-mismatch",
+      `Residual score (1×1=1) implies near-elimination, but rationale states residual risk remains. Either raise residual to reflect remaining risk, or restate the rationale.`,
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Check 4: KPI / threshold semantic alignment.
+  // Token-overlap heuristic. Stopwords + numerals stripped first so
+  // generic words like "rate" / "monthly" don't artificially inflate
+  // overlap. Fires only when BOTH fields have ≥ 1 substantive token AND
+  // the substantive token sets are disjoint.
+  // ------------------------------------------------------------------
+  const kpiText = args.monitoringMetric.trim();
+  const triggerText = args.triggerThreshold.trim();
+  if (kpiText && triggerText) {
+    const kpiTokens = tokeniseSubstantive(kpiText);
+    const triggerTokens = tokeniseSubstantive(triggerText);
+    if (kpiTokens.size > 0 && triggerTokens.size > 0) {
+      let overlap = 0;
+      for (const t of kpiTokens) {
+        if (triggerTokens.has(t)) overlap++;
+      }
+      if (overlap === 0) {
+        push(
+          "kpi-threshold-mismatch",
+          `Trigger threshold does not appear aligned to the KPI being monitored. The KPI describes one signal but the threshold references different terms. Restate the threshold so it triggers on the KPI being measured.`,
+        );
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Check 5: CAPA insufficient for severity of trigger.
+  // A measurable trigger threshold has been defined (the user is saying
+  // "this is the point at which action is required") but the CAPA is
+  // passive / deferred / informal.
+  // ------------------------------------------------------------------
+  const capaText = args.capa.trim();
+  if (triggerText && capaText && anyMatches(capaText, WEAK_CAPA_PATTERNS)) {
+    push(
+      "capa-severity-mismatch",
+      `Proposed CAPA may be insufficient for the severity of the trigger. A measurable threshold has been defined but the action is passive or deferred. State the specific escalation, decision-maker, and timescale that fire when the threshold is breached.`,
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Check 6: ownership vs hazard severity.
+  // Only fires when adjusted severity is high (≥ 4) AND the owner field
+  // has content but contains no clinical-chain indicator. Generic IT /
+  // operational ownership of a high-severity hazard is a real
+  // consistency failure even when the existing missing-clinical-chain
+  // engine has already fired.
+  // ------------------------------------------------------------------
+  const ownerText = args.owner.trim();
+  if (
+    args.adjustedSeverity >= 4 &&
+    ownerText &&
+    !anyMatches(ownerText, CLINICAL_CHAIN_PATTERNS)
+  ) {
+    push(
+      "ownership-severity-mismatch",
+      `Ownership may not reflect the clinical severity of this hazard (governance-adjusted severity ${args.adjustedSeverity}). A high-severity hazard requires a named clinical owner — Clinical Safety Officer, clinical lead, pathway lead, or named consultant. Generic IT, administrative or operational ownership is insufficient at this severity.`,
+    );
+  }
+
+  return findings;
+}
+
+// PDF / criticalWarnings string for a consistency finding. Engine messages
+// are already complete sentences, so the formatter is just a passthrough —
+// kept as a function for symmetry with formatScenarioExpectationForPdf and
+// formatGovernanceIssueForPdf so any future prefix change is one-line.
+function formatConsistencyFindingForPdf(finding: ConsistencyFinding): string {
+  return finding.message;
+}
+
 export function runValidation(input: ValidationInput): ValidationResult {
   // Two buckets so we can distinguish "the entry is unsafe" criticals from
   // "the entry has integrity issues" criticals. Concern is only floored to
@@ -1246,6 +1773,47 @@ export function runValidation(input: ValidationInput): ValidationResult {
   const adjustedRiskScore = adjustedSeverity * adjustedLikelihood;
   const adjustedRiskBand = bandFor(adjustedRiskScore);
 
+  // Rule 10 (Logical Consistency Engine, Phase 4B). Cross-field contradiction
+  // check. Scenario-AGNOSTIC — this engine reasons about the coherence of the
+  // user's own answers as a single risk argument, NOT against any scenario
+  // reference. Findings are routed by level:
+  //   - critical    → safetyCritical (floors concern to High, forces "Not
+  //                   governance-ready"). Covers weak-controls-low-residual,
+  //                   capa-severity-mismatch, ownership-severity-mismatch.
+  //   - warning     → improvements bucket. Covers controls-residual-mismatch,
+  //                   elimination-wording-mismatch, elimination-score-mismatch,
+  //                   kpi-threshold-mismatch.
+  // Co-existence with existing engines is intentional during the Phase 4B
+  // bedding-in period — Rule 8 (eliminated language for AI triage) and
+  // Rule 7's missing-clinical-chain may both flag wording that this engine
+  // also flags. The double-warn is tolerated; Phase 4B explains the WHY
+  // (logical inconsistency vs. rule-bank match) which the older rules don't.
+  //
+  // Runs AFTER the governance-adjusted scoring block so the ownership check
+  // can compare against the adjusted severity — when a user under-scored a
+  // hazard (e.g. typed Sev 2 for a missed-cancer hazard), the adjusted
+  // severity is the reference (Sev 5), and the consistency engine should
+  // flag generic ownership against the TRUE worst-credible severity, not
+  // the user-typed value.
+  const consistencyFindings = evaluateLogicalConsistency({
+    scenario: input.scenario,
+    preventativeControls: input.preventativeControls,
+    detectiveControls: input.detectiveControls,
+    correctiveControls: input.correctiveControls,
+    residualSeverity: input.residualSeverity,
+    residualLikelihood: input.residualLikelihood,
+    residualRationale: input.residualRationale,
+    monitoringMetric: input.monitoringMetric,
+    triggerThreshold: input.triggerThreshold,
+    capa: input.capa,
+    owner: input.owner,
+    adjustedSeverity,
+  });
+  for (const finding of consistencyFindings) {
+    const target = finding.level === "critical" ? safetyCritical : improvements;
+    target.push(formatConsistencyFindingForPdf(finding));
+  }
+
   // Rule 3 (post-adjustment). Unrealistic residual severity reduction.
   //
   // Compared against the governance-adjusted severity, NOT the user-entered
@@ -1384,6 +1952,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     missingEssentialControls,
     governanceQuality,
     scenarioExpectations: scenarioFindings,
+    consistencyFindings,
     recommendation,
     recommendationNote,
     referenceSeverity: refSeverity,
@@ -1428,6 +1997,9 @@ export function runValidation(input: ValidationInput): ValidationResult {
       adjustedRiskBand,
       scoreAdjustmentDirection,
       concern: result.governanceConcern,
+      consistencyFindings: consistencyFindings.map(
+        (f) => `${f.level}/${f.kind}`,
+      ),
     });
   }
 
