@@ -87,4 +87,69 @@ export type Scenario = {
     detective: KeywordGroup[];
     corrective: KeywordGroup[];
   };
+
+  /**
+   * Phase 4A — Scenario-Aware Intelligence.
+   *
+   * Richer, scenario-specific expectations covering the full hazard lifecycle:
+   * controls (preventative / detective / corrective), monitoring (KPI /
+   * trigger threshold / review cadence) and accountability (required clinical
+   * roles plus acceptable owner phrasings). Drives the
+   * `evaluateScenarioExpectations` engine, which surfaces missing items in
+   * Step 8 and Step 9 and routes them into governance scoring.
+   *
+   * Each sub-section is independently optional so a scenario can adopt the
+   * pattern incrementally — e.g. declare expectedControls without yet
+   * declaring expectedMonitoring. Sections that aren't declared are treated
+   * as a no-op for the engine.
+   *
+   * NOTE: this co-exists with `essentialControls` for now. essentialControls
+   * is the simpler "minimum-bar" engine introduced in Phase 2.2; the richer
+   * Phase 4A engine reads scenarioExpectations.expectedControls and may
+   * eventually subsume it. Keep both populated for the cancer scenario until
+   * the migration is verified end-to-end.
+   *
+   * Naming: this field uses the British "preventative" spelling for
+   * consistency with the rest of the codebase (essentialControls.preventative,
+   * feedback.controls.preventative, ControlType "preventative"). The Phase 4A
+   * brief used the American "preventive" — they are interchangeable.
+   */
+  scenarioExpectations?: ScenarioExpectations;
+};
+
+/**
+ * Phase 4A scenario expectation block. Each sub-section is independently
+ * optional so a scenario can declare any subset.
+ *
+ * Routing of findings (handled in the engine, not the schema):
+ *   - expectedControls.*           → safety-direction critical
+ *   - expectedMonitoring.kpis      → improvement (warning level)
+ *   - expectedMonitoring.triggerThresholds → safety-direction critical
+ *   - expectedMonitoring.reviewCadence     → improvement (warning level)
+ *   - expectedAccountability.requiredRoles → safety-direction critical
+ *
+ * acceptableOwnerPatterns is an OPTIONAL set of alternative phrasings that
+ * count as satisfying the clinical accountability chain. When ANY of these
+ * patterns is present in the owner field, the missing-required-role findings
+ * are suppressed entirely — useful when a scenario considers e.g. "Caldicott
+ * Guardian" or "Senior Oncologist" as acceptable substitutes for one of the
+ * named requiredRoles. Strings are matched case-insensitively as substrings,
+ * with word-boundary checks, mirroring the existing keywordGroupCovered
+ * helper.
+ */
+export type ScenarioExpectations = {
+  expectedControls?: {
+    preventative: KeywordGroup[];
+    detective: KeywordGroup[];
+    corrective: KeywordGroup[];
+  };
+  expectedMonitoring?: {
+    kpis: KeywordGroup[];
+    triggerThresholds: KeywordGroup[];
+    reviewCadence: KeywordGroup[];
+  };
+  expectedAccountability?: {
+    requiredRoles: KeywordGroup[];
+    acceptableOwnerPatterns?: string[];
+  };
 };

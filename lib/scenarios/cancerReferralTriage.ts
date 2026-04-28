@@ -350,4 +350,287 @@ export const cancerReferralTriage: Scenario = {
       },
     ],
   },
+
+  // Phase 4A scenario expectations. Richer than essentialControls: covers
+  // the full hazard lifecycle (controls + monitoring + accountability) so
+  // governance feedback adapts to what THIS scenario specifically requires.
+  // The eight controls in the Phase 4A brief are split across the three
+  // ControlType buckets according to their actual function: preventative
+  // controls stop the hazard before it occurs (red-flag escalation, urgent
+  // pathway protection, clinician review before downgrade), detective
+  // controls catch it after the fact (downgrade audit, false-negative
+  // monitoring), and corrective controls limit harm and feed learning back
+  // (override pathway, pause/disable threshold, supplier escalation /
+  // retraining).
+  scenarioExpectations: {
+    expectedControls: {
+      preventative: [
+        {
+          label: "rule-based red-flag escalation",
+          any: [
+            "red flag",
+            "red-flag",
+            "escalation rule",
+            "rule-based escalation",
+            "rule based escalation",
+            "deterministic rule",
+            "hard rule",
+            "explicit rule",
+            "guideline-based",
+            "criteria-based",
+            "trigger rule",
+            "auto-escalate",
+            "auto escalate",
+            "automatic escalation",
+          ],
+        },
+        {
+          label: "urgent pathway protection (no AI downgrade)",
+          any: [
+            "urgent pathway",
+            "two-week wait",
+            "two week wait",
+            "2ww",
+            "two-week pathway",
+            "2-week pathway",
+            "protect urgent",
+            "preserve urgent",
+            "no downgrade from urgent",
+            "block downgrade from urgent",
+            "block downgrade",
+            "prevent downgrade",
+            "default to urgent",
+            "fail safe to urgent",
+            "fail-safe to urgent",
+            "urgent by default",
+          ],
+        },
+        {
+          label: "clinician review before downgrade",
+          any: [
+            "human review",
+            "clinical review",
+            "clinician review",
+            "manual review",
+            "mandatory review",
+            "review before downgrade",
+            "review prior to downgrade",
+            "second opinion",
+            "two-clinician",
+            "two clinician",
+            "double check",
+            "double-check",
+            "human-in-the-loop",
+            "human in the loop",
+          ],
+        },
+      ],
+      detective: [
+        {
+          label: "downgrade audit",
+          any: [
+            "downgrade audit",
+            "audit of downgrade",
+            "audit downgrade",
+            "downgrade review",
+            "audit sample",
+            "audit of routine",
+            "review of routine",
+            "routine ranked",
+            "spot check",
+            "case review",
+          ],
+        },
+        {
+          label: "false-negative monitoring",
+          any: [
+            "false negative",
+            "false-negative",
+            "false neg",
+            "missed case",
+            "missed cases",
+            "miss rate",
+            "missed diagnosis",
+            "sensitivity monitoring",
+            "outcome tracking",
+            "downstream outcome",
+            "downstream outcomes",
+          ],
+        },
+      ],
+      corrective: [
+        {
+          label: "clinician override pathway",
+          any: [
+            "override",
+            "manual override",
+            "clinician override",
+            "override pathway",
+            "clinician escalation route",
+            "manual escalation",
+            "override mechanism",
+          ],
+        },
+        {
+          label: "pause / disable threshold",
+          any: [
+            "pause model",
+            "pause the model",
+            "disable model",
+            "disable the model",
+            "rollback",
+            "roll back",
+            "kill switch",
+            "withdraw model",
+            "deactivate model",
+            "shut down model",
+            "switch off model",
+            "freeze deployment",
+            "decommission",
+            "stop using",
+            "remove from production",
+            "take offline",
+          ],
+        },
+        {
+          label: "supplier escalation / retraining process",
+          any: [
+            "supplier escalation",
+            "vendor escalation",
+            "supplier notification",
+            "vendor notification",
+            "manufacturer notification",
+            "notify supplier",
+            "notify vendor",
+            "notify manufacturer",
+            "retrain",
+            "retraining",
+            "model update",
+            "model retrain",
+            "post-market surveillance",
+            "post market surveillance",
+            "pms",
+          ],
+        },
+      ],
+    },
+    expectedMonitoring: {
+      kpis: [
+        {
+          label: "false-negative rate in routine / downgraded referrals",
+          any: [
+            "false negative",
+            "false-negative",
+            "false neg",
+            "miss rate",
+            "missed case",
+            "missed cases",
+            "missed diagnosis",
+            "downgrade rate",
+            "sensitivity",
+            "downstream outcome",
+            "downstream outcomes",
+          ],
+        },
+        {
+          label: "confirmed delayed cancer diagnosis after AI downgrade",
+          any: [
+            "delayed diagnosis",
+            "delayed cancer",
+            "confirmed delayed",
+            "missed cancer",
+            "missed diagnosis",
+            "delayed treatment",
+            "late diagnosis",
+            "harm event",
+            "patient harm",
+            "serious incident",
+          ],
+        },
+      ],
+      triggerThresholds: [
+        {
+          label: "measurable false-negative or downgrade rate threshold",
+          any: [
+            "false negative",
+            "false-negative",
+            "miss rate",
+            "downgrade rate",
+            "rate above",
+            "rate exceeds",
+            ">",
+            "greater than",
+            "more than",
+            "threshold",
+            "%",
+            "per month",
+            "per quarter",
+            "rolling",
+          ],
+        },
+      ],
+      reviewCadence: [
+        {
+          label: "monthly or quarterly cadence",
+          any: [
+            "month",
+            "monthly",
+            "quarter",
+            "quarterly",
+            "every month",
+            "every quarter",
+            "every three months",
+            "every 3 months",
+            "every 30 days",
+            "every 90 days",
+            "csg",
+            "clinical safety group",
+          ],
+        },
+      ],
+    },
+    expectedAccountability: {
+      requiredRoles: [
+        {
+          label: "Clinical Safety Officer",
+          any: [
+            "clinical safety officer",
+            "cso",
+            "cs officer",
+            "clinical safety lead",
+          ],
+        },
+        {
+          label: "Cancer Pathway Clinical Lead",
+          any: [
+            "cancer pathway clinical lead",
+            "cancer pathway lead",
+            "pathway clinical lead",
+            "pathway lead",
+            "cancer lead",
+            "cancer clinical lead",
+            "tumour pathway lead",
+            "tumor pathway lead",
+          ],
+        },
+        {
+          label: "Product Owner / AI Owner",
+          any: [
+            "product owner",
+            "ai product owner",
+            "ai owner",
+            "model owner",
+            "system owner",
+            "supplier safety case owner",
+          ],
+        },
+      ],
+      // Reserved phrasings that count as satisfying the chain even if a
+      // listed required role isn't named verbatim. Empty for now; can be
+      // expanded as scenarios accumulate alternative legitimate ownership
+      // patterns. Suppression rule: when ANY entry below appears in the
+      // owner field, ALL missing-required-role findings are suppressed.
+      acceptableOwnerPatterns: [],
+    },
+  },
 };

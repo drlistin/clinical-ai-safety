@@ -25,8 +25,10 @@ import {
   evaluateControlQuality,
   evaluateGovernanceQuality,
   evaluateMissingEssentials,
+  evaluateScenarioExpectations,
   runValidation,
   type GovernanceQualityIssue,
+  type ScenarioExpectationFinding,
 } from "./validation";
 
 /* ------------------------------------------------------------------ */
@@ -666,6 +668,7 @@ export default function HazardLogSimulator({
         )}
         {step === 9 && (
           <ResidualStep
+            scenario={scenario}
             answers={answers}
             initialRisk={initialRisk}
             initialBand={initialBand}
@@ -1321,6 +1324,149 @@ function ControlsStep({
       </section>
 
       <MissingEssentialsPanel scenario={scenario} answers={answers} />
+      <ScenarioControlsPanel scenario={scenario} answers={answers} />
+    </div>
+  );
+}
+
+/**
+ * Phase 4A — live scenario-aware control expectations panel. Mirrors the
+ * MissingEssentialsPanel pattern but reads `scenarioExpectations.expectedControls`
+ * instead of `essentialControls`. Both panels co-exist during the bedding-in
+ * period; once the migration is verified end-to-end, essentialControls can be
+ * removed and this panel can stand alone.
+ *
+ * Hidden when:
+ *   - the scenario doesn't declare scenarioExpectations.expectedControls
+ *   - the user hasn't typed anything in any of the six control textareas yet
+ *   - every expected control is covered (no findings of kind
+ *     "missing-expected-control")
+ */
+function ScenarioControlsPanel({
+  scenario,
+  answers,
+}: {
+  scenario: Scenario;
+  answers: Answers;
+}) {
+  const userHasTypedAnything = useMemo(
+    () =>
+      [
+        answers.existingPreventative,
+        answers.existingDetective,
+        answers.existingCorrective,
+        answers.proposedPreventative,
+        answers.proposedDetective,
+        answers.proposedCorrective,
+      ].some((s) => s.trim().length > 0),
+    [
+      answers.existingPreventative,
+      answers.existingDetective,
+      answers.existingCorrective,
+      answers.proposedPreventative,
+      answers.proposedDetective,
+      answers.proposedCorrective,
+    ],
+  );
+
+  const findings = useMemo(() => {
+    const preventative = [
+      ...splitLines(answers.existingPreventative),
+      ...splitLines(answers.proposedPreventative),
+    ];
+    const detective = [
+      ...splitLines(answers.existingDetective),
+      ...splitLines(answers.proposedDetective),
+    ];
+    const corrective = [
+      ...splitLines(answers.existingCorrective),
+      ...splitLines(answers.proposedCorrective),
+    ];
+    return evaluateScenarioExpectations({
+      scenario,
+      preventativeControls: preventative,
+      detectiveControls: detective,
+      correctiveControls: corrective,
+      // Pass empty Step 9 inputs so this panel only ever surfaces control
+      // findings — Step 9-related scenario expectations are rendered by the
+      // ResidualStep panel, not here.
+      monitoringMetric: "",
+      triggerThreshold: "",
+      reviewFrequency: "",
+      owner: "",
+    }).filter((f) => f.kind === "missing-expected-control");
+  }, [
+    scenario,
+    answers.existingPreventative,
+    answers.existingDetective,
+    answers.existingCorrective,
+    answers.proposedPreventative,
+    answers.proposedDetective,
+    answers.proposedCorrective,
+  ]);
+
+  if (!scenario.scenarioExpectations?.expectedControls) return null;
+  if (!userHasTypedAnything) return null;
+  if (findings.length === 0) return null;
+
+  const grouped: Record<
+    "preventative" | "detective" | "corrective",
+    ScenarioExpectationFinding[]
+  > = {
+    preventative: findings.filter((f) => f.controlType === "preventative"),
+    detective: findings.filter((f) => f.controlType === "detective"),
+    corrective: findings.filter((f) => f.controlType === "corrective"),
+  };
+
+  const sections: Array<{
+    key: "preventative" | "detective" | "corrective";
+    title: string;
+  }> = [
+    { key: "preventative", title: "Scenario expects (preventative)" },
+    { key: "detective", title: "Scenario expects (detective)" },
+    { key: "corrective", title: "Scenario expects (corrective)" },
+  ];
+
+  return (
+    <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-5">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800">
+          Critical
+        </span>
+        <h5 className="text-sm font-semibold text-rose-900">
+          Scenario-specific controls are missing
+        </h5>
+      </div>
+      <p className="mt-1.5 text-xs text-rose-800">
+        These items are expected by this scenario&apos;s safety case. Add a
+        matching control above (in the correct category) to clear the finding.
+      </p>
+      <div className="mt-4 space-y-4">
+        {sections.map((s) => {
+          const items = grouped[s.key];
+          if (items.length === 0) return null;
+          return (
+            <div key={s.key}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
+                {s.title}
+              </p>
+              <ul className="mt-1.5 space-y-1.5">
+                {items.map((f) => (
+                  <li
+                    key={`scenario-${s.key}-${f.label}`}
+                    className="rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
+                  >
+                    <span className="font-semibold">&ldquo;{f.label}&rdquo;</span>
+                    <p className="mt-1 text-[11px] text-rose-800">
+                      {f.message}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1548,6 +1694,7 @@ function ControlField({
 }
 
 function ResidualStep({
+  scenario,
   answers,
   initialRisk,
   initialBand,
@@ -1555,6 +1702,7 @@ function ResidualStep({
   residualBand,
   onChange,
 }: {
+  scenario: Scenario;
   answers: Answers;
   initialRisk: number | null;
   initialBand: RiskBand | null;
@@ -1595,6 +1743,47 @@ function ResidualStep({
       owner: governanceIssues.filter((i) => i.field === "owner"),
     }),
     [governanceIssues],
+  );
+
+  // Phase 4A scenario-aware findings for Step 9 inputs. We pass empty
+  // control arrays so this engine call ONLY surfaces monitoring +
+  // accountability findings — the Step 8 panel handles control findings.
+  const scenarioFindings = useMemo(
+    () =>
+      evaluateScenarioExpectations({
+        scenario,
+        preventativeControls: [],
+        detectiveControls: [],
+        correctiveControls: [],
+        monitoringMetric: answers.monitoringMetric,
+        triggerThreshold: answers.triggerThreshold,
+        reviewFrequency: answers.reviewFrequency,
+        owner: answers.owner,
+      }),
+    [
+      scenario,
+      answers.monitoringMetric,
+      answers.triggerThreshold,
+      answers.reviewFrequency,
+      answers.owner,
+    ],
+  );
+  const scenarioFindingsByField = useMemo(
+    () => ({
+      "monitoring-metric": scenarioFindings.filter(
+        (f) => f.kind === "missing-expected-kpi",
+      ),
+      "trigger-threshold": scenarioFindings.filter(
+        (f) => f.kind === "missing-expected-trigger-threshold",
+      ),
+      "review-cadence": scenarioFindings.filter(
+        (f) => f.kind === "missing-expected-review-cadence",
+      ),
+      owner: scenarioFindings.filter(
+        (f) => f.kind === "missing-required-role",
+      ),
+    }),
+    [scenarioFindings],
   );
 
   return (
@@ -1685,6 +1874,9 @@ function ResidualStep({
             placeholder="e.g. False-negative rate on routine-ranked cases (audit sample)."
           />
           <GovernanceIssueChips issues={issuesByField["monitoring-metric"]} />
+          <ScenarioExpectationChips
+            findings={scenarioFindingsByField["monitoring-metric"]}
+          />
         </FieldShell>
 
         <FieldShell
@@ -1699,6 +1891,9 @@ function ResidualStep({
             placeholder="e.g. Any confirmed delayed cancer diagnosis where AI assigned routine, or false-negative rate above 1%."
           />
           <GovernanceIssueChips issues={issuesByField["trigger-threshold"]} />
+          <ScenarioExpectationChips
+            findings={scenarioFindingsByField["trigger-threshold"]}
+          />
         </FieldShell>
 
         <FieldShell
@@ -1713,6 +1908,9 @@ function ResidualStep({
             placeholder="e.g. Quarterly, or sooner if trigger fires."
           />
           <GovernanceIssueChips issues={issuesByField["review-cadence"]} />
+          <ScenarioExpectationChips
+            findings={scenarioFindingsByField["review-cadence"]}
+          />
         </FieldShell>
 
         <FieldShell
@@ -1794,6 +1992,9 @@ function ResidualStep({
             placeholder="e.g. Clinical Safety Officer, supported by cancer pathway clinical lead and AI product owner."
           />
           <GovernanceIssueChips issues={issuesByField.owner} />
+          <ScenarioExpectationChips
+            findings={scenarioFindingsByField.owner}
+          />
         </FieldShell>
       </section>
     </div>
@@ -1810,6 +2011,52 @@ function ResidualStep({
  * surfaces consume the same engine output - any wording change is made
  * once, in validation.ts, and propagates everywhere.
  */
+/**
+ * Phase 4A scenario-aware chips. Renders one chip per finding beneath the
+ * matching Step 9 input (KPI / threshold / cadence / owner). Critical-level
+ * findings use rose styling (matching the Phase 3 critical chips and the
+ * Step 8 missing-expected-control panel). Improvement-level findings use
+ * amber styling. Renders nothing when the array is empty.
+ *
+ * The chip wording is identical to what the PDF surfaces because both
+ * surfaces consume `evaluateScenarioExpectations` — any wording change is
+ * made once, in validation.ts, and propagates everywhere.
+ */
+function ScenarioExpectationChips({
+  findings,
+}: {
+  findings: ScenarioExpectationFinding[];
+}) {
+  if (findings.length === 0) return null;
+  return (
+    <ul className="mt-2 space-y-1.5">
+      {findings.map((finding, i) => {
+        const isCritical = finding.level === "critical";
+        const chipClass = isCritical
+          ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
+          : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
+        const labelClass = isCritical
+          ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
+          : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+        return (
+          <li
+            key={`${finding.kind}-${i}-${finding.label}`}
+            className={chipClass}
+          >
+            <div className="flex items-center gap-2">
+              <span className={labelClass}>
+                {isCritical ? "Scenario expects" : "Scenario suggests"}
+              </span>
+              <span className="font-semibold">&ldquo;{finding.label}&rdquo;</span>
+            </div>
+            <p className="mt-1">{finding.message}</p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) {
   if (issues.length === 0) return null;
   return (

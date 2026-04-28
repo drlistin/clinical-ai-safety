@@ -27,7 +27,11 @@ import type {
   GovernanceStatus,
   Recommendation,
 } from "./pdf/types";
-import type { KeywordGroup, Scenario } from "@/lib/scenarios/types";
+import type {
+  KeywordGroup,
+  Scenario,
+  ScenarioExpectations,
+} from "@/lib/scenarios/types";
 
 export type ValidationInput = {
   scenario: Scenario;
@@ -132,6 +136,56 @@ export type GovernanceQualityIssue = {
   message: string;
 };
 
+/**
+ * Phase 4A — Scenario-Aware Intelligence engine output.
+ *
+ * Per-expectation findings produced by `evaluateScenarioExpectations`. Each
+ * finding represents one declared expectation in `scenario.scenarioExpectations`
+ * that wasn't satisfied by the user's entries in Step 8 / Step 9.
+ *
+ * Finding kinds:
+ *   - missing-expected-control            (critical)    – an expected
+ *       preventative/detective/corrective control wasn't covered in the
+ *       matching ControlType bucket. `controlType` is set on the finding.
+ *   - missing-expected-kpi                (improvement) – the monitoring
+ *       metric / KPI field has content but doesn't match an expected metric
+ *       (e.g. false-negative rate, confirmed delayed cancer).
+ *   - missing-expected-trigger-threshold  (critical)    – the trigger
+ *       threshold field has content but doesn't match a measurable expected
+ *       threshold pattern.
+ *   - missing-expected-review-cadence     (improvement) – the review cadence
+ *       field has content but doesn't match an expected cadence (monthly /
+ *       quarterly / CSG meeting).
+ *   - missing-required-role               (critical)    – the owner field
+ *       has content but doesn't name one of the scenario's required clinical
+ *       roles. Suppressed per-finding when `acceptableOwnerPatterns` matches.
+ *
+ * Routing in runValidation mirrors the existing pattern: critical findings
+ * feed safetyCritical (floor concern to High, force "Not governance-ready"),
+ * improvement findings feed `improvements`. The same engine output is also
+ * exposed on ValidationResult so the live UI in Step 8 / Step 9 can render
+ * panels with identical wording.
+ */
+export type ScenarioExpectationLevel = "critical" | "improvement";
+
+export type ScenarioExpectationKind =
+  | "missing-expected-control"
+  | "missing-expected-kpi"
+  | "missing-expected-trigger-threshold"
+  | "missing-expected-review-cadence"
+  | "missing-required-role";
+
+export type ScenarioExpectationFinding = {
+  kind: ScenarioExpectationKind;
+  level: ScenarioExpectationLevel;
+  /** Human-readable label of the missing expectation (KeywordGroup.label). */
+  label: string;
+  /** Set ONLY for missing-expected-control. Identifies which bucket. */
+  controlType?: ControlType;
+  /** Verbatim user-facing message. Identical between PDF and live UI. */
+  message: string;
+};
+
 export type ValidationResult = {
   status: GovernanceStatus;
   governanceConcern: GovernanceConcern;
@@ -154,6 +208,15 @@ export type ValidationResult = {
    * issues. Same engine output also drives PDF criticals/improvements.
    */
   governanceQuality: GovernanceQualityIssue[];
+  /**
+   * Phase 4A — Scenario-Aware Intelligence findings. One entry per declared
+   * scenario expectation (control / monitoring / accountability) that wasn't
+   * satisfied by the user's entries. Empty when the scenario does not declare
+   * scenarioExpectations, or when every declared expectation is covered.
+   * Powers the Step 8 ScenarioControlsPanel and Step 9 scenario-monitoring /
+   * scenario-accountability chips, and also drives PDF criticals/improvements.
+   */
+  scenarioExpectations: ScenarioExpectationFinding[];
   recommendation: Recommendation;
   recommendationNote: string;
   /** Reference values used to compute the governance-adjusted score. */
@@ -571,6 +634,211 @@ export function evaluateGovernanceQuality(args: {
   return issues;
 }
 
+/* ------------------------------------------------------------------ */
+/* Scenario-Aware Intelligence Engine (Phase 4A)                       */
+/*                                                                     */
+/* Reads scenario.scenarioExpectations and reports per-expectation     */
+/* misses across controls (Step 8), monitoring (Step 9 KPI / threshold */
+/* / cadence) and accountability (Step 9 owner). Scenario-driven by    */
+/* design — scenarios that don't declare scenarioExpectations get no   */
+/* findings (engine is a no-op), so the existing scenario-agnostic     */
+/* engines remain the only signal in that case.                        */
+/*                                                                     */
+/* Suppression rules (chosen to avoid spamming an empty form):         */
+/*   - expectedControls.*: only run when the user has typed at least   */
+/*     one non-empty control across all six textareas.                 */
+/*   - expectedMonitoring.kpis: only run when monitoringMetric has     */
+/*     content; empty fields are handled by Phase 1 placeholder logic. */
+/*   - expectedMonitoring.triggerThresholds: only when triggerThreshold*/
+/*     has content (Phase 3 weak-trigger covers the empty case).       */
+/*   - expectedMonitoring.reviewCadence: only when reviewFrequency has */
+/*     content.                                                        */
+/*   - expectedAccountability.requiredRoles: only when owner has       */
+/*     content (Phase 1 empty-owner critical covers the empty case).   */
+/*     If acceptableOwnerPatterns matches the owner field, ALL         */
+/*     missing-required-role findings are suppressed.                  */
+/* ------------------------------------------------------------------ */
+
+const SCENARIO_EXPECTATION_LEVELS: Record<ScenarioExpectationKind, ScenarioExpectationLevel> = {
+  "missing-expected-control": "critical",
+  "missing-expected-kpi": "improvement",
+  "missing-expected-trigger-threshold": "critical",
+  "missing-expected-review-cadence": "improvement",
+  "missing-required-role": "critical",
+};
+
+/** Phrasing per finding kind. Composed with the expectation label. */
+function scenarioExpectationMessage(
+  kind: ScenarioExpectationKind,
+  label: string,
+  controlType?: ControlType,
+): string {
+  switch (kind) {
+    case "missing-expected-control": {
+      const ct = controlType ?? "preventative";
+      const tail =
+        ct === "preventative"
+          ? "Add an upstream barrier in the preventative bucket — this scenario expects it as part of safe deployment."
+          : ct === "detective"
+            ? "Add a matching detective control — without it you cannot prove the system is operating safely after go-live for this scenario."
+            : "Add a matching corrective control — this scenario expects a defined route to act when the system fails or drifts.";
+      return `Expected ${ct} control for this scenario appears to be missing: "${label}". ${tail}`;
+    }
+    case "missing-expected-kpi":
+      return `Expected monitoring metric for this scenario is not reflected in the KPI: "${label}". Add or restate the KPI so this signal is being measured on an ongoing basis.`;
+    case "missing-expected-trigger-threshold":
+      return `Expected trigger threshold for this scenario is not reflected: "${label}". Specify a measurable threshold tied to this signal so escalation can be tested after the fact.`;
+    case "missing-expected-review-cadence":
+      return `Expected review cadence for this scenario is not reflected: "${label}". State a defined interval (e.g. monthly or quarterly Clinical Safety Group review).`;
+    case "missing-required-role":
+      return `Required clinical role for this scenario is not named in ownership: "${label}". Clinical accountability is incomplete without it.`;
+  }
+}
+
+/**
+ * Run the Phase 4A Scenario-Aware Intelligence engine.
+ *
+ * Pure function — empty inputs are tolerated and skipped per-section. Returns
+ * [] when the scenario doesn't declare any scenarioExpectations. The same
+ * engine is consumed by:
+ *   1. runValidation — feeds criticalWarnings / requiredImprovements so the
+ *      PDF and governance status reflect scenario-aware findings.
+ *   2. Step 8 ScenarioControlsPanel — live missing-expected-control panel
+ *      mirroring the existing MissingEssentialsPanel.
+ *   3. Step 9 chips — live missing-expected-kpi / threshold / cadence /
+ *      required-role chips beneath the matching input.
+ */
+export function evaluateScenarioExpectations(args: {
+  scenario: Scenario;
+  preventativeControls: string[];
+  detectiveControls: string[];
+  correctiveControls: string[];
+  monitoringMetric: string;
+  triggerThreshold: string;
+  reviewFrequency: string;
+  owner: string;
+}): ScenarioExpectationFinding[] {
+  const expectations: ScenarioExpectations | undefined =
+    args.scenario.scenarioExpectations;
+  if (!expectations) return [];
+
+  const findings: ScenarioExpectationFinding[] = [];
+  const push = (
+    kind: ScenarioExpectationKind,
+    label: string,
+    controlType?: ControlType,
+  ) => {
+    findings.push({
+      kind,
+      level: SCENARIO_EXPECTATION_LEVELS[kind],
+      label,
+      ...(controlType ? { controlType } : {}),
+      message: scenarioExpectationMessage(kind, label, controlType),
+    });
+  };
+
+  // --- expectedControls ---------------------------------------------------
+  // Suppression: only run when at least one control has been entered across
+  // any of the three buckets, so the panel doesn't fire on a blank form.
+  if (expectations.expectedControls) {
+    const anyControl =
+      args.preventativeControls.some((c) => c.trim()) ||
+      args.detectiveControls.some((c) => c.trim()) ||
+      args.correctiveControls.some((c) => c.trim());
+    if (anyControl) {
+      const checkBucket = (
+        userEntries: string[],
+        groups: KeywordGroup[],
+        ct: ControlType,
+      ) => {
+        const joined = userEntries.map((c) => c.toLowerCase()).join(" \n ");
+        for (const group of groups) {
+          if (keywordGroupCovered(group, joined)) continue;
+          push("missing-expected-control", group.label, ct);
+        }
+      };
+      checkBucket(
+        args.preventativeControls,
+        expectations.expectedControls.preventative,
+        "preventative",
+      );
+      checkBucket(
+        args.detectiveControls,
+        expectations.expectedControls.detective,
+        "detective",
+      );
+      checkBucket(
+        args.correctiveControls,
+        expectations.expectedControls.corrective,
+        "corrective",
+      );
+    }
+  }
+
+  // --- expectedMonitoring -------------------------------------------------
+  // Per-field suppression. Empty fields are covered by Phase 1 placeholder
+  // logic and Phase 3's vague-* warnings, so we only fire when the user has
+  // typed something but it doesn't match the expected pattern.
+  if (expectations.expectedMonitoring) {
+    const kpiText = args.monitoringMetric.trim().toLowerCase();
+    if (kpiText) {
+      for (const group of expectations.expectedMonitoring.kpis) {
+        if (keywordGroupCovered(group, kpiText)) continue;
+        push("missing-expected-kpi", group.label);
+      }
+    }
+    const triggerText = args.triggerThreshold.trim().toLowerCase();
+    if (triggerText) {
+      for (const group of expectations.expectedMonitoring.triggerThresholds) {
+        if (keywordGroupCovered(group, triggerText)) continue;
+        push("missing-expected-trigger-threshold", group.label);
+      }
+    }
+    const cadenceText = args.reviewFrequency.trim().toLowerCase();
+    if (cadenceText) {
+      for (const group of expectations.expectedMonitoring.reviewCadence) {
+        if (keywordGroupCovered(group, cadenceText)) continue;
+        push("missing-expected-review-cadence", group.label);
+      }
+    }
+  }
+
+  // --- expectedAccountability --------------------------------------------
+  // Suppression order: empty owner is handled by Phase 1 Rule 7 (separate
+  // critical). When acceptableOwnerPatterns matches anywhere in the owner
+  // field, ALL required-role findings for THIS scenario are suppressed —
+  // useful when a scenario considers e.g. "Caldicott Guardian" or another
+  // pre-approved phrasing as a full chain substitute.
+  if (expectations.expectedAccountability) {
+    const ownerText = args.owner.trim().toLowerCase();
+    if (ownerText) {
+      const acceptable =
+        expectations.expectedAccountability.acceptableOwnerPatterns ?? [];
+      const acceptableMatched = acceptable.some((pat) => {
+        const needle = pat.toLowerCase().trim();
+        return needle.length > 0 && ownerText.includes(needle);
+      });
+      if (!acceptableMatched) {
+        for (const group of expectations.expectedAccountability.requiredRoles) {
+          if (keywordGroupCovered(group, ownerText)) continue;
+          push("missing-required-role", group.label);
+        }
+      }
+    }
+  }
+
+  return findings;
+}
+
+// PDF / criticalWarnings string for a scenario-expectation finding. Includes
+// the kind so reviewers reading Page 1 know which class of expectation was
+// missed without having to cross-reference Step 8 / Step 9.
+function formatScenarioExpectationForPdf(
+  finding: ScenarioExpectationFinding,
+): string {
+  return finding.message;
+}
+
 // Phrases that indicate a weak monitoring or CAPA approach.
 const WEAK_MONITORING_PATTERNS = [
   /no\s+issues\s+reported/i,
@@ -906,6 +1174,35 @@ export function runValidation(input: ValidationInput): ValidationResult {
     );
   }
 
+  // Rule 9 (Scenario-Aware Intelligence Engine, Phase 4A). Scenario-driven
+  // expectation check across controls, monitoring and accountability. Misses
+  // are routed by level:
+  //   - critical  → safetyCritical (floors concern to High, forces "Not
+  //                 governance-ready"). Covers expectedControls.*,
+  //                 expectedMonitoring.triggerThresholds and
+  //                 expectedAccountability.requiredRoles.
+  //   - improvement → improvements bucket. Covers expectedMonitoring.kpis
+  //                 and expectedMonitoring.reviewCadence.
+  // The engine is a no-op for scenarios that don't declare
+  // scenarioExpectations, so existing behaviour is preserved for them.
+  // Co-existence with essentialControls is intentional during the Phase 4A
+  // bedding-in period — both engines may flag the same control, which is a
+  // tolerable double-warn until the migration is verified end-to-end.
+  const scenarioFindings = evaluateScenarioExpectations({
+    scenario: input.scenario,
+    preventativeControls: input.preventativeControls,
+    detectiveControls: input.detectiveControls,
+    correctiveControls: input.correctiveControls,
+    monitoringMetric: input.monitoringMetric,
+    triggerThreshold: input.triggerThreshold,
+    reviewFrequency: input.reviewFrequency,
+    owner: input.owner,
+  });
+  for (const finding of scenarioFindings) {
+    const target = finding.level === "critical" ? safetyCritical : improvements;
+    target.push(formatScenarioExpectationForPdf(finding));
+  }
+
   // Governance-adjusted scoring (bidirectional). When the user under-scored
   // a dimension we adopt the scenario reference; when they over-scored it
   // we adopt the inferred ceiling implied by the described hazard text.
@@ -1064,6 +1361,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     controlQuality,
     missingEssentialControls,
     governanceQuality,
+    scenarioExpectations: scenarioFindings,
     recommendation,
     recommendationNote,
     referenceSeverity: refSeverity,
