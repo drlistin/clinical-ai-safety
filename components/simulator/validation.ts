@@ -90,6 +90,48 @@ export type MissingEssentialControl = {
   message: string;
 };
 
+/**
+ * Governance & Monitoring Engine output. Per-field classification of the
+ * Step 9 "Monitoring and governance" + ownership inputs. Surfaced both
+ * through criticalWarnings/requiredImprovements (PDF + governance scoring)
+ * and as a structured field on ValidationResult so the Step 9 UI can render
+ * live per-field feedback without re-implementing the regex banks.
+ *
+ * Five rule branches:
+ *   1. vague-kpi              (warning) - monitoringMetric is non-measurable
+ *   2. weak-trigger           (critical) - triggerThreshold is non-actionable
+ *   3. vague-cadence          (warning) - reviewFrequency lacks an interval
+ *   4. weak-owner             (critical) - owner is dominated by IT/admin/management/operations with no clinical chain
+ *   5. missing-clinical-chain (critical) - owner lacks a clinical accountability indicator
+ *
+ * "field" identifies which Step 9 input the chip should render under.
+ * "owner" issues both render under the single owner field.
+ */
+export type GovernanceQualityField =
+  | "monitoring-metric"
+  | "trigger-threshold"
+  | "review-cadence"
+  | "owner";
+
+export type GovernanceQualityKind =
+  | "vague-kpi"
+  | "weak-trigger"
+  | "vague-cadence"
+  | "weak-owner"
+  | "missing-clinical-chain";
+
+export type GovernanceQualityLevel = "warning" | "critical";
+
+export type GovernanceQualityIssue = {
+  field: GovernanceQualityField;
+  kind: GovernanceQualityKind;
+  level: GovernanceQualityLevel;
+  /** The offending text (trimmed). Full field value, since these are single-input fields. */
+  text: string;
+  /** Verbatim user-facing message. Identical between PDF and live UI. */
+  message: string;
+};
+
 export type ValidationResult = {
   status: GovernanceStatus;
   governanceConcern: GovernanceConcern;
@@ -105,6 +147,13 @@ export type ValidationResult = {
    * empty form).
    */
   missingEssentialControls: MissingEssentialControl[];
+  /**
+   * Per-field Governance & Monitoring Engine findings, used by Step 9
+   * live UI. Includes both warning-level (vague KPI / cadence) and
+   * critical-level (weak trigger / weak owner / missing clinical chain)
+   * issues. Same engine output also drives PDF criticals/improvements.
+   */
+  governanceQuality: GovernanceQualityIssue[];
   recommendation: Recommendation;
   recommendationNote: string;
   /** Reference values used to compute the governance-adjusted score. */
@@ -349,6 +398,179 @@ export function evaluateMissingEssentials(args: {
   return findings;
 }
 
+/* ------------------------------------------------------------------ */
+/* Governance & Monitoring Engine                                      */
+/*                                                                     */
+/* Per-field classification of Step 9 inputs against five rule banks.  */
+/* Scenario-agnostic. Consumed by:                                     */
+/*   1. runValidation - feeds criticalWarnings / requiredImprovements  */
+/*      so the PDF and governance status reflect the new findings.     */
+/*   2. Step 9 UI - per-field warning chips beneath each input plus a  */
+/*      missing-chain banner for the ownership block.                  */
+/*                                                                     */
+/* Critical-level findings (weak-trigger, weak-owner,                  */
+/* missing-clinical-chain) are routed into the SAFETY-direction        */
+/* critical bucket so they floor governance concern to High and force  */
+/* "Not governance-ready" status. Warning-level findings (vague-kpi,   */
+/* vague-cadence) feed `improvements`.                                 */
+/* ------------------------------------------------------------------ */
+
+// Vague monitoring metrics. KPI must be auditable with a measurable surface.
+const VAGUE_KPI_PATTERNS: RegExp[] = [
+  /\bmonitor(ing)?\s+issues?\b/i,
+  /\bmonitor(ing)?\s+incidents?\b/i,
+  /\bwatch(ing)?\s+trends?\b/i,
+  /\breview(ing)?\s+safety\b/i,
+];
+
+// Non-actionable trigger thresholds. A threshold must be measurable so a
+// reviewer can tell, after the fact, whether escalation should have fired.
+const VAGUE_TRIGGER_PATTERNS: RegExp[] = [
+  /\bif\s+issues?\s+(happen|happens|occur|occurs|arise|arises)\b/i,
+  /\bif\s+problems?\s+(arise|arises|happen|happens|occur|occurs)\b/i,
+  /\bif\s+needed\b/i,
+  /\bif\s+required\b/i,
+  /\bwhen\s+concerns?\s+arise\b/i,
+];
+
+// Vague review cadences. A cadence must name a defined interval (weekly,
+// monthly, quarterly, every six months, etc.) - bare "regularly" or
+// "periodically" cannot be audited.
+const VAGUE_CADENCE_PATTERNS: RegExp[] = [
+  /^\s*sometimes\s*$/i,
+  /\bsometimes\b/i,
+  /^\s*regular(ly)?\s*$/i,
+  /\bregularly\b/i,
+  /^\s*periodic(al)?(ly)?\s*$/i,
+  /\bperiodic(al)?ly\b/i,
+  /\bad[\s-]?hoc\b/i,
+  /\bas\s+(and\s+when\s+)?required\b/i,
+  /\bas\s+needed\b/i,
+];
+
+// Weak / non-accountable owners. These phrases name a function or
+// department but no individual or clinical role. Fired only when no
+// clinical chain indicator appears in the same field, so a legitimate
+// "Clinical Safety Officer with IT team support" does not trip.
+const WEAK_OWNER_PATTERNS: RegExp[] = [
+  /\bit\s+team\b/i,
+  /^\s*it\s*$/i,
+  /\btechnology\s+team\b/i,
+  /\badmin(istration|s)?\b/i,
+  /\bmanagement\b/i,
+  /\boperations\b/i,
+];
+
+// Clinical accountability chain indicators. At least one must appear in
+// the owner field. Spec lists CSO, Clinical Lead, Pathway Lead, Consultant,
+// and "Product Owner + clinical role" - the last is handled naturally by
+// requiring any clinical-role indicator (clinician, medical director,
+// caldicott) to also satisfy the chain when "Product Owner" is named.
+const CLINICAL_CHAIN_PATTERNS: RegExp[] = [
+  /\bclinical\s+safety\s+officer\b/i,
+  /\bcso\b/i,
+  /\bclinical\s+lead\b/i,
+  /\bpathway\s+lead\b/i,
+  /\bconsultant\b/i,
+  /\bclinician\b/i,
+  /\bmedical\s+director\b/i,
+  /\bcaldicott\b/i,
+];
+
+// Verbatim user-facing copy. One source of truth for both PDF and Step 9.
+const GOVERNANCE_QUALITY_MESSAGES: Record<GovernanceQualityKind, string> = {
+  "vague-kpi":
+    "This KPI is vague or non-measurable. Specify an auditable metric.",
+  "weak-trigger":
+    "This trigger threshold is non-actionable. Define a measurable escalation threshold.",
+  "vague-cadence":
+    "This review cadence is vague. Specify a defined interval.",
+  "weak-owner": "This owner lacks clear accountability.",
+  "missing-clinical-chain":
+    "No clear clinical accountability chain identified.",
+};
+
+const GOVERNANCE_QUALITY_LEVELS: Record<GovernanceQualityKind, GovernanceQualityLevel> = {
+  "vague-kpi": "warning",
+  "weak-trigger": "critical",
+  "vague-cadence": "warning",
+  "weak-owner": "critical",
+  "missing-clinical-chain": "critical",
+};
+
+const GOVERNANCE_QUALITY_FIELDS: Record<GovernanceQualityKind, GovernanceQualityField> = {
+  "vague-kpi": "monitoring-metric",
+  "weak-trigger": "trigger-threshold",
+  "vague-cadence": "review-cadence",
+  "weak-owner": "owner",
+  "missing-clinical-chain": "owner",
+};
+
+/**
+ * Run the Governance & Monitoring Engine over the four Step 9 inputs.
+ * Returns one issue per offending field plus an extra "missing chain"
+ * issue when the owner field has content but no clinical accountability
+ * indicator. Pure - empty inputs are tolerated and skipped per-field.
+ *
+ * Suppression behaviour:
+ *   - vague-kpi / weak-trigger / vague-cadence: only fire when the field
+ *     has content. Empty fields don't flag (Phase 1 already requires a
+ *     basic owner check, but missing KPI/threshold/cadence is handled by
+ *     the existing soft "to be defined" placeholder logic, not here).
+ *   - weak-owner: fires only when owner contains a weak pattern AND no
+ *     clinical chain indicator is present. Prevents false positives on
+ *     "Clinical Safety Officer with IT team support".
+ *   - missing-clinical-chain: fires only when owner has content but no
+ *     clinical chain match. Empty owner is handled by Phase 1 Rule 7.
+ */
+export function evaluateGovernanceQuality(args: {
+  monitoringMetric: string;
+  triggerThreshold: string;
+  reviewFrequency: string;
+  owner: string;
+}): GovernanceQualityIssue[] {
+  const issues: GovernanceQualityIssue[] = [];
+
+  const push = (kind: GovernanceQualityKind, text: string) => {
+    issues.push({
+      field: GOVERNANCE_QUALITY_FIELDS[kind],
+      kind,
+      level: GOVERNANCE_QUALITY_LEVELS[kind],
+      text,
+      message: GOVERNANCE_QUALITY_MESSAGES[kind],
+    });
+  };
+
+  const kpi = args.monitoringMetric.trim();
+  if (kpi && anyMatches(kpi, VAGUE_KPI_PATTERNS)) {
+    push("vague-kpi", kpi);
+  }
+
+  const trigger = args.triggerThreshold.trim();
+  if (trigger && anyMatches(trigger, VAGUE_TRIGGER_PATTERNS)) {
+    push("weak-trigger", trigger);
+  }
+
+  const cadence = args.reviewFrequency.trim();
+  if (cadence && anyMatches(cadence, VAGUE_CADENCE_PATTERNS)) {
+    push("vague-cadence", cadence);
+  }
+
+  const owner = args.owner.trim();
+  if (owner) {
+    const ownerHasWeakPattern = anyMatches(owner, WEAK_OWNER_PATTERNS);
+    const ownerHasClinicalChain = anyMatches(owner, CLINICAL_CHAIN_PATTERNS);
+    if (ownerHasWeakPattern && !ownerHasClinicalChain) {
+      push("weak-owner", owner);
+    }
+    if (!ownerHasClinicalChain) {
+      push("missing-clinical-chain", owner);
+    }
+  }
+
+  return issues;
+}
+
 // Phrases that indicate a weak monitoring or CAPA approach.
 const WEAK_MONITORING_PATTERNS = [
   /no\s+issues\s+reported/i,
@@ -368,19 +590,11 @@ const ELIMINATED_PATTERNS = [
   /\bcompletely\s+removed?\b/i,
 ];
 
-// Real clinical ownership signals.
-const CLINICAL_OWNERSHIP_PATTERNS = [
-  /clinical\s+safety\s+officer/i,
-  /\bcso\b/i,
-  /clinical\s+lead/i,
-  /clinician/i,
-  /medical\s+director/i,
-  /pathway\s+lead/i,
-  /caldicott/i,
-];
-
-// IT-only ownership (insufficient on its own).
-const IT_ONLY_PATTERNS = [/^\s*it\s+team\s*$/i, /^\s*it\s*$/i, /^\s*technology\s+team\s*$/i];
+// NOTE: clinical-ownership and IT-only ownership patterns previously lived
+// here as CLINICAL_OWNERSHIP_PATTERNS / IT_ONLY_PATTERNS. As of the
+// Governance & Monitoring Engine they have moved into the engine's banks
+// (CLINICAL_CHAIN_PATTERNS / WEAK_OWNER_PATTERNS) so the same logic drives
+// both PDF criticals and Step 9 live UI without drift.
 
 // Phrases that imply a credible severity ceiling around 1-2 (minor / admin /
 // non-urgent / no clinical impact). Used to detect over-scored severity.
@@ -436,6 +650,29 @@ const RARE_LIKELIHOOD_MARKERS = [
 
 function anyMatches(text: string, patterns: RegExp[]): boolean {
   return patterns.some((p) => p.test(text));
+}
+
+// Field labels surfaced into PDF criticals/improvements so a reviewer
+// reading Page 1 can immediately see WHICH governance input was flagged.
+const GOVERNANCE_FIELD_LABEL: Record<GovernanceQualityField, string> = {
+  "monitoring-metric": "Monitoring metric / KPI",
+  "trigger-threshold": "Trigger threshold",
+  "review-cadence": "Review cadence",
+  owner: "Owner",
+};
+
+/**
+ * Compose the PDF / criticalWarnings string for a governance issue. The
+ * "missing-clinical-chain" finding has no offending phrase to quote (the
+ * problem is the absence of a role), so it formats differently from the
+ * vague-/weak- findings that quote the user's text.
+ */
+function formatGovernanceIssueForPdf(issue: GovernanceQualityIssue): string {
+  const fieldLabel = GOVERNANCE_FIELD_LABEL[issue.field];
+  if (issue.kind === "missing-clinical-chain") {
+    return `${fieldLabel}: ${issue.message} Add a Clinical Safety Officer, clinical lead, pathway lead, or named consultant.`;
+  }
+  return `${fieldLabel}: "${issue.text}" — ${issue.message}`;
 }
 
 export function runValidation(input: ValidationInput): ValidationResult {
@@ -628,17 +865,38 @@ export function runValidation(input: ValidationInput): ValidationResult {
     );
   }
 
-  // Rule 7. Missing clinical ownership.
+  // Rule 7 (Governance & Monitoring Engine). Per-field classification of the
+  // four Step 9 inputs (KPI, threshold, cadence, owner). Replaces the
+  // previous coarse Rule 7 (empty owner / IT-only / missing-clinical) with
+  // the structured engine. The engine is consumed by both this code path
+  // (for governance scoring + PDF) and the Step 9 live UI (per-field chips).
+  //
+  // Routing:
+  //   - critical-level findings (weak-trigger, weak-owner, missing-clinical-
+  //     chain) feed the SAFETY-direction critical bucket so they floor
+  //     governance concern to High and force "Not governance-ready" status.
+  //     The actual governance failure is real: no measurable trigger means
+  //     no escalation will fire; no clinical chain means no clinician owns
+  //     the hazard at sign-off.
+  //   - warning-level findings (vague-kpi, vague-cadence) feed improvements.
+  //     The activity exists in principle but is not auditable as written.
+  //
+  // The empty-owner check is preserved (was Phase 1 Rule 7); the engine
+  // intentionally doesn't fire on empty fields for the other three inputs
+  // because soft placeholders elsewhere (e.g. "to be defined") cover that
+  // case at PDF render time.
   if (!input.owner.trim()) {
     safetyCritical.push("No owner has been assigned to this hazard.");
-  } else if (anyMatches(input.owner, IT_ONLY_PATTERNS)) {
-    safetyCritical.push(
-      `Ownership is recorded as IT only. Clinical Safety Officer or clinical lead accountability is required.`,
-    );
-  } else if (!anyMatches(input.owner, CLINICAL_OWNERSHIP_PATTERNS)) {
-    improvements.push(
-      `Owner does not name a Clinical Safety Officer, clinical lead, or pathway lead. Add named clinical accountability.`,
-    );
+  }
+  const governanceQuality = evaluateGovernanceQuality({
+    monitoringMetric: input.monitoringMetric,
+    triggerThreshold: input.triggerThreshold,
+    reviewFrequency: input.reviewFrequency,
+    owner: input.owner,
+  });
+  for (const issue of governanceQuality) {
+    const target = issue.level === "critical" ? safetyCritical : improvements;
+    target.push(formatGovernanceIssueForPdf(issue));
   }
 
   // Rule 8. "Risk eliminated" language for AI triage.
@@ -805,6 +1063,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     requiredImprovements: improvements,
     controlQuality,
     missingEssentialControls,
+    governanceQuality,
     recommendation,
     recommendationNote,
     referenceSeverity: refSeverity,

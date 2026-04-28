@@ -23,8 +23,10 @@ import type {
 } from "./pdf/types";
 import {
   evaluateControlQuality,
+  evaluateGovernanceQuality,
   evaluateMissingEssentials,
   runValidation,
+  type GovernanceQualityIssue,
 } from "./validation";
 
 /* ------------------------------------------------------------------ */
@@ -1560,6 +1562,41 @@ function ResidualStep({
   residualBand: RiskBand | null;
   onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
 }) {
+  // Live Governance & Monitoring Engine output. Re-runs every keystroke so
+  // the per-field chips and missing-chain banner update as the user edits
+  // KPI / threshold / cadence / owner. Wording is identical to what the PDF
+  // surfaces because both consume the same engine in validation.ts.
+  const governanceIssues = useMemo(
+    () =>
+      evaluateGovernanceQuality({
+        monitoringMetric: answers.monitoringMetric,
+        triggerThreshold: answers.triggerThreshold,
+        reviewFrequency: answers.reviewFrequency,
+        owner: answers.owner,
+      }),
+    [
+      answers.monitoringMetric,
+      answers.triggerThreshold,
+      answers.reviewFrequency,
+      answers.owner,
+    ],
+  );
+  const issuesByField = useMemo(
+    () => ({
+      "monitoring-metric": governanceIssues.filter(
+        (i) => i.field === "monitoring-metric",
+      ),
+      "trigger-threshold": governanceIssues.filter(
+        (i) => i.field === "trigger-threshold",
+      ),
+      "review-cadence": governanceIssues.filter(
+        (i) => i.field === "review-cadence",
+      ),
+      owner: governanceIssues.filter((i) => i.field === "owner"),
+    }),
+    [governanceIssues],
+  );
+
   return (
     <div className="space-y-9">
       {/* Section A: residual scoring */}
@@ -1647,6 +1684,7 @@ function ResidualStep({
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
             placeholder="e.g. False-negative rate on routine-ranked cases (audit sample)."
           />
+          <GovernanceIssueChips issues={issuesByField["monitoring-metric"]} />
         </FieldShell>
 
         <FieldShell
@@ -1660,6 +1698,7 @@ function ResidualStep({
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
             placeholder="e.g. Any confirmed delayed cancer diagnosis where AI assigned routine, or false-negative rate above 1%."
           />
+          <GovernanceIssueChips issues={issuesByField["trigger-threshold"]} />
         </FieldShell>
 
         <FieldShell
@@ -1673,6 +1712,7 @@ function ResidualStep({
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
             placeholder="e.g. Quarterly, or sooner if trigger fires."
           />
+          <GovernanceIssueChips issues={issuesByField["review-cadence"]} />
         </FieldShell>
 
         <FieldShell
@@ -1753,9 +1793,65 @@ function ResidualStep({
             className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
             placeholder="e.g. Clinical Safety Officer, supported by cancer pathway clinical lead and AI product owner."
           />
+          <GovernanceIssueChips issues={issuesByField.owner} />
         </FieldShell>
       </section>
     </div>
+  );
+}
+
+/**
+ * Renders the live Governance & Monitoring Engine chips beneath a Step 9
+ * input. Critical-level issues use rose styling (matching the non-control
+ * chip in Step 8). Warning-level issues use amber styling (matching the
+ * vague-control chip). Renders nothing when the array is empty.
+ *
+ * The chip wording is identical to what the PDF surfaces because both
+ * surfaces consume the same engine output - any wording change is made
+ * once, in validation.ts, and propagates everywhere.
+ */
+function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) {
+  if (issues.length === 0) return null;
+  return (
+    <ul className="mt-2 space-y-1.5">
+      {issues.map((issue, i) => {
+        const isCritical = issue.level === "critical";
+        const chipClass = isCritical
+          ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
+          : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
+        const labelClass = isCritical
+          ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
+          : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+        // The "missing-clinical-chain" finding has no offending phrase to
+        // quote (the problem is the absence of a role), so we just render
+        // the message body without a quoted snippet.
+        const showQuoted = issue.kind !== "missing-clinical-chain";
+        return (
+          <li
+            key={`${issue.kind}-${i}-${issue.text}`}
+            className={chipClass}
+          >
+            <div className="flex items-center gap-2">
+              <span className={labelClass}>
+                {isCritical ? "Critical" : "Warning"}
+              </span>
+              {showQuoted ? (
+                <span className="font-semibold">&ldquo;{issue.text}&rdquo;</span>
+              ) : (
+                <span className="font-semibold">Clinical accountability</span>
+              )}
+            </div>
+            <p className="mt-1">{issue.message}</p>
+            {issue.kind === "missing-clinical-chain" ? (
+              <p className="mt-1 text-[10px] text-rose-700">
+                Add a Clinical Safety Officer, clinical lead, pathway lead, or
+                named consultant.
+              </p>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
