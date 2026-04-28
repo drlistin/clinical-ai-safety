@@ -11,9 +11,21 @@ import {
 
 function summariseControls(controls: ControlEntry[]): string {
   if (controls.length === 0) return "(none recorded)";
-  const top = controls.slice(0, 3).map((c) => c.text);
-  if (controls.length > 3) return top.join("; ") + "; plus " + (controls.length - 3) + " more";
-  return top.join("; ");
+  // One bullet per control, newline-separated. Earlier this joined entries
+  // with "; " into a single string, which then wrapped awkwardly inside the
+  // narrow Mitigation / Control cell — a single control name could be split
+  // across two visual lines with another control's text immediately after,
+  // producing output like "pause / disable thclinician override pathway" /
+  // "processreshold". Newline separation forces each control onto its own
+  // logical line, and jsPDF's splitTextToSize preserves the breaks. Long
+  // control names that don't fit on one visual line still wrap, but at word
+  // boundaries within the control's own bullet, never bleeding into the
+  // next entry.
+  const top = controls.slice(0, 3).map((c) => "- " + c.text);
+  if (controls.length > 3) {
+    top.push("  (plus " + (controls.length - 3) + " more)");
+  }
+  return top.join("\n");
 }
 
 function summariseVerification(controls: ControlEntry[]): string {
