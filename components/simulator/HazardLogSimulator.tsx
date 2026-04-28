@@ -584,6 +584,48 @@ export default function HazardLogSimulator({
   );
   const residualBand = useMemo(() => bandForRisk(residualRisk), [residualRisk]);
 
+  // Phase 4B — component-level governance-adjusted severity. Used by the
+  // Step 9 ConsistencyFindingsPanel (via ResidualStep) so the live ownership
+  // check compares against the TRUE worst-credible severity, not the
+  // user-typed Step 6 value. Also keeps the live panel wording identical to
+  // what the PDF will render at export time, since both surfaces feed off
+  // the same runValidation output. runValidation is pure and re-runs on
+  // every keystroke (as does buildHazardLogReport on export) so there is no
+  // staleness risk; the cost is acceptable for a single-record simulator.
+  const adjustedSeverity = useMemo(() => {
+    const validation = runValidation({
+      scenario,
+      hazard: answers.hazard,
+      cause: answers.cause,
+      consequence: answers.consequence,
+      severity: answers.severity ?? 0,
+      likelihood: answers.likelihood ?? 0,
+      residualSeverity: answers.residualSeverity ?? 0,
+      residualLikelihood: answers.residualLikelihood ?? 0,
+      residualRationale: answers.residualRationale,
+      preventativeControls: [
+        ...splitLines(answers.existingPreventative),
+        ...splitLines(answers.proposedPreventative),
+      ],
+      detectiveControls: [
+        ...splitLines(answers.existingDetective),
+        ...splitLines(answers.proposedDetective),
+      ],
+      correctiveControls: [
+        ...splitLines(answers.existingCorrective),
+        ...splitLines(answers.proposedCorrective),
+      ],
+      monitoringMetric: answers.monitoringMetric,
+      triggerThreshold: answers.triggerThreshold,
+      reviewFrequency: answers.reviewFrequency,
+      capa: answers.capa,
+      owner: answers.owner,
+      severityEvidence: answers.severityEvidence,
+      likelihoodEvidence: answers.likelihoodEvidence,
+    });
+    return validation.adjustedSeverity;
+  }, [scenario, answers]);
+
   const handleExport = async () => {
     if (initialRisk == null || !initialBand) return;
     setExportError(null);
@@ -701,7 +743,7 @@ export default function HazardLogSimulator({
             initialBand={initialBand}
             residualRisk={residualRisk}
             residualBand={residualBand}
-            adjustedSeverity={validation.adjustedSeverity}
+            adjustedSeverity={adjustedSeverity}
             onChange={(field, v) => update(field, v)}
           />
         )}
