@@ -1338,6 +1338,32 @@ function MissingEssentialsPanel({
   scenario: Scenario;
   answers: Answers;
 }) {
+  // Suppression is now based on the RAW answer strings, not on the
+  // post-splitLines arrays. Previously the engine itself suppressed when
+  // every parsed array was empty - that was the Phase-2.2 bug (the panel
+  // never rendered live on Step 8). With raw-string suppression the panel
+  // appears the moment the user types ANY non-whitespace character into
+  // ANY of the six control textareas.
+  const userHasTypedAnything = useMemo(
+    () =>
+      [
+        answers.existingPreventative,
+        answers.existingDetective,
+        answers.existingCorrective,
+        answers.proposedPreventative,
+        answers.proposedDetective,
+        answers.proposedCorrective,
+      ].some((s) => s.trim().length > 0),
+    [
+      answers.existingPreventative,
+      answers.existingDetective,
+      answers.existingCorrective,
+      answers.proposedPreventative,
+      answers.proposedDetective,
+      answers.proposedCorrective,
+    ],
+  );
+
   const findings = useMemo(() => {
     const preventative = [
       ...splitLines(answers.existingPreventative),
@@ -1367,8 +1393,29 @@ function MissingEssentialsPanel({
     answers.proposedCorrective,
   ]);
 
+  // Hidden cases:
+  //   - scenario doesn't declare essentialControls (panel is irrelevant)
+  //   - user has not typed anything yet (don't yell at an empty form)
   if (!scenario.essentialControls) return null;
-  if (findings.length === 0) return null;
+  if (!userHasTypedAnything) return null;
+
+  // Positive-confirmation case: user has typed something, all essentials
+  // are covered. Render a calm green confirmation so the engine's run is
+  // visible (and the user knows they cleared the bar).
+  if (findings.length === 0) {
+    return (
+      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+            Covered
+          </span>
+          <p className="text-sm font-semibold text-emerald-900">
+            All essential controls for this scenario are present.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const grouped: Record<"preventative" | "detective" | "corrective", typeof findings> = {
     preventative: findings.filter((f) => f.type === "preventative"),

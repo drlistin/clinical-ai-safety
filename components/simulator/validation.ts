@@ -299,12 +299,22 @@ function keywordGroupCovered(group: KeywordGroup, joinedLower: string): boolean 
  * Run the missing-essentials engine for one scenario.
  *
  * Returns one finding per essential KeywordGroup that didn't match in the
- * corresponding control type. Returns [] when the scenario doesn't declare
- * essentialControls, or when the user has entered no controls at all.
+ * corresponding control type. Returns [] only when the scenario doesn't
+ * declare essentialControls.
  *
- * Consumed by:
- *   1. Step 8's MissingEssentialsPanel (live summary)
- *   2. runValidation (governance scoring + PDF criticals)
+ * NOTE: this function is intentionally pure - it does NOT suppress on
+ * empty input. Callers decide when to call it. This was changed in the
+ * Phase-2.2 bug fix because the prior internal suppression
+ * (`totalEntered === 0`) was the root cause of the live panel never
+ * appearing on Step 8 - a subtle data-path issue meant the engine could
+ * be called with empty arrays even when the user had typed text. The two
+ * callers handle suppression directly:
+ *
+ *   - runValidation: uses `allControls.length > 0` (Phase-1 behaviour
+ *     preserved exactly)
+ *   - Step 8 MissingEssentialsPanel: uses a raw-string check on the
+ *     answers, so the panel appears the moment any non-empty text is in
+ *     ANY of the six control textareas
  */
 export function evaluateMissingEssentials(args: {
   scenario: Scenario;
@@ -314,15 +324,6 @@ export function evaluateMissingEssentials(args: {
 }): MissingEssentialControl[] {
   const essentials = args.scenario.essentialControls;
   if (!essentials) return [];
-
-  // Suppress findings on a totally empty form. The user must have engaged
-  // with at least one control textarea before we start flagging gaps -
-  // otherwise step 8 lights up red the moment it loads.
-  const totalEntered =
-    args.preventativeControls.length +
-    args.detectiveControls.length +
-    args.correctiveControls.length;
-  if (totalEntered === 0) return [];
 
   const findings: MissingEssentialControl[] = [];
   const checkType = (
@@ -593,12 +594,20 @@ export function runValidation(input: ValidationInput): ValidationResult {
   // All three are safety-critical (not integrity-critical) so they floor
   // governance concern to High and force "Not governance-ready" status.
   // Engine is a no-op for scenarios that don't declare essentialControls.
-  const missingEssentialControls = evaluateMissingEssentials({
-    scenario: input.scenario,
-    preventativeControls: input.preventativeControls,
-    detectiveControls: input.detectiveControls,
-    correctiveControls: input.correctiveControls,
-  });
+  //
+  // Suppression here uses `allControls.length > 0` to preserve the exact
+  // Phase-1 behaviour. The engine itself is pure (no internal suppression);
+  // the live UI in Step 8 uses a different, more permissive raw-string
+  // check so the panel appears the moment the user types anything.
+  const missingEssentialControls =
+    allControls.length > 0
+      ? evaluateMissingEssentials({
+          scenario: input.scenario,
+          preventativeControls: input.preventativeControls,
+          detectiveControls: input.detectiveControls,
+          correctiveControls: input.correctiveControls,
+        })
+      : [];
   for (const finding of missingEssentialControls) {
     safetyCritical.push(finding.message);
   }
