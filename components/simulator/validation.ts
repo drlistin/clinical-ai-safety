@@ -373,6 +373,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
 
   let adjustedSeverity: number;
   if (severityOverstated) adjustedSeverity = sevCeiling!;
+  else if (severityUnderstated) adjustedSeverity = refSeverity;
   else adjustedSeverity = input.severity || refSeverity;
 
   let adjustedLikelihood: number;
