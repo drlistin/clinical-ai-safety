@@ -310,6 +310,24 @@ export const cancerReferralTriage: Scenario = {
       {
         label: "pause / disable threshold",
         any: [
+          // Variants that include the LABEL itself or are substrings of
+          // it. Earlier these were missing — every synonym referenced
+          // "model" but the label says "threshold", so a user typing the
+          // visible label exactly cleared neither panel. Listed first so
+          // the most natural phrasings match cheaply.
+          "pause / disable threshold",
+          "pause / disable",
+          "pause threshold",
+          "disable threshold",
+          // "Pause-the-AI" phrasing used by the placeholder in
+          // ResidualStep. Hyphenated and spaced variants are both kept so
+          // a user pasting from the placeholder copy clears the finding.
+          "pause the ai",
+          "disable the ai",
+          "pause ai",
+          "disable ai",
+          "pause-the-ai",
+          // Original model-centric wording.
           "pause model",
           "pause the model",
           "disable model",

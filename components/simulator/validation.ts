@@ -472,7 +472,15 @@ function normaliseForKeywordMatch(text: string): string {
     .replace(/[  ​]/g, " ")
     .replace(/[‘’‚‛]/g, "'")
     .replace(/[“”„‟]/g, '"')
-    .replace(/[–—―]/g, "-");
+    .replace(/[–—―]/g, "-")
+    // Canonicalise slash spacing so "pause/disable", "pause / disable",
+    // "pause /disable", and "pause/ disable" all collapse to a single
+    // form. The codebase consistently writes slashed labels with spaces
+    // around the slash ("pause / disable threshold", "supplier
+    // escalation / retraining process") so we normalise toward that.
+    // Applied to BOTH haystack and needle in keywordGroupCovered so the
+    // user's typing form does not have to match the synonym's exactly.
+    .replace(/\s*\/\s*/g, " / ");
 }
 
 /**
