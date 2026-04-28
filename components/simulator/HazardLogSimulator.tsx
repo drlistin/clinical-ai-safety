@@ -21,7 +21,7 @@ import type {
   ActionEntry,
   ControlEntry,
 } from "./pdf/types";
-import { runValidation } from "./validation";
+import { evaluateControlQuality, runValidation } from "./validation";
 
 /* ------------------------------------------------------------------ */
 /* Types & static metadata                                            */
@@ -1325,6 +1325,18 @@ function ControlField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  // Live per-line Control Quality Engine feedback. Re-runs every keystroke so
+  // the chip beneath the textarea updates as the user rewrites a vague or
+  // non-control entry. Identical wording to what the PDF will surface, since
+  // both surfaces consume the same engine in validation.ts.
+  const issues = useMemo(() => {
+    const lines = value
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return evaluateControlQuality(lines);
+  }, [value]);
+
   return (
     <div>
       <div className="flex items-baseline justify-between">
@@ -1339,6 +1351,33 @@ function ControlField({
         className="mt-2 w-full rounded-md border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 focus:border-clinical-500"
         placeholder="One control per line"
       />
+      {issues.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {issues.map((issue, i) => {
+            const isNonControl = issue.level === "non-control";
+            const chipClass = isNonControl
+              ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
+              : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
+            const labelClass = isNonControl
+              ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
+              : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+            return (
+              <li
+                key={`${issue.level}-${i}-${issue.text}`}
+                className={chipClass}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={labelClass}>
+                    {isNonControl ? "Not a control" : "Vague control"}
+                  </span>
+                  <span className="font-semibold">&ldquo;{issue.text}&rdquo;</span>
+                </div>
+                <p className="mt-1">{issue.message}</p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

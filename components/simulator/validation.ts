@@ -51,12 +51,37 @@ export type ValidationInput = {
   likelihoodEvidence: string[];
 };
 
+/**
+ * Control Quality Engine output. Per-line classification of a single control
+ * entry. Surfaced both through criticalWarnings/requiredImprovements (PDF +
+ * governance scoring) and as a structured field on ValidationResult so the
+ * Step 8 UI can render live per-line feedback without re-implementing the
+ * regex banks. Scenario-agnostic by design.
+ *   - "non-control" : entry is a state-of-mind or one-off communication, not
+ *                     an enforceable barrier. Treated as a SAFETY-direction
+ *                     critical so it floors governance concern to High.
+ *   - "vague"       : entry is auditable in principle but missing the WHO /
+ *                     HOW OFTEN / MEASURABLE ACTION needed for governance.
+ *                     Surfaced as a required improvement.
+ */
+export type ControlQualityLevel = "vague" | "non-control";
+
+export type ControlQualityIssue = {
+  /** The offending control text (trimmed). */
+  text: string;
+  level: ControlQualityLevel;
+  /** Verbatim user-facing message. Identical between PDF and live UI. */
+  message: string;
+};
+
 export type ValidationResult = {
   status: GovernanceStatus;
   governanceConcern: GovernanceConcern;
   governanceConcernRationale: string;
   criticalWarnings: string[];
   requiredImprovements: string[];
+  /** Per-line Control Quality Engine findings, used by Step 8 live UI. */
+  controlQuality: ControlQualityIssue[];
   recommendation: Recommendation;
   recommendationNote: string;
   /** Reference values used to compute the governance-adjusted score. */
@@ -91,18 +116,116 @@ export type ValidationResult = {
   derivedLikelihoodRationale: string;
 };
 
-// Phrases that indicate a "soft" control rather than a real one.
-const WEAK_CONTROL_PATTERNS = [
-  /\btrain(ing|s)?\s+staff\b/i,
-  /\bstaff\s+training\b/i,
-  /\bbe\s+careful\b/i,
-  /\bawareness\b/i,
+/* ------------------------------------------------------------------ */
+/* Control Quality Engine                                              */
+/*                                                                     */
+/* Two pattern banks, scenario-agnostic. Vague controls = the wording  */
+/* could be auditable but isn't (no WHO / HOW OFTEN / measurable       */
+/* trigger). Non-controls = the entry isn't a control barrier at all   */
+/* (state-of-mind, one-off communication, "be careful" style copy).   */
+/*                                                                     */
+/* These supersede the previous WEAK_CONTROL_PATTERNS aggregate. The   */
+/* engine is consumed both by runValidation (governance scoring + PDF) */
+/* and by Step 8's live UI (per-line feedback chips).                  */
+/* ------------------------------------------------------------------ */
+
+// Vague / non-auditable control wording. The activity exists in principle
+// but a reviewer can't tell who does it, how often, or what triggers an
+// action. These produce a "Required improvement", not a critical warning.
+const VAGUE_CONTROL_PATTERNS: RegExp[] = [
+  /\bmonitor(ed|ing)?\s+regular(ly)?\b/i,
+  /\breview(ed|ing)?\s+regular(ly)?\b/i,
+  /\breview(ed|ing)?\s+as\s+needed\b/i,
+  /\bperiodic\s+review\b/i,
+  /\baudit\s+later\b/i,
+  /\bfuture\s+training\b/i,
+  /\btake\s+action\s+if\s+required\b/i,
+  /\bif\s+(issues?|problems?|something|anything)\s+(happen|happens|arise|arises|occurs?)\b/i,
+  /\bmonitor\s+incidents?\b/i,
+  // Carry-overs from the previous WEAK_CONTROL_PATTERNS that describe
+  // wording-quality issues; the underlying activity COULD be auditable if
+  // rewritten with a measurable trigger, so they remain in the vague bucket.
   /\bpolicy\s+(only|alone)\b/i,
   /\breport\s+if\s+noticed\b/i,
   /^\s*monthly\s+review\s+only\s*$/i,
   /\breminder\s+to\b/i,
   /\bencourage(d)?\s+to\b/i,
+  // Standalone "staff training" / "training staff" - vague rather than non-
+  // control, because "Mandatory annual staff training with competency
+  // assessment" IS auditable when written that way. Surfaced as an
+  // improvement so the user can rewrite to add WHO / HOW OFTEN / measurable
+  // assessment, not as a critical that escalates governance status.
+  /\btrain(ing|s)?\s+staff\b/i,
+  /\bstaff\s+training\b/i,
 ];
+
+// Non-controls disguised as controls. State-of-mind, one-off communication,
+// or vigilance-style copy. No rewording turns these into an enforceable
+// barrier. These produce a CRITICAL warning and are treated as a safety-
+// direction critical so they floor governance concern to at least High.
+//
+// Patterns are deliberately TIGHT (no bare /awareness/ or /vigilance/ — those
+// catch legitimate controls like "mandatory situational awareness module
+// delivered quarterly with assessment"). A control that genuinely is just
+// "staff awareness" still fires via the more specific staff/clinician/user
+// + awareness/vigilance patterns below.
+const NON_CONTROL_PATTERNS: RegExp[] = [
+  /\bstaff\s+aware(ness)?\b/i,
+  /\b(clinician|clinical\s+staff|user|users|staff|patient|patients)\s+(awareness|vigilance)\b/i,
+  /\b(user|patient|staff|clinician|clinicians)\s+vigilance\b/i,
+  /\bbe\s+(careful|vigilant|alert|cautious|mindful)\b/i,
+  /\b(clinician|clinicians|staff|users?)\s+(informed|notified|told|reminded|made\s+aware)\b/i,
+];
+
+// Verbatim user-facing copy. Kept in one place so the live Step 8 chip and
+// the PDF's improvements / criticals lists carry identical wording.
+const CONTROL_QUALITY_MESSAGES: Record<ControlQualityLevel, string> = {
+  vague:
+    "This control is vague or non-auditable. Specify who performs it, how often, and what measurable action occurs.",
+  "non-control":
+    "This entry does not describe an actual control barrier.",
+};
+
+/**
+ * Classify a single control entry. Returns null when no issue is detected.
+ *
+ * Non-control takes precedence over vague: a control that matches both
+ * banks (e.g. "staff awareness reviewed regularly") returns the stronger
+ * finding. Empty / whitespace-only inputs return null so the caller can
+ * pass raw textarea lines without pre-filtering.
+ */
+export function classifyControl(text: string): ControlQualityLevel | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  if (anyMatches(trimmed, NON_CONTROL_PATTERNS)) return "non-control";
+  if (anyMatches(trimmed, VAGUE_CONTROL_PATTERNS)) return "vague";
+  return null;
+}
+
+/**
+ * Run the Control Quality Engine over a list of control entries. Returns
+ * one issue per offending entry, in input order. Scenario-agnostic by
+ * design - the same engine is used by every simulator.
+ *
+ * Consumed by:
+ *   1. Step 8's ControlField (live per-line feedback chips)
+ *   2. runValidation (governance scoring + PDF criticals/improvements)
+ */
+export function evaluateControlQuality(
+  controls: string[],
+): ControlQualityIssue[] {
+  const issues: ControlQualityIssue[] = [];
+  for (const raw of controls) {
+    const level = classifyControl(raw);
+    if (!level) continue;
+    issues.push({
+      text: raw.trim(),
+      level,
+      message: CONTROL_QUALITY_MESSAGES[level],
+    });
+  }
+  return issues;
+}
 
 // Phrases that indicate a weak monitoring or CAPA approach.
 const WEAK_MONITORING_PATTERNS = [
@@ -191,10 +314,6 @@ const RARE_LIKELIHOOD_MARKERS = [
 
 function anyMatches(text: string, patterns: RegExp[]): boolean {
   return patterns.some((p) => p.test(text));
-}
-
-function listMatches(items: string[], patterns: RegExp[]): string[] {
-  return items.filter((it) => anyMatches(it, patterns));
 }
 
 export function runValidation(input: ValidationInput): ValidationResult {
@@ -314,17 +433,32 @@ export function runValidation(input: ValidationInput): ValidationResult {
     );
   }
 
-  // Rule 5. Weak controls.
+  // Rule 5 (Control Quality Engine). Per-line classification of every control
+  // entry against the vague / non-control pattern banks. Replaces the previous
+  // aggregate weak-control count with specific, actionable per-control
+  // feedback so reviewers know exactly which entry to rewrite. Scenario-
+  // agnostic - the same engine runs for every simulator.
+  //
+  // - "non-control" issues feed the SAFETY-direction critical bucket so they
+  //   floor governance concern to High and force "Not governance-ready"
+  //   status (an unenforceable barrier IS a safety problem, not just an
+  //   integrity one).
+  // - "vague" issues feed the improvements bucket - the underlying activity
+  //   could be auditable if rewritten with measurable triggers.
   const allControls = [
     ...input.preventativeControls,
     ...input.detectiveControls,
     ...input.correctiveControls,
   ];
-  const weakControls = listMatches(allControls, WEAK_CONTROL_PATTERNS);
-  if (weakControls.length > 0) {
-    improvements.push(
-      `${weakControls.length} control entr${weakControls.length === 1 ? "y reads" : "ies read"} as a soft expectation rather than an enforced control. Tighten wording so the control is auditable.`,
-    );
+  const controlQuality = evaluateControlQuality(allControls);
+  for (const issue of controlQuality) {
+    if (issue.level === "non-control") {
+      safetyCritical.push(
+        `Control "${issue.text}" — ${issue.message} Replace with an enforceable barrier (procedure, hard stop, automated check, mandatory review).`,
+      );
+    } else {
+      improvements.push(`Control "${issue.text}" — ${issue.message}`);
+    }
   }
 
   // Rule 6. Weak monitoring or CAPA.
@@ -518,6 +652,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     governanceConcernRationale: concernRationale,
     criticalWarnings: critical,
     requiredImprovements: improvements,
+    controlQuality,
     recommendation,
     recommendationNote,
     referenceSeverity: refSeverity,
