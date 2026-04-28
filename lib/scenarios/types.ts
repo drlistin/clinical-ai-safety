@@ -70,4 +70,21 @@ export type Scenario = {
       corrective: KeywordGroup[];
     };
   };
+
+  /**
+   * Optional minimum-bar set of controls. Distinct from `feedback.controls`
+   * (the teaching/reference library shown by FeedbackStep): essentialControls
+   * is the SAFETY MINIMUM — any one of these absent fires a critical warning
+   * in the governance engine. Scoped per type so the matcher only counts
+   * coverage in the correct preventative/detective/corrective bucket.
+   *
+   * Optional so future scenarios can opt in without forcing every existing
+   * scenario to declare a minimum bar. When omitted, the missing-essentials
+   * engine is a no-op for that scenario.
+   */
+  essentialControls?: {
+    preventative: KeywordGroup[];
+    detective: KeywordGroup[];
+    corrective: KeywordGroup[];
+  };
 };

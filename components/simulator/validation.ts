@@ -27,7 +27,7 @@ import type {
   GovernanceStatus,
   Recommendation,
 } from "./pdf/types";
-import type { Scenario } from "@/lib/scenarios/types";
+import type { KeywordGroup, Scenario } from "@/lib/scenarios/types";
 
 export type ValidationInput = {
   scenario: Scenario;
@@ -74,6 +74,22 @@ export type ControlQualityIssue = {
   message: string;
 };
 
+export type ControlType = "preventative" | "detective" | "corrective";
+
+/**
+ * Missing-essential finding from the scenario-driven minimum-bar engine.
+ * One finding per essential KeywordGroup that wasn't matched in the user's
+ * controls of that type. Surfaced both through criticalWarnings (PDF +
+ * governance scoring) and through Step 8's MissingEssentialsPanel.
+ */
+export type MissingEssentialControl = {
+  type: ControlType;
+  /** Human-readable name of the absent essential (e.g. "clinician review before downgrade"). */
+  label: string;
+  /** Verbatim user-facing message. Identical between PDF and live UI. */
+  message: string;
+};
+
 export type ValidationResult = {
   status: GovernanceStatus;
   governanceConcern: GovernanceConcern;
@@ -82,6 +98,13 @@ export type ValidationResult = {
   requiredImprovements: string[];
   /** Per-line Control Quality Engine findings, used by Step 8 live UI. */
   controlQuality: ControlQualityIssue[];
+  /**
+   * Scenario-driven missing-essential controls. Empty when the scenario
+   * doesn't declare an `essentialControls` minimum bar, or when the user
+   * has not yet entered any controls (suppressed to avoid spamming an
+   * empty form).
+   */
+  missingEssentialControls: MissingEssentialControl[];
   recommendation: Recommendation;
   recommendationNote: string;
   /** Reference values used to compute the governance-adjusted score. */
@@ -225,6 +248,104 @@ export function evaluateControlQuality(
     });
   }
   return issues;
+}
+
+/* ------------------------------------------------------------------ */
+/* Missing Critical Controls Engine                                    */
+/*                                                                     */
+/* Scenario-driven. Uses the scenario's optional essentialControls     */
+/* keyword groups as the minimum-bar set. For each essential group,    */
+/* checks whether ANY synonym appears in the user's controls of that   */
+/* type. Per-type scoping is intentional: a corrective barrier typed   */
+/* into the preventative box does not satisfy the preventative         */
+/* essential, because category placement is part of the contract.      */
+/*                                                                     */
+/* Extensible for future scenarios: any scenario that defines          */
+/* essentialControls inherits this behaviour automatically. Scenarios  */
+/* that omit the field skip the engine entirely (no-op).               */
+/* ------------------------------------------------------------------ */
+
+const CONTROL_TYPE_LABEL: Record<ControlType, string> = {
+  preventative: "preventative",
+  detective: "detective",
+  corrective: "corrective",
+};
+
+/** Phrasing per type. Kept short so it composes cleanly into the message. */
+const MISSING_ESSENTIAL_TAILS: Record<ControlType, string> = {
+  preventative:
+    "Add an upstream barrier that explicitly names this control - the scenario cannot ship safely without it.",
+  detective:
+    "Without this you cannot prove the system is operating safely after go-live.",
+  corrective:
+    "Document a route to act when the system fails or drifts in production.",
+};
+
+/**
+ * Test whether ANY of a keyword group's synonyms appears in the joined,
+ * lower-cased user text. Word-boundary aware to avoid false positives like
+ * "report" matching the substring "reporter".
+ */
+function keywordGroupCovered(group: KeywordGroup, joinedLower: string): boolean {
+  for (const kw of group.any) {
+    const needle = kw.toLowerCase().trim();
+    if (!needle) continue;
+    if (joinedLower.includes(needle)) return true;
+  }
+  return false;
+}
+
+/**
+ * Run the missing-essentials engine for one scenario.
+ *
+ * Returns one finding per essential KeywordGroup that didn't match in the
+ * corresponding control type. Returns [] when the scenario doesn't declare
+ * essentialControls, or when the user has entered no controls at all.
+ *
+ * Consumed by:
+ *   1. Step 8's MissingEssentialsPanel (live summary)
+ *   2. runValidation (governance scoring + PDF criticals)
+ */
+export function evaluateMissingEssentials(args: {
+  scenario: Scenario;
+  preventativeControls: string[];
+  detectiveControls: string[];
+  correctiveControls: string[];
+}): MissingEssentialControl[] {
+  const essentials = args.scenario.essentialControls;
+  if (!essentials) return [];
+
+  // Suppress findings on a totally empty form. The user must have engaged
+  // with at least one control textarea before we start flagging gaps -
+  // otherwise step 8 lights up red the moment it loads.
+  const totalEntered =
+    args.preventativeControls.length +
+    args.detectiveControls.length +
+    args.correctiveControls.length;
+  if (totalEntered === 0) return [];
+
+  const findings: MissingEssentialControl[] = [];
+  const checkType = (
+    user: string[],
+    groups: KeywordGroup[],
+    type: ControlType,
+  ) => {
+    const joined = user.map((c) => c.toLowerCase()).join(" \n ");
+    for (const group of groups) {
+      if (keywordGroupCovered(group, joined)) continue;
+      findings.push({
+        type,
+        label: group.label,
+        message: `Essential ${CONTROL_TYPE_LABEL[type]} control appears to be missing: "${group.label}". ${MISSING_ESSENTIAL_TAILS[type]}`,
+      });
+    }
+  };
+
+  checkType(args.preventativeControls, essentials.preventative, "preventative");
+  checkType(args.detectiveControls, essentials.detective, "detective");
+  checkType(args.correctiveControls, essentials.corrective, "corrective");
+
+  return findings;
 }
 
 // Phrases that indicate a weak monitoring or CAPA approach.
@@ -461,6 +582,27 @@ export function runValidation(input: ValidationInput): ValidationResult {
     }
   }
 
+  // Rule 5b (Missing Critical Controls Engine). Scenario-driven minimum-bar
+  // check. For each essential KeywordGroup the scenario declares, if no
+  // synonym appears in the user's controls of the matching type we surface
+  // a SAFETY-direction critical:
+  //   - Preventative essentials missing = no upstream barrier to the hazard
+  //   - Detective essentials missing    = no way to know if the system is
+  //                                       failing safely after deployment
+  //   - Corrective essentials missing   = no way to recover when it does
+  // All three are safety-critical (not integrity-critical) so they floor
+  // governance concern to High and force "Not governance-ready" status.
+  // Engine is a no-op for scenarios that don't declare essentialControls.
+  const missingEssentialControls = evaluateMissingEssentials({
+    scenario: input.scenario,
+    preventativeControls: input.preventativeControls,
+    detectiveControls: input.detectiveControls,
+    correctiveControls: input.correctiveControls,
+  });
+  for (const finding of missingEssentialControls) {
+    safetyCritical.push(finding.message);
+  }
+
   // Rule 6. Weak monitoring or CAPA.
   const monitoringText = [
     input.monitoringMetric,
@@ -653,6 +795,7 @@ export function runValidation(input: ValidationInput): ValidationResult {
     criticalWarnings: critical,
     requiredImprovements: improvements,
     controlQuality,
+    missingEssentialControls,
     recommendation,
     recommendationNote,
     referenceSeverity: refSeverity,

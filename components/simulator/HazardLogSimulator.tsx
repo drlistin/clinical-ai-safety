@@ -21,7 +21,11 @@ import type {
   ActionEntry,
   ControlEntry,
 } from "./pdf/types";
-import { evaluateControlQuality, runValidation } from "./validation";
+import {
+  evaluateControlQuality,
+  evaluateMissingEssentials,
+  runValidation,
+} from "./validation";
 
 /* ------------------------------------------------------------------ */
 /* Types & static metadata                                            */
@@ -653,6 +657,7 @@ export default function HazardLogSimulator({
         )}
         {step === 8 && (
           <ControlsStep
+            scenario={scenario}
             answers={answers}
             onChange={(field, v) => update(field, v)}
           />
@@ -1227,9 +1232,11 @@ function RiskBanner({
 }
 
 function ControlsStep({
+  scenario,
   answers,
   onChange,
 }: {
+  scenario: Scenario;
   answers: Answers;
   onChange: <K extends keyof Answers>(field: K, v: Answers[K]) => void;
 }) {
@@ -1310,6 +1317,115 @@ function ControlsStep({
           onChange={(v) => onChange("proposedCorrective", v)}
         />
       </section>
+
+      <MissingEssentialsPanel scenario={scenario} answers={answers} />
+    </div>
+  );
+}
+
+/**
+ * Live, scenario-driven minimum-bar panel. Re-runs the same engine that
+ * runValidation uses, so what the user sees here is exactly what the PDF
+ * will show under "Critical warnings" on Page 1. Hidden when (a) the
+ * scenario doesn't declare essentialControls, or (b) the user has not
+ * entered any controls yet (suppressed by the engine itself), or
+ * (c) every essential is covered.
+ */
+function MissingEssentialsPanel({
+  scenario,
+  answers,
+}: {
+  scenario: Scenario;
+  answers: Answers;
+}) {
+  const findings = useMemo(() => {
+    const preventative = [
+      ...splitLines(answers.existingPreventative),
+      ...splitLines(answers.proposedPreventative),
+    ];
+    const detective = [
+      ...splitLines(answers.existingDetective),
+      ...splitLines(answers.proposedDetective),
+    ];
+    const corrective = [
+      ...splitLines(answers.existingCorrective),
+      ...splitLines(answers.proposedCorrective),
+    ];
+    return evaluateMissingEssentials({
+      scenario,
+      preventativeControls: preventative,
+      detectiveControls: detective,
+      correctiveControls: corrective,
+    });
+  }, [
+    scenario,
+    answers.existingPreventative,
+    answers.existingDetective,
+    answers.existingCorrective,
+    answers.proposedPreventative,
+    answers.proposedDetective,
+    answers.proposedCorrective,
+  ]);
+
+  if (!scenario.essentialControls) return null;
+  if (findings.length === 0) return null;
+
+  const grouped: Record<"preventative" | "detective" | "corrective", typeof findings> = {
+    preventative: findings.filter((f) => f.type === "preventative"),
+    detective: findings.filter((f) => f.type === "detective"),
+    corrective: findings.filter((f) => f.type === "corrective"),
+  };
+
+  const sections: Array<{
+    key: "preventative" | "detective" | "corrective";
+    title: string;
+  }> = [
+    { key: "preventative", title: "Preventative essentials missing" },
+    { key: "detective", title: "Detective essentials missing" },
+    { key: "corrective", title: "Corrective essentials missing" },
+  ];
+
+  return (
+    <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-5">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800">
+          Critical
+        </span>
+        <h5 className="text-sm font-semibold text-rose-900">
+          Essential controls for this scenario are missing
+        </h5>
+      </div>
+      <p className="mt-1.5 text-xs text-rose-800">
+        Each item below is a barrier this scenario cannot ship safely without.
+        Add a matching control above (in the correct category) to clear the
+        finding.
+      </p>
+      <div className="mt-4 space-y-4">
+        {sections.map((s) => {
+          const items = grouped[s.key];
+          if (items.length === 0) return null;
+          return (
+            <div key={s.key}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
+                {s.title}
+              </p>
+              <ul className="mt-1.5 space-y-1.5">
+                {items.map((f) => (
+                  <li
+                    key={`${s.key}-${f.label}`}
+                    className="rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
+                  >
+                    <span className="font-semibold">&ldquo;{f.label}&rdquo;</span>
+                    <p className="mt-1 text-[11px] text-rose-800">
+                      {f.message}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
