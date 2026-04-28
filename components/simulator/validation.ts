@@ -602,7 +602,7 @@ function governanceConcernRationale(
     return "Submitted scoring overestimates both severity and likelihood compared with the described workflow impact. Governance position is taken from the credible severity and likelihood implied by the described hazard.";
   }
   if (severityOverstated) {
-    return "Submitted scoring overestimates the credible severity compared with the described workflow impact. Governance position is taken from the severity implied by the described hazard, not the user-entered value.";
+    return "Submitted scoring overestimates the credible severity compared with the described workflow impact. Governance position is based on the credible severity implied by the hazard narrative.";
   }
   if (likelihoodOverstated) {
     return "Submitted scoring overestimates the credible likelihood compared with the described frequency of the event. Governance position is taken from the likelihood implied by the described hazard.";

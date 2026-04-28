@@ -203,11 +203,36 @@ function drawScoreBlock(
 
 function drawConcernBanner(b: PdfBuilder) {
   const { doc, MARGIN, CONTENT_W, report } = b;
-  b.ensureRoom(48);
+
+  // Layout constants. Banner used to be a fixed 40pt rect with the rationale
+  // hard-sliced to 2 lines, which truncated the over-scoring branch. The
+  // banner now grows to fit ALL wrapped lines while preserving its current
+  // visual weight when the text is short.
+  const RATIONALE_X = MARGIN + 130;        // left edge of rationale column
+  const RATIONALE_W = CONTENT_W - 130 - 14; // right padding inside the box
+  const RATIONALE_FONT = 9.5;
+  const TOP_PAD = 18;                       // baseline of first rationale line
+  const LINE_H = 12;                        // line height for 9.5pt body
+  const BOTTOM_PAD = 12;                    // visual padding below last baseline
+  const MIN_H = 40;                         // preserve current look when short
+
+  // Measure first so the rounded rect can be drawn at the correct height.
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(RATIONALE_FONT);
+  const rationaleLines = report.governanceConcernRationale
+    ? doc.splitTextToSize(report.governanceConcernRationale, RATIONALE_W)
+    : [];
+  const measuredH =
+    rationaleLines.length === 0
+      ? 0
+      : TOP_PAD + (rationaleLines.length - 1) * LINE_H + BOTTOM_PAD;
+  const bannerH = Math.max(MIN_H, measuredH);
+
+  b.ensureRoom(bannerH + 8);
   b.fill([255, 248, 245]);
   b.stroke([255, 213, 179]);
   doc.setLineWidth(0.5);
-  doc.roundedRect(MARGIN, b.y, CONTENT_W, 40, 4, 4, "FD");
+  doc.roundedRect(MARGIN, b.y, CONTENT_W, bannerH, 4, 4, "FD");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
@@ -219,12 +244,15 @@ function drawConcernBanner(b: PdfBuilder) {
   b.ink(NAVY);
   doc.text(report.governanceConcern, MARGIN + 14, b.y + 30);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  b.ink(TEXT_BODY);
-  const lines = doc.splitTextToSize(report.governanceConcernRationale, CONTENT_W - 130 - 14);
-  doc.text(lines.slice(0, 2), MARGIN + 130, b.y + 18);
-  b.y += 52;
+  if (rationaleLines.length > 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(RATIONALE_FONT);
+    b.ink(TEXT_BODY);
+    // Render ALL wrapped lines. jsPDF advances LINE_H per line automatically.
+    doc.text(rationaleLines, RATIONALE_X, b.y + TOP_PAD);
+  }
+
+  b.y += bannerH + 12;
 }
 
 function drawControlsTable(b: PdfBuilder, controls: ControlEntry[]): void {
