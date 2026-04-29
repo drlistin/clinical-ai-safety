@@ -43,6 +43,7 @@ import {
   Badge,
   deriveChallengedStatus,
   statusFor,
+  type BadgeVariant,
   type StatusLevel,
 } from "./status";
 
@@ -3008,7 +3009,15 @@ function SummaryCard({
             // were colliding visually. md:col-span-2 restores the full row
             // width, gap-x-8 matches the surrounding dl gutter so the three
             // column headers never run together.
-            <div className="grid grid-cols-3 gap-x-8 gap-y-2 md:col-span-2">
+            //
+            // Phase 5A — Step 2.4. Initial Risk column now gets ~40% more
+            // width than Severity / Likelihood via an explicit fr template.
+            // The Initial Risk cell carries both the band annotation
+            // ("12 High") and a chip ("CORRECTED" or acceptability), so the
+            // extra width lets the band text and chip breathe rather than
+            // crowding each other. minmax(0,...) on each track stops grid's
+            // default min-content from blocking shrink with long content.
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-x-8 gap-y-2 md:col-span-2">
               <SummaryStat
                 label="Severity"
                 value={answers.severity}
@@ -3056,11 +3065,21 @@ function SummaryCard({
 
         {/* Phase 5A — Step 2.1. Same column-span fix as the initial-risk
             grid above so "Residual severity / likelihood / risk" headers
-            don't visually merge inside the narrower single-column slot. */}
-        <div className="grid grid-cols-3 gap-x-8 gap-y-2 md:col-span-2">
+            don't visually merge inside the narrower single-column slot.
+            Phase 5A — Step 2.4. Track widths mirror the initial-risk grid
+            so the two rows align column-for-column. The third column
+            carries the band annotation ("8 Medium") plus an acceptability
+            chip — same visual rhythm as Initial Risk so the residual row
+            no longer looks unfinished. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-x-8 gap-y-2 md:col-span-2">
           <SummaryStat label="Residual severity" value={answers.residualSeverity} />
           <SummaryStat label="Residual likelihood" value={answers.residualLikelihood} />
-          <SummaryStat label="Residual risk" value={residualRisk} extra={residualBand} />
+          <SummaryStat
+            label="Residual risk"
+            value={residualRisk}
+            extra={residualBand}
+            acceptabilityBand={residualBand}
+          />
         </div>
 
         <SummaryField label="Residual rationale" value={answers.residualRationale} />
@@ -3099,6 +3118,31 @@ function SummaryField({
   );
 }
 
+/**
+ * Phase 5A — Step 2.4. Maps a residual-risk band to a Badge descriptor for
+ * the SummaryStat's acceptability chip. Centralised so the SummaryStat
+ * stays declarative and any future surface that wants the same visual cue
+ * (PDF, executive summary, dashboards) can lift this without re-deriving.
+ *
+ * Returns null for unknown / unset bands so the caller can short-circuit
+ * with a single ternary.
+ */
+function acceptabilityChipFor(
+  band: RiskBand,
+): { variant: BadgeVariant; label?: string } {
+  switch (band) {
+    case "Low":
+      return { variant: "ready", label: "Acceptable" };
+    case "Medium":
+      return { variant: "warning", label: "Monitor" };
+    case "High":
+      return { variant: "critical", label: "Mitigate" };
+    case "Extreme":
+      // Default label "Escalate" is exactly the right word here.
+      return { variant: "escalate" };
+  }
+}
+
 function SummaryStat({
   label,
   value,
@@ -3107,6 +3151,7 @@ function SummaryStat({
   challengeLevel,
   adjusted,
   adjustedExtra,
+  acceptabilityBand,
 }: {
   label: string;
   value: number | null;
@@ -3122,9 +3167,25 @@ function SummaryStat({
   challengeLevel?: StatusLevel;
   adjusted?: number | null;
   adjustedExtra?: string | null;
+  /**
+   * Phase 5A — Step 2.4. Optional residual-band-derived acceptability chip.
+   * Only meaningful for the Residual risk column. When set, the chip slot
+   * renders an acceptability marker so the residual row carries the same
+   * visual weight as the initial-risk row's CORRECTED chip:
+   *   - Low     → ready / "Acceptable"
+   *   - Medium  → warning / "Monitor"
+   *   - High    → critical / "Mitigate"
+   *   - Extreme → escalate / default "Escalate"
+   * Mutually exclusive with `challenged` in practice — challenged is for
+   * initial-risk scores, acceptabilityBand is for residual-risk outcomes.
+   * If both are passed, challenged wins (CORRECTED is the more specific
+   * commentary on a single number).
+   */
+  acceptabilityBand?: RiskBand | null;
 }) {
   const status = challenged ? statusFor(challengeLevel ?? "review") : null;
-  // Phase 5A — Step 2.1. Per-stat chips ALWAYS use the CORRECTED variant.
+  // Phase 5A — Step 2.1. Per-stat chips ALWAYS use the CORRECTED variant
+  // when the score is challenged (governance-adjusted).
   //
   // The previous Step 2 behaviour escalated the variant alongside the
   // challenge level (corrected → critical → escalate). That conflated two
@@ -3145,7 +3206,18 @@ function SummaryStat({
   //
   // Compact mode is enabled because these chips sit in three narrow
   // SummaryCard columns where the default min-width caused overflow.
-  const statBadgeVariant: "corrected" | null = challenged ? "corrected" : null;
+  //
+  // Phase 5A — Step 2.4. Chip resolution unified through a single descriptor.
+  // The chip slot can now render either the CORRECTED variant (challenged
+  // initial-risk scores) or an acceptability variant (residual-risk band).
+  // The two paths never both produce a chip on the same cell in practice,
+  // and this function defines the precedence: challenged > acceptability.
+  const chipDescriptor: { variant: BadgeVariant; label?: string } | null =
+    challenged
+      ? { variant: "corrected" }
+      : acceptabilityBand
+        ? acceptabilityChipFor(acceptabilityBand)
+        : null;
   // Phase 5A — Step 2.2. Symmetric columns.
   //
   // The three SummaryStat columns sit side-by-side in a grid. Without
@@ -3175,7 +3247,12 @@ function SummaryStat({
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
         {label}
       </dt>
-      <dd className="mt-1 flex min-h-[2.25rem] items-baseline gap-2">
+      {/* Phase 5A — Step 2.4. dd flex gap bumped from gap-2 (8px) to gap-3
+          (12px) so the chip clearly reads as adjacent commentary on the
+          number rather than crowding it. The number gains its own ml-1.5
+          gap to its band-text annotation ("12 High"); the larger gap-3
+          separates the number+annotation cluster from the chip. */}
+      <dd className="mt-1 flex min-h-[2.25rem] items-baseline gap-3">
         <span className="text-2xl font-semibold leading-none text-white tabular-nums">
           {value ?? "-"}
           {extra ? (
@@ -3184,9 +3261,10 @@ function SummaryStat({
             </span>
           ) : null}
         </span>
-        {statBadgeVariant ? (
+        {chipDescriptor ? (
           <Badge
-            variant={statBadgeVariant}
+            variant={chipDescriptor.variant}
+            label={chipDescriptor.label}
             surface="dark"
             compact
             className="self-center"
@@ -3226,14 +3304,25 @@ function SummaryList({
           <span className="text-sm italic text-navy-400">(none)</span>
         ) : (
           // Phase 5A — Step 2.2. Refined list rhythm:
-          //   - explicit bullet glyph (•) in a softer slate tone replaces
-          //     the inline "- " prefix, which kept hyphens stuck to text
-          //     and fought the leading
+          //   - explicit bullet glyph (•) replaces the inline "- " prefix,
+          //     which kept hyphens stuck to text and fought the leading
           //   - flex layout aligns the bullet with the first line of each
           //     wrapped item even when the item runs to multiple lines
           //   - hairline white/8 divider between items so dense lists read
           //     as a structured register rather than a paragraph
           //   - generous space-y so each line of evidence breathes
+          //
+          // Phase 5A — Step 2.4. Bullets brighter / slightly larger:
+          //   - colour bumped from text-navy-400 to text-clinical-300, the
+          //     same sky-tone family as the corrected chip — visible at a
+          //     glance on the navy-950 surface without competing with the
+          //     item text
+          //   - size bumped from inheriting text-sm (14px) to text-base
+          //     (16px) so the glyph has structural weight rather than
+          //     reading as a dim tick
+          //   - leading-none keeps the glyph on its baseline; the small
+          //     pt offset shifts it down to optically line up with the
+          //     x-height of the body text
           <ul className="space-y-2 divide-y divide-white/5">
             {items.map((it, i) => (
               <li
@@ -3244,7 +3333,7 @@ function SummaryList({
               >
                 <span
                   aria-hidden
-                  className="select-none pt-[3px] text-navy-400"
+                  className="select-none pt-[1px] text-base leading-none text-clinical-300"
                 >
                   •
                 </span>

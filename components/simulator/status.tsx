@@ -393,7 +393,7 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
       pillOnDark:
         "inline-flex items-center gap-1.5 rounded-full border border-emerald-300/50 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-50",
       bannerOnDark:
-        "rounded-md border border-emerald-400/40 bg-emerald-500/10 px-4 py-3",
+        "rounded-md border border-emerald-400/40 bg-emerald-500/10 px-4 py-2.5",
       bannerOnDarkText: "text-emerald-50",
     },
   },
@@ -431,7 +431,7 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
       pillOnDark:
         "inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-50",
       bannerOnDark:
-        "rounded-md border border-amber-400/40 bg-amber-500/10 px-4 py-3",
+        "rounded-md border border-amber-400/40 bg-amber-500/10 px-4 py-2.5",
       bannerOnDarkText: "text-amber-50",
     },
   },
@@ -469,7 +469,7 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
       pillOnDark:
         "inline-flex items-center gap-1.5 rounded-full border border-rose-300/50 bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-100",
       bannerOnDark:
-        "rounded-md border border-rose-400/40 bg-rose-500/10 px-4 py-3",
+        "rounded-md border border-rose-400/40 bg-rose-500/10 px-4 py-2.5",
       bannerOnDarkText: "text-rose-50",
     },
   },
@@ -510,7 +510,7 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
       pillOnDark:
         "inline-flex items-center gap-1.5 rounded-full border border-red-500/70 bg-red-600/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-50",
       bannerOnDark:
-        "rounded-md border border-red-500/60 bg-red-600/25 px-4 py-3",
+        "rounded-md border border-red-500/60 bg-red-600/25 px-4 py-2.5",
       bannerOnDarkText: "text-red-50",
     },
   },
