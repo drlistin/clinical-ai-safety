@@ -40,6 +40,7 @@ import {
 // usage that remains is for descriptive / non-status surfaces (band chip,
 // concept lists, briefing card) which are intentionally on their own scale.
 import {
+  Badge,
   deriveChallengedStatus,
   statusFor,
   type StatusLevel,
@@ -1525,14 +1526,10 @@ function ScenarioControlsPanel({
   // Scenario-specific missing controls always indicate the entry is not
   // shippable — wired through the unified status system at "not-ready".
   const status = statusFor("not-ready");
-  const Icon = status.icon;
   return (
     <div className={status.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className={status.classes.pill}>
-          <Icon />
-          {status.shortLabel}
-        </span>
+        <Badge variant="critical" />
         <h5 className={status.classes.panelHeading}>
           Scenario-specific controls are missing
         </h5>
@@ -1669,14 +1666,10 @@ function MissingEssentialsPanel({
   // visible (and the user knows they cleared the bar).
   if (findings.length === 0) {
     const ready = statusFor("ready");
-    const ReadyIcon = ready.icon;
     return (
       <div className={ready.classes.panel.replace(" p-5", " p-4")}>
         <div className="flex items-center gap-2">
-          <span className={ready.classes.pill}>
-            <ReadyIcon />
-            Covered
-          </span>
+          <Badge variant="ready" label="Covered" />
           <p className={ready.classes.panelHeading}>
             All essential controls for this scenario are present.
           </p>
@@ -1704,14 +1697,10 @@ function MissingEssentialsPanel({
   // status system so this panel reads visually identically with the rest of
   // the critical-tier UI.
   const status = statusFor("not-ready");
-  const Icon = status.icon;
   return (
     <div className={status.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className={status.classes.pill}>
-          <Icon />
-          {status.shortLabel}
-        </span>
+        <Badge variant="critical" />
         <h5 className={status.classes.panelHeading}>
           Essential controls for this scenario are missing
         </h5>
@@ -1797,28 +1786,22 @@ function ControlField({
           {issues.map((issue, i) => {
             // Non-control entries are not-ready (they aren't a barrier at
             // all). Vague entries are review-required (they could be made
-            // auditable with a rewrite). Both wired through the unified
-            // status system so they read consistently with Step 9 panels.
+            // auditable with a rewrite). Both rendered through the unified
+            // Badge component so they sit at the same height / typography
+            // as every other badge in the simulator.
             const isNonControl = issue.level === "non-control";
             const issueStatus = statusFor(isNonControl ? "not-ready" : "review");
-            // The original styling used rose-100/amber-100 pills inset INSIDE
-            // a rose-50/amber-50 chip. We keep the same chip-inside-row
-            // pattern; the unified rowChip class handles the chip surface
-            // and the pill class handles the inset label.
             const chipClass = issueStatus.classes.rowChip;
-            const labelClass = issueStatus.classes.pill.replace(
-              "px-2 py-0.5 text-[10px]",
-              "px-1.5 py-0.5 text-[9px]",
-            );
             return (
               <li
                 key={`${issue.level}-${i}-${issue.text}`}
                 className={chipClass}
               >
                 <div className="flex items-center gap-2">
-                  <span className={labelClass}>
-                    {isNonControl ? "Not a control" : "Vague control"}
-                  </span>
+                  <Badge
+                    variant={isNonControl ? "critical" : "warning"}
+                    label={isNonControl ? "Not a control" : "Vague control"}
+                  />
                   <span className="font-semibold">&ldquo;{issue.text}&rdquo;</span>
                 </div>
                 <p className="mt-1">{issue.message}</p>
@@ -2223,18 +2206,16 @@ function ConsistencyFindingsPanel({
   const warnings = findings.filter((f) => f.level === "warning");
   // Phase 5A — header status reflects the worst level present. Critical
   // consistency findings are not-ready; warning-only is review-required.
-  // Wired through the unified status system so the header reads visually
-  // identically with every other panel.
+  // The badge variants (critical / warning) match the user-facing severity
+  // vocabulary; colours come from the status system.
   const headerStatus = statusFor(criticals.length > 0 ? "not-ready" : "review");
-  const HeaderIcon = headerStatus.icon;
+  const headerVariant: "critical" | "warning" =
+    criticals.length > 0 ? "critical" : "warning";
 
   return (
     <div className={headerStatus.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className={headerStatus.classes.pill}>
-          <HeaderIcon />
-          {headerStatus.shortLabel}
-        </span>
+        <Badge variant={headerVariant} />
         <h5 className={headerStatus.classes.panelHeading}>
           Consistency findings across this risk argument
         </h5>
@@ -2249,22 +2230,20 @@ function ConsistencyFindingsPanel({
           const itemStatus = statusFor(
             finding.level === "critical" ? "not-ready" : "review",
           );
+          const itemVariant: "critical" | "warning" =
+            finding.level === "critical" ? "critical" : "warning";
           // Per-finding chip uses the row-on-white pattern (white/60 surface
           // inside the panel) rather than the standalone rowChip variant —
           // matches existing in-panel finding-row pattern across the
           // simulator.
           const itemClass = `rounded-md border bg-white/60 px-3 py-2 text-[12px] leading-relaxed ${itemStatus.borderColor} ${itemStatus.classes.rowText}`;
-          const labelClass = itemStatus.classes.pill.replace(
-            "px-2 py-0.5 text-[10px]",
-            "px-1.5 py-0.5 text-[9px]",
-          );
           return (
             <li
               key={`consistency-${finding.kind}-${i}`}
               className={itemClass}
             >
               <div className="flex items-center gap-2">
-                <span className={labelClass}>{itemStatus.shortLabel}</span>
+                <Badge variant={itemVariant} />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
                   {consistencyFindingTitle(finding.kind)}
                 </span>
@@ -2346,22 +2325,21 @@ function ScenarioExpectationChips({
         // Critical scenario expectations are not-ready (the scenario cannot
         // ship safely without them). Improvements are review-required (the
         // scenario suggests them but they're not deployment-blocking).
+        // Badge label is "Scenario expects / suggests" — context-specific
+        // wording overrides the variant default; colour follows the variant.
         const isCritical = finding.level === "critical";
         const status = statusFor(isCritical ? "not-ready" : "review");
         const chipClass = status.classes.rowChip;
-        const labelClass = status.classes.pill.replace(
-          "px-2 py-0.5 text-[10px]",
-          "px-1.5 py-0.5 text-[9px]",
-        );
         return (
           <li
             key={`${finding.kind}-${i}-${finding.label}`}
             className={chipClass}
           >
             <div className="flex items-center gap-2">
-              <span className={labelClass}>
-                {isCritical ? "Scenario expects" : "Scenario suggests"}
-              </span>
+              <Badge
+                variant={isCritical ? "critical" : "warning"}
+                label={isCritical ? "Scenario expects" : "Scenario suggests"}
+              />
               <span className="font-semibold">&ldquo;{finding.label}&rdquo;</span>
             </div>
             <p className="mt-1">{finding.message}</p>
@@ -2379,14 +2357,10 @@ function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) 
       {issues.map((issue, i) => {
         // Critical governance issues (weak trigger / weak owner / missing
         // clinical chain) are not-ready. Warnings (vague KPI / cadence) are
-        // review-required. Both wired through the unified status system.
+        // review-required. Both wired through the unified Badge component.
         const isCritical = issue.level === "critical";
         const status = statusFor(isCritical ? "not-ready" : "review");
         const chipClass = status.classes.rowChip;
-        const labelClass = status.classes.pill.replace(
-          "px-2 py-0.5 text-[10px]",
-          "px-1.5 py-0.5 text-[9px]",
-        );
         // The "missing-clinical-chain" finding has no offending phrase to
         // quote (the problem is the absence of a role), so we just render
         // the message body without a quoted snippet.
@@ -2397,7 +2371,7 @@ function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) 
             className={chipClass}
           >
             <div className="flex items-center gap-2">
-              <span className={labelClass}>{status.shortLabel}</span>
+              <Badge variant={isCritical ? "critical" : "warning"} />
               {showQuoted ? (
                 <span className="font-semibold">&ldquo;{issue.text}&rdquo;</span>
               ) : (
@@ -2847,24 +2821,31 @@ function SummaryCard({
       {showChallenged && (() => {
         // Phase 5A — challenge severity is centralised. REVIEW for any
         // challenge by default; NOT-READY when adjusted band lands in High;
-        // ESCALATE when adjusted band lands in Extreme. Same rule as every
-        // other surface that surfaces a challenge.
-        const challengeStatus = statusFor(
-          deriveChallengedStatus({
-            severityChallenged,
-            likelihoodChallenged,
-            adjustedRiskBand: adjustedBand ?? "Low",
-          }),
-        );
-        const ChallengeIcon = challengeStatus.icon;
+        // ESCALATE when adjusted band lands in Extreme. The banner pill
+        // uses the CHALLENGED variant — the broader framing of the
+        // situation. Per-stat pills below use the CORRECTED variant for the
+        // specific number-was-fixed framing.
+        //
+        // BadgeVariant escalates with severity: REVIEW → "challenged",
+        // NOT-READY → "critical", ESCALATE → "escalate". This keeps the
+        // banner pill colour-aligned with the SummaryStat per-stat pills.
+        const challengeLevel = deriveChallengedStatus({
+          severityChallenged,
+          likelihoodChallenged,
+          adjustedRiskBand: adjustedBand ?? "Low",
+        });
+        const challengeStatus = statusFor(challengeLevel);
+        const bannerVariant: "challenged" | "critical" | "escalate" =
+          challengeLevel === "escalate"
+            ? "escalate"
+            : challengeLevel === "not-ready"
+              ? "critical"
+              : "challenged";
         return (
           <div
             className={`mt-4 flex flex-wrap items-center gap-3 ${challengeStatus.classes.bannerOnDark}`}
           >
-            <span className={challengeStatus.classes.pillOnDark}>
-              <ChallengeIcon />
-              {challengeStatus.shortLabel}
-            </span>
+            <Badge variant={bannerVariant} surface="dark" />
             <p
               className={`text-xs leading-relaxed ${challengeStatus.classes.bannerOnDarkText}`}
             >
@@ -2990,23 +2971,29 @@ function SummaryStat({
   adjustedExtra?: string | null;
 }) {
   const status = challenged ? statusFor(challengeLevel ?? "review") : null;
-  const StatusIcon = status?.icon;
+  // Phase 5A — Step 2. The per-stat badge uses the CORRECTED variant per
+  // the spec example "Severity → CORRECTED, Likelihood → CORRECTED, Risk →
+  // CORRECTED". Variant escalates with the underlying challenge level so
+  // the colour stays in sync with the banner above (CRITICAL when adjusted
+  // band lands in High, ESCALATE when Extreme — but the wording stays as
+  // CORRECTED until the level forces a stronger word, mirroring the
+  // banner's CHALLENGED → CRITICAL → ESCALATE escalation path).
+  const statBadgeVariant: "corrected" | "critical" | "escalate" | null =
+    challenged && challengeLevel === "escalate"
+      ? "escalate"
+      : challenged && challengeLevel === "not-ready"
+        ? "critical"
+        : challenged
+          ? "corrected"
+          : null;
   return (
     <div>
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-white">
         {value ?? "-"}
         {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
-        {challenged && status && StatusIcon ? (
-          <span
-            className={`ml-2 align-middle ${status.classes.pillOnDark.replace(
-              "px-2 py-0.5 text-[10px]",
-              "px-1.5 py-0.5 text-[9px]",
-            )}`}
-          >
-            <StatusIcon />
-            {status.shortLabel}
-          </span>
+        {statBadgeVariant ? (
+          <Badge variant={statBadgeVariant} surface="dark" className="ml-2" />
         ) : null}
       </dd>
       {challenged && status && adjusted != null ? (

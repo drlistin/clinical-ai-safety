@@ -21,10 +21,25 @@
  *   - StatusLevel              union of the four levels
  *   - STATUS_DEFINITIONS       record keyed by StatusLevel; exposes label,
  *                              shortLabel, severityRank, bgColor, textColor,
- *                              borderColor, icon, plus variant class strings
- *                              for the standard UI patterns this simulator
- *                              already uses (panel / pill / row chip / banner
- *                              variants for both light and dark surfaces).
+ *                              borderColor, icon, colour-token fragments for
+ *                              light + dark surfaces, plus pre-composed
+ *                              Tailwind class strings for the panel / banner
+ *                              variants this simulator already uses (the
+ *                              row-chip variant is retained for the
+ *                              non-Badge-rendered finding-row pattern).
+ *   - BadgeVariant             union of the seven user-facing badge labels
+ *                              (ready / challenged / corrected / warning /
+ *                              critical / blocked / escalate). Each variant
+ *                              maps to a StatusLevel for colour and a
+ *                              default label string for display.
+ *   - Badge                    React component. Single source of truth for
+ *                              every status pill across the simulator. Owns
+ *                              the standardised geometry (height, padding,
+ *                              border radius, min-width), typography (size,
+ *                              weight, letter-spacing, uppercase), icon
+ *                              size + spacing, and whitespace behaviour.
+ *                              Surface is "light" or "dark" — chooses the
+ *                              correct colour-token fragment.
  *   - statusFor(level)         convenience getter; equivalent to
  *                              STATUS_DEFINITIONS[level].
  *   - combineStatuses(...)     returns the worst of N levels by severityRank.
@@ -85,6 +100,27 @@ export const STATUS_LEVELS: readonly StatusLevel[] = [
  * string. Ad-hoc combinations are discouraged — pick the variant that matches
  * your surface.
  */
+/**
+ * Phase 5A — Step 2. Colour-token fragments used by the Badge component.
+ *
+ * Kept SEPARATE from the pre-composed StatusVariantClasses class strings so
+ * the Badge component can mix the colour tokens with its own standardised
+ * geometry / typography / layout rules without slicing strings apart at
+ * runtime. Two fragments per status:
+ *
+ *   - light  for badges sitting on a white / light panel surface
+ *   - dark   for badges sitting on the navy SummaryCard surface
+ *
+ * Only the THREE colour properties (bg / text / border) live here. Layout
+ * (rounded-full, px / py, font-size, etc.) is owned exclusively by the Badge
+ * component to guarantee every badge across the simulator renders at the
+ * same height, padding, radius and typography.
+ */
+export type StatusColorTokens = {
+  light: { bg: string; text: string; border: string };
+  dark: { bg: string; text: string; border: string };
+};
+
 export type StatusVariantClasses = {
   /**
    * Outer rounded card / panel wrapper. Lighter surface tint over a coloured
@@ -159,9 +195,22 @@ export type StatusDefinition = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 
   /**
+   * Phase 5A — Step 2. Light / dark colour-token fragments consumed by the
+   * Badge component. ONLY these three properties (bg / text / border) per
+   * surface; geometry and typography are standardised in the Badge component
+   * itself.
+   */
+  tokens: StatusColorTokens;
+
+  /**
    * Pre-composed Tailwind class strings for the four standard UI variants
    * this simulator already uses. Don't mix with the bare bgColor /
    * textColor / borderColor — pick one or the other for any given surface.
+   *
+   * NOTE: classes.pill and classes.pillOnDark were used by Step 1 callsites
+   * that have since migrated to the unified Badge component. They remain on
+   * the type for reference and to support any future non-Badge consumer that
+   * needs a quick standalone pill, but new code should prefer Badge.
    */
   classes: StatusVariantClasses;
 };
@@ -320,6 +369,18 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
     textColor: "text-emerald-900",
     borderColor: "border-emerald-200",
     icon: ReadyIcon,
+    tokens: {
+      light: {
+        bg: "bg-emerald-100",
+        text: "text-emerald-800",
+        border: "border-emerald-300",
+      },
+      dark: {
+        bg: "bg-emerald-500/20",
+        text: "text-emerald-50",
+        border: "border-emerald-300/50",
+      },
+    },
     classes: {
       panel: "rounded-lg border border-emerald-200 bg-emerald-50/60 p-5",
       panelHeading: "text-sm font-semibold text-emerald-900",
@@ -346,6 +407,18 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
     textColor: "text-amber-900",
     borderColor: "border-amber-200",
     icon: ReviewIcon,
+    tokens: {
+      light: {
+        bg: "bg-amber-100",
+        text: "text-amber-900",
+        border: "border-amber-300",
+      },
+      dark: {
+        bg: "bg-amber-500/20",
+        text: "text-amber-50",
+        border: "border-amber-300/50",
+      },
+    },
     classes: {
       panel: "rounded-lg border border-amber-200 bg-amber-50/60 p-5",
       panelHeading: "text-sm font-semibold text-amber-900",
@@ -372,6 +445,18 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
     textColor: "text-rose-900",
     borderColor: "border-rose-200",
     icon: NotReadyIcon,
+    tokens: {
+      light: {
+        bg: "bg-rose-100",
+        text: "text-rose-800",
+        border: "border-rose-300",
+      },
+      dark: {
+        bg: "bg-rose-500/20",
+        text: "text-rose-100",
+        border: "border-rose-300/50",
+      },
+    },
     classes: {
       panel: "rounded-lg border border-rose-200 bg-rose-50/60 p-5",
       panelHeading: "text-sm font-semibold text-rose-900",
@@ -401,6 +486,18 @@ export const STATUS_DEFINITIONS: Record<StatusLevel, StatusDefinition> = {
     textColor: "text-red-50",
     borderColor: "border-red-700",
     icon: EscalateIcon,
+    tokens: {
+      light: {
+        bg: "bg-stone-900",
+        text: "text-red-50",
+        border: "border-red-700",
+      },
+      dark: {
+        bg: "bg-red-600/40",
+        text: "text-red-50",
+        border: "border-red-500/70",
+      },
+    },
     classes: {
       panel: "rounded-lg border border-red-700 bg-stone-900 p-5",
       panelHeading: "text-sm font-semibold text-red-50",
@@ -558,4 +655,163 @@ export function deriveOverallStatus(args: {
   }
 
   return combineStatuses(...candidates);
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 5A — Step 2. Unified Badge component.                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The seven user-facing badge variants. Each maps to a StatusLevel for
+ * colour and to a default label string for display. The variants exist
+ * because the simulator UI needs to communicate slightly different things
+ * with the same underlying status colour:
+ *
+ *   - ready       READY       — positive confirmation (default for ready level)
+ *   - challenged  CHALLENGED  — score has been challenged by governance
+ *                               (used on the SummaryCard banner pill — the
+ *                               broader framing of the situation)
+ *   - corrected   CORRECTED   — this specific number has been governance-
+ *                               adjusted (used on per-stat pills next to a
+ *                               severity / likelihood / risk number)
+ *   - warning     WARNING     — generic warning (default for review level)
+ *   - critical    CRITICAL    — critical finding present
+ *   - blocked     BLOCKED     — deployment is blocked (consequence framing,
+ *                               reserved for future executive summary /
+ *                               governance output surfaces)
+ *   - escalate    ESCALATE    — immediate escalation required
+ *
+ * BadgeVariant is decoupled from StatusLevel because multiple variants can
+ * share a level (challenged + corrected + warning are all review-level,
+ * critical + blocked are both not-ready) — the variant carries the user-
+ * facing word, the level carries the colour.
+ */
+export type BadgeVariant =
+  | "ready"
+  | "challenged"
+  | "corrected"
+  | "warning"
+  | "critical"
+  | "blocked"
+  | "escalate";
+
+/**
+ * Variant → status level + default label. Single source of truth for the
+ * variant vocabulary. Update HERE to change a default label or to map a
+ * variant to a different level.
+ */
+export const BADGE_VARIANT_DEFINITIONS: Record<
+  BadgeVariant,
+  { level: StatusLevel; defaultLabel: string }
+> = {
+  ready: { level: "ready", defaultLabel: "Ready" },
+  challenged: { level: "review", defaultLabel: "Challenged" },
+  corrected: { level: "review", defaultLabel: "Corrected" },
+  warning: { level: "review", defaultLabel: "Warning" },
+  critical: { level: "not-ready", defaultLabel: "Critical" },
+  blocked: { level: "not-ready", defaultLabel: "Blocked" },
+  escalate: { level: "escalate", defaultLabel: "Escalate" },
+};
+
+export type BadgeProps = {
+  /** Which named variant. Drives both colour (via status level) and label. */
+  variant: BadgeVariant;
+
+  /**
+   * Override the displayed label. Use only when the surface needs a
+   * context-specific word that the variant default doesn't capture. Examples
+   * across the simulator:
+   *   - "Covered" instead of "Ready" (MissingEssentialsPanel positive case)
+   *   - "Not a control" instead of "Critical" (ControlField non-control chip)
+   *   - "Vague control" instead of "Warning" (ControlField vague chip)
+   *   - "Scenario expects" instead of "Critical" (ScenarioExpectationChips)
+   *   - "Scenario suggests" instead of "Warning" (ScenarioExpectationChips)
+   * The colour and icon stay tied to the variant; only the displayed text
+   * changes.
+   */
+  label?: string;
+
+  /**
+   * Surface the badge sits on. Drives whether the colour token's "light" or
+   * "dark" fragment is used. Light is the default; dark is the navy
+   * SummaryCard surface where translucent variants read better than the
+   * full-saturation light-surface palette.
+   */
+  surface?: "light" | "dark";
+
+  /**
+   * Hide the icon. Default false. Use sparingly — most badges should keep
+   * the icon for instant scanning. Useful for very dense inline contexts
+   * where a separate adjacent icon would be redundant.
+   */
+  hideIcon?: boolean;
+
+  /**
+   * Optional extra Tailwind class string. Use for layout-adjacent tweaks
+   * (margin-left next to a number, etc.) — NEVER to override the badge's
+   * standardised geometry / typography / colour. Append-only.
+   */
+  className?: string;
+};
+
+/**
+ * The single badge component for the simulator UI. Owns the standardised
+ * geometry, typography and icon presentation per Phase 5A — Step 2:
+ *
+ *   - same height across all variants (inline-flex + py-1)
+ *   - same internal padding (px-2.5 py-1)
+ *   - same border radius (rounded-full)
+ *   - same typography (text-[10px] font-semibold tracking-[0.12em] uppercase)
+ *   - same icon size + spacing (h-3.5 w-3.5 mr-1.5 flex-none)
+ *   - same minimum width so short labels don't look tiny (min-w-[88px])
+ *   - same wrap behaviour (whitespace-nowrap so a long label never breaks
+ *     across two lines and warps the layout)
+ *
+ * Colour comes from the status definition's tokens. Layout never changes
+ * across surfaces — only the colour fragments do.
+ */
+export function Badge({
+  variant,
+  label,
+  surface = "light",
+  hideIcon = false,
+  className,
+}: BadgeProps) {
+  const def = BADGE_VARIANT_DEFINITIONS[variant];
+  const status = STATUS_DEFINITIONS[def.level];
+  const tokens = surface === "dark" ? status.tokens.dark : status.tokens.light;
+  const Icon = status.icon;
+  const text = label ?? def.defaultLabel;
+
+  // Phase 5A — Step 2. Standardised geometry / typography is owned HERE so
+  // every badge across the simulator renders at the same height, padding,
+  // radius and typography. Colour comes from `tokens` (light vs dark).
+  const classes = [
+    // Layout & alignment.
+    "inline-flex items-center justify-center align-middle",
+    // Sizing & wrap behaviour.
+    "min-w-[88px] whitespace-nowrap",
+    // Shape.
+    "rounded-full border",
+    // Internal padding — px-2.5 py-1 produces ~24px height with the 14px
+    // icon and 10px text, which reads as a premium audit-ready chip.
+    "px-2.5 py-1",
+    // Typography per spec.
+    "text-[10px] font-semibold uppercase tracking-[0.12em]",
+    // Surface-specific colour fragments.
+    tokens.bg,
+    tokens.text,
+    tokens.border,
+    // Caller append-only.
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <span className={classes} data-status-level={def.level} data-badge-variant={variant}>
+      {!hideIcon && <Icon className="mr-1.5" />}
+      {text}
+    </span>
+  );
 }

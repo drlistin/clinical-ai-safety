@@ -1,17 +1,24 @@
 /**
- * Phase 5A — Step 1 verification harness for the unified visual status system.
+ * Phase 5A verification harness for the unified visual status system.
  *
  * This file does NOT import status.tsx (the project has noEmit: true and no
  * build step that produces JS the runtime can require). Instead it acts as
- * a deterministic spec the implementation must conform to. The matrix below
- * is the expected behaviour of:
+ * a deterministic spec the implementation must conform to. Sections:
  *
- *   - STATUS_DEFINITIONS keys, labels, severity ranks
- *   - combineStatuses: worst-rank wins
- *   - deriveChallengedStatus: REVIEW by default, NOT-READY for High,
- *     ESCALATE for Extreme, READY when not challenged
- *   - acceptabilityStatusFor: Low→READY, Medium→REVIEW, High→NOT-READY,
- *     Extreme→ESCALATE, null→READY
+ *   STEP 1 — STATUS LEVELS
+ *     - STATUS_DEFINITIONS keys, labels, severity ranks
+ *     - combineStatuses: worst-rank wins
+ *     - deriveChallengedStatus: REVIEW by default, NOT-READY for High,
+ *       ESCALATE for Extreme, READY when not challenged
+ *     - acceptabilityStatusFor: Low→READY, Medium→REVIEW, High→NOT-READY,
+ *       Extreme→ESCALATE, null→READY
+ *
+ *   STEP 2 — BADGE VARIANTS
+ *     - BADGE_VARIANT_DEFINITIONS keys map to the right StatusLevel
+ *     - default labels match the user-facing vocabulary
+ *     - all seven variants present (ready / challenged / corrected /
+ *       warning / critical / blocked / escalate)
+ *     - level mapping matches the spec table
  *
  * Run `node outputs/status_system_verify.js` to print the expected matrix.
  * Use the printed table to spot-check the implementation when reviewing
@@ -122,5 +129,73 @@ assertEq(acceptabilityStatusFor("Medium"), "review", "Medium → review");
 assertEq(acceptabilityStatusFor("High"), "not-ready", "High → not-ready");
 assertEq(acceptabilityStatusFor("Extreme"), "escalate", "Extreme → escalate");
 assertEq(acceptabilityStatusFor(null), "ready", "null → ready");
+
+// ====================================================================
+// Phase 5A — Step 2. Badge variants.
+// ====================================================================
+
+const BADGE_VARIANT_DEFINITIONS = {
+  ready: { level: "ready", defaultLabel: "Ready" },
+  challenged: { level: "review", defaultLabel: "Challenged" },
+  corrected: { level: "review", defaultLabel: "Corrected" },
+  warning: { level: "review", defaultLabel: "Warning" },
+  critical: { level: "not-ready", defaultLabel: "Critical" },
+  blocked: { level: "not-ready", defaultLabel: "Blocked" },
+  escalate: { level: "escalate", defaultLabel: "Escalate" },
+};
+
+const EXPECTED_BADGE_VARIANTS = [
+  "ready",
+  "challenged",
+  "corrected",
+  "warning",
+  "critical",
+  "blocked",
+  "escalate",
+];
+
+console.log("\n=== Badge variants ===");
+for (const v of EXPECTED_BADGE_VARIANTS) {
+  const def = BADGE_VARIANT_DEFINITIONS[v];
+  console.log(
+    `  ${v.padEnd(11)} level=${def.level.padEnd(10)}  defaultLabel="${def.defaultLabel}"`,
+  );
+}
+
+assertEq(
+  Object.keys(BADGE_VARIANT_DEFINITIONS).length,
+  EXPECTED_BADGE_VARIANTS.length,
+  "exactly seven variants present",
+);
+for (const v of EXPECTED_BADGE_VARIANTS) {
+  assertEq(
+    typeof BADGE_VARIANT_DEFINITIONS[v]?.level,
+    "string",
+    `variant "${v}" maps to a level`,
+  );
+  assertEq(
+    typeof BADGE_VARIANT_DEFINITIONS[v]?.defaultLabel,
+    "string",
+    `variant "${v}" has a defaultLabel`,
+  );
+}
+
+// Per-variant level mappings per the spec.
+assertEq(BADGE_VARIANT_DEFINITIONS.ready.level, "ready", "ready → ready");
+assertEq(BADGE_VARIANT_DEFINITIONS.challenged.level, "review", "challenged → review");
+assertEq(BADGE_VARIANT_DEFINITIONS.corrected.level, "review", "corrected → review");
+assertEq(BADGE_VARIANT_DEFINITIONS.warning.level, "review", "warning → review");
+assertEq(BADGE_VARIANT_DEFINITIONS.critical.level, "not-ready", "critical → not-ready");
+assertEq(BADGE_VARIANT_DEFINITIONS.blocked.level, "not-ready", "blocked → not-ready");
+assertEq(BADGE_VARIANT_DEFINITIONS.escalate.level, "escalate", "escalate → escalate");
+
+// Default labels per spec — driving consistent enterprise wording.
+assertEq(BADGE_VARIANT_DEFINITIONS.ready.defaultLabel, "Ready", "Ready label");
+assertEq(BADGE_VARIANT_DEFINITIONS.challenged.defaultLabel, "Challenged", "Challenged label");
+assertEq(BADGE_VARIANT_DEFINITIONS.corrected.defaultLabel, "Corrected", "Corrected label");
+assertEq(BADGE_VARIANT_DEFINITIONS.warning.defaultLabel, "Warning", "Warning label");
+assertEq(BADGE_VARIANT_DEFINITIONS.critical.defaultLabel, "Critical", "Critical label");
+assertEq(BADGE_VARIANT_DEFINITIONS.blocked.defaultLabel, "Blocked", "Blocked label");
+assertEq(BADGE_VARIANT_DEFINITIONS.escalate.defaultLabel, "Escalate", "Escalate label");
 
 console.log("\nAll Phase 5A status spec assertions pass when this script exits with code 0.");
