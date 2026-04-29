@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   KeywordGroup,
   RiskBand,
@@ -524,6 +524,13 @@ export default function HazardLogSimulator({
   scenario: Scenario;
 }) {
   const [step, setStep] = useState(1);
+  // Phase 5A — Step 2.3. The highest step the user has ever reached.
+  // Monotonically non-decreasing through the lifetime of a single simulator
+  // session: bumped only when Next advances past it; never decremented when
+  // jumping back via the progress indicator. This is what gates which steps
+  // in the stepper are clickable — the user can revisit any step they've
+  // previously been on but cannot leapfrog into unseen territory.
+  const [maxReached, setMaxReached] = useState(1);
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -533,6 +540,24 @@ export default function HazardLogSimulator({
   useEffect(() => {
     containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [step]);
+
+  /**
+   * Phase 5A — Step 2.3. Single navigation helper. Every step transition
+   * (Next, Back, progress-indicator click) flows through here so:
+   *   - bounds are validated once
+   *   - maxReached is correctly bumped on forward navigation
+   *   - back / jump-back navigation NEVER decrements maxReached, preserving
+   *     the user's right to re-enter steps they've already visited
+   *   - answers are not touched (state is preserved across navigation)
+   * The function tolerates out-of-range inputs (clamps / no-ops) so callers
+   * can pass arithmetic results without pre-validating.
+   */
+  const navigateToStep = useCallback((next: number) => {
+    if (!Number.isFinite(next)) return;
+    const clamped = Math.min(STEPS.length, Math.max(1, Math.trunc(next)));
+    setStep(clamped);
+    setMaxReached((m) => Math.max(m, clamped));
+  }, []);
 
   const initialRisk = useMemo(
     () => calculateInitialRisk(answers.severity, answers.likelihood),
@@ -587,6 +612,10 @@ export default function HazardLogSimulator({
   const handleReset = () => {
     setAnswers(initialAnswers);
     setStep(1);
+    // Phase 5A — Step 2.3. Reset wipes the navigation history too, otherwise
+    // a fresh exercise would inherit clickable links to every previously
+    // visited step in the previous run.
+    setMaxReached(1);
     setExportError(null);
   };
 
@@ -672,7 +701,11 @@ export default function HazardLogSimulator({
       ref={containerRef}
       className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-sm"
     >
-      <ProgressIndicator step={step} />
+      <ProgressIndicator
+        step={step}
+        maxReached={maxReached}
+        onStepClick={navigateToStep}
+      />
 
       <div className="border-b border-navy-100 bg-navy-50/40 px-6 py-5 md:px-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clinical-700">
@@ -781,7 +814,7 @@ export default function HazardLogSimulator({
           <button
             type="button"
             disabled={isFirst}
-            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            onClick={() => navigateToStep(step - 1)}
             className="text-sm font-medium text-navy-600 transition-colors hover:text-navy-900 disabled:cursor-not-allowed disabled:text-navy-300"
           >
             ← Back
@@ -795,7 +828,7 @@ export default function HazardLogSimulator({
             <button
               type="button"
               disabled={!canAdvance}
-              onClick={() => setStep((s) => Math.min(STEPS.length, s + 1))}
+              onClick={() => navigateToStep(step + 1)}
               className="inline-flex items-center rounded-md bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-800 disabled:cursor-not-allowed disabled:bg-navy-300"
             >
               {isFirst ? "Begin exercise" : step === 9 ? "Review answers" : "Next"}
@@ -842,7 +875,26 @@ function validationHint(step: number): string {
 /* Progress indicator                                                  */
 /* ------------------------------------------------------------------ */
 
-function ProgressIndicator({ step }: { step: number }) {
+function ProgressIndicator({
+  step,
+  maxReached,
+  onStepClick,
+}: {
+  step: number;
+  /**
+   * Phase 5A — Step 2.3. Highest step the user has visited in this session.
+   * Steps 1..maxReached render as keyboard- and mouse-accessible buttons;
+   * steps beyond maxReached render as inert disabled markers so the user
+   * can't leapfrog into territory they haven't yet seen.
+   */
+  maxReached: number;
+  /**
+   * Click / activate handler. Receives the 1-indexed step id. Called both
+   * on mouse click and on keyboard activation (Enter / Space) of a
+   * stepper button.
+   */
+  onStepClick: (id: number) => void;
+}) {
   const pct = Math.round(((step - 1) / (STEPS.length - 1)) * 100);
   return (
     <div className="border-b border-navy-100 bg-white px-6 pt-4 md:px-10">
@@ -856,23 +908,78 @@ function ProgressIndicator({ step }: { step: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="mt-3 hidden grid-cols-10 gap-1 pb-3 text-[10px] font-medium uppercase tracking-wider md:grid">
-        {STEPS.map((s) => (
-          <div
-            key={s.id}
-            className={`truncate text-center ${
-              s.id === step
-                ? "text-clinical-700"
-                : s.id < step
-                ? "text-navy-700"
-                : "text-navy-300"
-            }`}
-            title={s.name}
-          >
-            {String(s.id).padStart(2, "0")}
-          </div>
-        ))}
-      </div>
+      {/*
+        Phase 5A — Step 2.3. Each step is rendered as a button so users can
+        jump freely to any step they've previously reached. Three states:
+
+          - current      step.id === step              clinical-700, ring on focus
+          - reachable    step.id <= maxReached         navy-700, hoverable / focusable
+          - unreached    step.id > maxReached          navy-300, aria-disabled, no hover
+
+        The previous visited-vs-future split (s.id < step / s.id > step) is
+        replaced with reachable-vs-unreached based on maxReached, since the
+        user can be ON step 3 while having previously reached step 7 — so a
+        purely "less than current" rule would incorrectly disable steps 4-7.
+
+        Buttons carry aria-label="Go to step N: <name>" so screen readers
+        announce the destination, plus aria-current="step" on the active
+        item. type="button" prevents accidental form submission.
+      */}
+      <ol
+        className="mt-3 hidden grid-cols-10 gap-1 pb-3 text-[10px] font-medium uppercase tracking-wider md:grid"
+        aria-label="Hazard log builder progress"
+      >
+        {STEPS.map((s) => {
+          const isCurrent = s.id === step;
+          const isReachable = s.id <= maxReached;
+          const numberLabel = String(s.id).padStart(2, "0");
+          const ariaLabel = `Go to step ${s.id}: ${s.name}`;
+          // Common visual chrome: focus ring for keyboard users, transition
+          // for hover, and a 1px-of-bottom-padding underline indicator on
+          // the current step so the highlight reads at a glance.
+          const baseClass =
+            "block truncate rounded-sm px-1 py-1 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-clinical-500 focus-visible:ring-offset-1";
+          if (!isReachable) {
+            // Unreached: rendered as a disabled button so it stays in the
+            // document tab order's natural place but cannot be activated.
+            // Visual cue: muted colour + not-allowed cursor.
+            return (
+              <li key={s.id} role="presentation">
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  aria-label={`Step ${s.id}: ${s.name} (not yet reached)`}
+                  title={`${s.name} — not yet reached`}
+                  className={`${baseClass} cursor-not-allowed text-navy-300`}
+                >
+                  {numberLabel}
+                </button>
+              </li>
+            );
+          }
+          // Reachable. Current step is highlighted (clinical accent + bold);
+          // other reachable steps are navy-700 with a hover lift to
+          // clinical-600 so they read as clearly clickable.
+          const stateClass = isCurrent
+            ? "font-semibold text-clinical-700 bg-clinical-50 hover:bg-clinical-100"
+            : "text-navy-700 hover:text-clinical-700 hover:bg-clinical-50";
+          return (
+            <li key={s.id} role="presentation">
+              <button
+                type="button"
+                onClick={() => onStepClick(s.id)}
+                aria-label={ariaLabel}
+                aria-current={isCurrent ? "step" : undefined}
+                title={s.name}
+                className={`${baseClass} ${stateClass} cursor-pointer`}
+              >
+                {numberLabel}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
       <div className="md:hidden pb-3" />
     </div>
   );
