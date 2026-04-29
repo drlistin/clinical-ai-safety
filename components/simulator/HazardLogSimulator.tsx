@@ -2845,7 +2845,12 @@ function SummaryCard({
           <div
             className={`mt-4 flex flex-wrap items-center gap-3 ${challengeStatus.classes.bannerOnDark}`}
           >
-            <Badge variant={bannerVariant} surface="dark" />
+            {/* Phase 5A — Step 2.1. Compact mode slims the banner pill so it
+                still feels premium but no longer dominates the dark surface
+                callout. Same height as the default badge; ~10–15% less
+                horizontal density via reduced padding and dropped
+                min-width floor. */}
+            <Badge variant={bannerVariant} surface="dark" compact />
             <p
               className={`text-xs leading-relaxed ${challengeStatus.classes.bannerOnDarkText}`}
             >
@@ -2877,7 +2882,14 @@ function SummaryCard({
               })
             : "review";
           return (
-            <div className="grid grid-cols-3 gap-4">
+            // Phase 5A — Step 2.1. Span both parent dl columns so the three
+            // stat columns each get a fair share of width. Inside the
+            // single-column slot the previous layout used, "LIKELIHOOD" and
+            // "INITIAL RISK" headers (text-[10px] + tracking-[0.22em] is wide)
+            // were colliding visually. md:col-span-2 restores the full row
+            // width, gap-x-8 matches the surrounding dl gutter so the three
+            // column headers never run together.
+            <div className="grid grid-cols-3 gap-x-8 gap-y-2 md:col-span-2">
               <SummaryStat
                 label="Severity"
                 value={answers.severity}
@@ -2918,7 +2930,10 @@ function SummaryCard({
           items={[...splitLines(answers.existingCorrective), ...splitLines(answers.proposedCorrective)]}
         />
 
-        <div className="grid grid-cols-3 gap-4">
+        {/* Phase 5A — Step 2.1. Same column-span fix as the initial-risk
+            grid above so "Residual severity / likelihood / risk" headers
+            don't visually merge inside the narrower single-column slot. */}
+        <div className="grid grid-cols-3 gap-x-8 gap-y-2 md:col-span-2">
           <SummaryStat label="Residual severity" value={answers.residualSeverity} />
           <SummaryStat label="Residual likelihood" value={answers.residualLikelihood} />
           <SummaryStat label="Residual risk" value={residualRisk} extra={residualBand} />
@@ -2971,29 +2986,37 @@ function SummaryStat({
   adjustedExtra?: string | null;
 }) {
   const status = challenged ? statusFor(challengeLevel ?? "review") : null;
-  // Phase 5A — Step 2. The per-stat badge uses the CORRECTED variant per
-  // the spec example "Severity → CORRECTED, Likelihood → CORRECTED, Risk →
-  // CORRECTED". Variant escalates with the underlying challenge level so
-  // the colour stays in sync with the banner above (CRITICAL when adjusted
-  // band lands in High, ESCALATE when Extreme — but the wording stays as
-  // CORRECTED until the level forces a stronger word, mirroring the
-  // banner's CHALLENGED → CRITICAL → ESCALATE escalation path).
-  const statBadgeVariant: "corrected" | "critical" | "escalate" | null =
-    challenged && challengeLevel === "escalate"
-      ? "escalate"
-      : challenged && challengeLevel === "not-ready"
-        ? "critical"
-        : challenged
-          ? "corrected"
-          : null;
+  // Phase 5A — Step 2.1. Per-stat chips ALWAYS use the CORRECTED variant.
+  //
+  // The previous Step 2 behaviour escalated the variant alongside the
+  // challenge level (corrected → critical → escalate). That conflated two
+  // separate signals: a per-stat chip describes a SCORE ADJUSTMENT, not an
+  // active critical incident or an escalation event. CRITICAL is now
+  // reserved for actual deployment blockers / critical findings; ESCALATE
+  // for the highest-severity escalation surface (the banner pill above
+  // already escalates as the situation worsens, which keeps the visual
+  // hierarchy intact).
+  //
+  // The caption text below the number ("Governance-adjusted: X") still uses
+  // the underlying challenge-level colour via status.classes.bannerOnDarkText
+  // so the secondary text remains aligned with the banner above.
+  //
+  // Compact mode is enabled because these chips sit in three narrow
+  // SummaryCard columns where the default min-width caused overflow.
+  const statBadgeVariant: "corrected" | null = challenged ? "corrected" : null;
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-white">
         {value ?? "-"}
         {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
         {statBadgeVariant ? (
-          <Badge variant={statBadgeVariant} surface="dark" className="ml-2" />
+          <Badge
+            variant={statBadgeVariant}
+            surface="dark"
+            compact
+            className="ml-2"
+          />
         ) : null}
       </dd>
       {challenged && status && adjusted != null ? (

@@ -747,6 +747,27 @@ export type BadgeProps = {
   hideIcon?: boolean;
 
   /**
+   * Phase 5A — Step 2.1. Render the badge in compact mode.
+   *
+   * Compact mode keeps the same height and typography as the default badge
+   * but tightens horizontal density so the badge sits cleanly inside narrow
+   * columns (the SummaryCard's three per-stat columns) and slims slightly
+   * dominant banner pills.
+   *
+   * Compared to the default geometry:
+   *   - no `min-w-[88px]` floor (let natural width take over)
+   *   - reduced horizontal padding (`px-2` vs `px-2.5`)
+   *   - reduced icon gap (`mr-1` vs `mr-1.5`)
+   *   - same vertical padding / height (`py-1`)
+   *   - same border, radius, typography and colour tokens
+   *
+   * Default false. Use for: per-stat chips next to a number in narrow grid
+   * columns, banner pills that need to feel less dominant. Don't use for
+   * full-width row chips where the standard density is correct.
+   */
+  compact?: boolean;
+
+  /**
    * Optional extra Tailwind class string. Use for layout-adjacent tweaks
    * (margin-left next to a number, etc.) — NEVER to override the badge's
    * standardised geometry / typography / colour. Append-only.
@@ -759,22 +780,29 @@ export type BadgeProps = {
  * geometry, typography and icon presentation per Phase 5A — Step 2:
  *
  *   - same height across all variants (inline-flex + py-1)
- *   - same internal padding (px-2.5 py-1)
+ *   - same internal padding (px-2.5 py-1; px-2 in compact mode)
  *   - same border radius (rounded-full)
  *   - same typography (text-[10px] font-semibold tracking-[0.12em] uppercase)
- *   - same icon size + spacing (h-3.5 w-3.5 mr-1.5 flex-none)
- *   - same minimum width so short labels don't look tiny (min-w-[88px])
+ *   - same icon size + spacing (h-3.5 w-3.5 mr-1.5 flex-none; mr-1 in compact)
+ *   - same minimum width so short labels don't look tiny (min-w-[88px];
+ *     suppressed in compact mode so badges fit narrow grid columns)
  *   - same wrap behaviour (whitespace-nowrap so a long label never breaks
  *     across two lines and warps the layout)
  *
  * Colour comes from the status definition's tokens. Layout never changes
  * across surfaces — only the colour fragments do.
+ *
+ * Phase 5A — Step 2.1. The optional `compact` prop tightens horizontal
+ * density (no min-width floor, smaller padding, smaller icon gap) without
+ * changing height or typography. Used for per-stat chips inside narrow
+ * grid columns and to slim the SummaryCard banner pill.
  */
 export function Badge({
   variant,
   label,
   surface = "light",
   hideIcon = false,
+  compact = false,
   className,
 }: BadgeProps) {
   const def = BADGE_VARIANT_DEFINITIONS[variant];
@@ -786,16 +814,26 @@ export function Badge({
   // Phase 5A — Step 2. Standardised geometry / typography is owned HERE so
   // every badge across the simulator renders at the same height, padding,
   // radius and typography. Colour comes from `tokens` (light vs dark).
+  //
+  // Phase 5A — Step 2.1. Compact mode swaps three layout fragments:
+  //   - drops the `min-w-[88px]` floor so the badge collapses to its natural
+  //     width (no overflow in narrow columns)
+  //   - reduces horizontal padding from px-2.5 to px-2 (~20% per side)
+  //   - reduces icon margin-right from mr-1.5 to mr-1
+  // Vertical padding (py-1) is unchanged so default and compact badges sit
+  // at exactly the same height when they appear next to each other.
   const classes = [
     // Layout & alignment.
     "inline-flex items-center justify-center align-middle",
-    // Sizing & wrap behaviour.
-    "min-w-[88px] whitespace-nowrap",
+    // Sizing & wrap behaviour. min-width floor only in default mode; compact
+    // collapses to natural width so it can fit narrow grid columns without
+    // overflowing.
+    compact ? "whitespace-nowrap" : "min-w-[88px] whitespace-nowrap",
     // Shape.
     "rounded-full border",
-    // Internal padding — px-2.5 py-1 produces ~24px height with the 14px
-    // icon and 10px text, which reads as a premium audit-ready chip.
-    "px-2.5 py-1",
+    // Internal padding. Vertical padding is constant across modes so the
+    // badge height is stable; horizontal padding tightens in compact mode.
+    compact ? "px-2 py-1" : "px-2.5 py-1",
     // Typography per spec.
     "text-[10px] font-semibold uppercase tracking-[0.12em]",
     // Surface-specific colour fragments.
@@ -809,8 +847,13 @@ export function Badge({
     .join(" ");
 
   return (
-    <span className={classes} data-status-level={def.level} data-badge-variant={variant}>
-      {!hideIcon && <Icon className="mr-1.5" />}
+    <span
+      className={classes}
+      data-status-level={def.level}
+      data-badge-variant={variant}
+      data-badge-compact={compact ? "true" : undefined}
+    >
+      {!hideIcon && <Icon className={compact ? "mr-1" : "mr-1.5"} />}
       {text}
     </span>
   );
