@@ -32,6 +32,18 @@ import {
   type GovernanceQualityIssue,
   type ScenarioExpectationFinding,
 } from "./validation";
+// Phase 5A — Step 1. Unified visual status system. All status indicators
+// (challenged badges, consistency findings, governance/scenario chips,
+// missing-essentials and scenario-controls panels) consume STATUS_DEFINITIONS
+// instead of inlining colour classes. This file is the only place that
+// references "rose", "amber" etc. for SEMANTIC status; raw rose/amber/emerald
+// usage that remains is for descriptive / non-status surfaces (band chip,
+// concept lists, briefing card) which are intentionally on their own scale.
+import {
+  deriveChallengedStatus,
+  statusFor,
+  type StatusLevel,
+} from "./status";
 
 /* ------------------------------------------------------------------ */
 /* Types & static metadata                                            */
@@ -1510,17 +1522,22 @@ function ScenarioControlsPanel({
     { key: "corrective", title: "Scenario expects (corrective)" },
   ];
 
+  // Scenario-specific missing controls always indicate the entry is not
+  // shippable — wired through the unified status system at "not-ready".
+  const status = statusFor("not-ready");
+  const Icon = status.icon;
   return (
-    <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-5">
+    <div className={status.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800">
-          Critical
+        <span className={status.classes.pill}>
+          <Icon />
+          {status.shortLabel}
         </span>
-        <h5 className="text-sm font-semibold text-rose-900">
+        <h5 className={status.classes.panelHeading}>
           Scenario-specific controls are missing
         </h5>
       </div>
-      <p className="mt-1.5 text-xs text-rose-800">
+      <p className={status.classes.panelSubtle}>
         These items are expected by this scenario&apos;s safety case. Add a
         matching control above (in the correct category) to clear the finding.
       </p>
@@ -1530,17 +1547,21 @@ function ScenarioControlsPanel({
           if (items.length === 0) return null;
           return (
             <div key={s.key}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
+              <p
+                className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${status.classes.rowTitleAccent}`}
+              >
                 {s.title}
               </p>
               <ul className="mt-1.5 space-y-1.5">
                 {items.map((f) => (
                   <li
                     key={`scenario-${s.key}-${f.label}`}
-                    className="rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
+                    className={`rounded-md border bg-white/60 px-3 py-2 text-[12px] leading-relaxed ${status.borderColor} ${status.classes.rowText}`}
                   >
                     <span className="font-semibold">&ldquo;{f.label}&rdquo;</span>
-                    <p className="mt-1 text-[11px] text-rose-800">
+                    <p
+                      className={`mt-1 text-[11px] ${status.classes.rowText}`}
+                    >
                       {f.message}
                     </p>
                   </li>
@@ -1647,13 +1668,16 @@ function MissingEssentialsPanel({
   // are covered. Render a calm green confirmation so the engine's run is
   // visible (and the user knows they cleared the bar).
   if (findings.length === 0) {
+    const ready = statusFor("ready");
+    const ReadyIcon = ready.icon;
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+      <div className={ready.classes.panel.replace(" p-5", " p-4")}>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+          <span className={ready.classes.pill}>
+            <ReadyIcon />
             Covered
           </span>
-          <p className="text-sm font-semibold text-emerald-900">
+          <p className={ready.classes.panelHeading}>
             All essential controls for this scenario are present.
           </p>
         </div>
@@ -1676,17 +1700,23 @@ function MissingEssentialsPanel({
     { key: "corrective", title: "Corrective essentials missing" },
   ];
 
+  // Missing essentials are always not-ready. Wired through the unified
+  // status system so this panel reads visually identically with the rest of
+  // the critical-tier UI.
+  const status = statusFor("not-ready");
+  const Icon = status.icon;
   return (
-    <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-5">
+    <div className={status.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800">
-          Critical
+        <span className={status.classes.pill}>
+          <Icon />
+          {status.shortLabel}
         </span>
-        <h5 className="text-sm font-semibold text-rose-900">
+        <h5 className={status.classes.panelHeading}>
           Essential controls for this scenario are missing
         </h5>
       </div>
-      <p className="mt-1.5 text-xs text-rose-800">
+      <p className={status.classes.panelSubtle}>
         Each item below is a barrier this scenario cannot ship safely without.
         Add a matching control above (in the correct category) to clear the
         finding.
@@ -1697,17 +1727,21 @@ function MissingEssentialsPanel({
           if (items.length === 0) return null;
           return (
             <div key={s.key}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
+              <p
+                className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${status.classes.rowTitleAccent}`}
+              >
                 {s.title}
               </p>
               <ul className="mt-1.5 space-y-1.5">
                 {items.map((f) => (
                   <li
                     key={`${s.key}-${f.label}`}
-                    className="rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
+                    className={`rounded-md border bg-white/60 px-3 py-2 text-[12px] leading-relaxed ${status.borderColor} ${status.classes.rowText}`}
                   >
                     <span className="font-semibold">&ldquo;{f.label}&rdquo;</span>
-                    <p className="mt-1 text-[11px] text-rose-800">
+                    <p
+                      className={`mt-1 text-[11px] ${status.classes.rowText}`}
+                    >
                       {f.message}
                     </p>
                   </li>
@@ -1761,13 +1795,21 @@ function ControlField({
       {issues.length > 0 && (
         <ul className="mt-2 space-y-1.5">
           {issues.map((issue, i) => {
+            // Non-control entries are not-ready (they aren't a barrier at
+            // all). Vague entries are review-required (they could be made
+            // auditable with a rewrite). Both wired through the unified
+            // status system so they read consistently with Step 9 panels.
             const isNonControl = issue.level === "non-control";
-            const chipClass = isNonControl
-              ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
-              : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
-            const labelClass = isNonControl
-              ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
-              : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+            const issueStatus = statusFor(isNonControl ? "not-ready" : "review");
+            // The original styling used rose-100/amber-100 pills inset INSIDE
+            // a rose-50/amber-50 chip. We keep the same chip-inside-row
+            // pattern; the unified rowChip class handles the chip surface
+            // and the pill class handles the inset label.
+            const chipClass = issueStatus.classes.rowChip;
+            const labelClass = issueStatus.classes.pill.replace(
+              "px-2 py-0.5 text-[10px]",
+              "px-1.5 py-0.5 text-[9px]",
+            );
             return (
               <li
                 key={`${issue.level}-${i}-${issue.text}`}
@@ -2179,55 +2221,50 @@ function ConsistencyFindingsPanel({
   if (findings.length === 0) return null;
   const criticals = findings.filter((f) => f.level === "critical");
   const warnings = findings.filter((f) => f.level === "warning");
-  const headerTone = criticals.length > 0 ? "critical" : "warning";
-  const wrapperClass =
-    headerTone === "critical"
-      ? "rounded-lg border border-rose-200 bg-rose-50/60 p-5"
-      : "rounded-lg border border-amber-200 bg-amber-50/60 p-5";
-  const headerLabelClass =
-    headerTone === "critical"
-      ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-800"
-      : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-900";
-  const headerTitleClass =
-    headerTone === "critical"
-      ? "text-sm font-semibold text-rose-900"
-      : "text-sm font-semibold text-amber-900";
-  const headerSubtleClass =
-    headerTone === "critical" ? "mt-1.5 text-xs text-rose-800" : "mt-1.5 text-xs text-amber-900";
+  // Phase 5A — header status reflects the worst level present. Critical
+  // consistency findings are not-ready; warning-only is review-required.
+  // Wired through the unified status system so the header reads visually
+  // identically with every other panel.
+  const headerStatus = statusFor(criticals.length > 0 ? "not-ready" : "review");
+  const HeaderIcon = headerStatus.icon;
 
   return (
-    <div className={wrapperClass}>
+    <div className={headerStatus.classes.panel}>
       <div className="flex items-center gap-2">
-        <span className={headerLabelClass}>
-          {criticals.length > 0 ? "Critical" : "Warning"}
+        <span className={headerStatus.classes.pill}>
+          <HeaderIcon />
+          {headerStatus.shortLabel}
         </span>
-        <h5 className={headerTitleClass}>
+        <h5 className={headerStatus.classes.panelHeading}>
           Consistency findings across this risk argument
         </h5>
       </div>
-      <p className={headerSubtleClass}>
+      <p className={headerStatus.classes.panelSubtle}>
         These items flag where parts of the entry contradict each other or
         where reasoning across the answers is weak. Resolve them so the
         argument holds together end-to-end.
       </p>
       <ul className="mt-4 space-y-2">
         {findings.map((finding, i) => {
-          const isCritical = finding.level === "critical";
-          const itemClass = isCritical
-            ? "rounded-md border border-rose-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-rose-900"
-            : "rounded-md border border-amber-200 bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-amber-900";
-          const labelClass = isCritical
-            ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
-            : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+          const itemStatus = statusFor(
+            finding.level === "critical" ? "not-ready" : "review",
+          );
+          // Per-finding chip uses the row-on-white pattern (white/60 surface
+          // inside the panel) rather than the standalone rowChip variant —
+          // matches existing in-panel finding-row pattern across the
+          // simulator.
+          const itemClass = `rounded-md border bg-white/60 px-3 py-2 text-[12px] leading-relaxed ${itemStatus.borderColor} ${itemStatus.classes.rowText}`;
+          const labelClass = itemStatus.classes.pill.replace(
+            "px-2 py-0.5 text-[10px]",
+            "px-1.5 py-0.5 text-[9px]",
+          );
           return (
             <li
               key={`consistency-${finding.kind}-${i}`}
               className={itemClass}
             >
               <div className="flex items-center gap-2">
-                <span className={labelClass}>
-                  {isCritical ? "Critical" : "Warning"}
-                </span>
+                <span className={labelClass}>{itemStatus.shortLabel}</span>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
                   {consistencyFindingTitle(finding.kind)}
                 </span>
@@ -2238,7 +2275,10 @@ function ConsistencyFindingsPanel({
         })}
       </ul>
       {/* Footer summary helps a reviewer scanning the panel see the count
-          breakdown without re-counting items. */}
+          breakdown without re-counting items. Wording uses the original
+          "critical / warning" terms because the count maps directly to
+          ConsistencyFinding.level — the user-facing chips above already
+          translate those into the unified status vocabulary. */}
       {(criticals.length > 0 && warnings.length > 0) && (
         <p className="mt-3 text-[11px] text-navy-700">
           {criticals.length} critical · {warnings.length} warning
@@ -2303,13 +2343,16 @@ function ScenarioExpectationChips({
   return (
     <ul className="mt-2 space-y-1.5">
       {findings.map((finding, i) => {
+        // Critical scenario expectations are not-ready (the scenario cannot
+        // ship safely without them). Improvements are review-required (the
+        // scenario suggests them but they're not deployment-blocking).
         const isCritical = finding.level === "critical";
-        const chipClass = isCritical
-          ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
-          : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
-        const labelClass = isCritical
-          ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
-          : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+        const status = statusFor(isCritical ? "not-ready" : "review");
+        const chipClass = status.classes.rowChip;
+        const labelClass = status.classes.pill.replace(
+          "px-2 py-0.5 text-[10px]",
+          "px-1.5 py-0.5 text-[9px]",
+        );
         return (
           <li
             key={`${finding.kind}-${i}-${finding.label}`}
@@ -2334,13 +2377,16 @@ function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) 
   return (
     <ul className="mt-2 space-y-1.5">
       {issues.map((issue, i) => {
+        // Critical governance issues (weak trigger / weak owner / missing
+        // clinical chain) are not-ready. Warnings (vague KPI / cadence) are
+        // review-required. Both wired through the unified status system.
         const isCritical = issue.level === "critical";
-        const chipClass = isCritical
-          ? "rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-800"
-          : "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900";
-        const labelClass = isCritical
-          ? "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-rose-800"
-          : "inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-900";
+        const status = statusFor(isCritical ? "not-ready" : "review");
+        const chipClass = status.classes.rowChip;
+        const labelClass = status.classes.pill.replace(
+          "px-2 py-0.5 text-[10px]",
+          "px-1.5 py-0.5 text-[9px]",
+        );
         // The "missing-clinical-chain" finding has no offending phrase to
         // quote (the problem is the absence of a role), so we just render
         // the message body without a quoted snippet.
@@ -2351,9 +2397,7 @@ function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) 
             className={chipClass}
           >
             <div className="flex items-center gap-2">
-              <span className={labelClass}>
-                {isCritical ? "Critical" : "Warning"}
-              </span>
+              <span className={labelClass}>{status.shortLabel}</span>
               {showQuoted ? (
                 <span className="font-semibold">&ldquo;{issue.text}&rdquo;</span>
               ) : (
@@ -2362,7 +2406,7 @@ function GovernanceIssueChips({ issues }: { issues: GovernanceQualityIssue[] }) 
             </div>
             <p className="mt-1">{issue.message}</p>
             {issue.kind === "missing-clinical-chain" ? (
-              <p className="mt-1 text-[10px] text-rose-700">
+              <p className={`mt-1 text-[10px] ${status.classes.rowTitleAccent}`}>
                 Add a Clinical Safety Officer, clinical lead, pathway lead, or
                 named consultant.
               </p>
@@ -2800,48 +2844,85 @@ function SummaryCard({
         </p>
         <p className="text-[11px] uppercase tracking-widest text-navy-300">{scenario.shortName}</p>
       </div>
-      {showChallenged && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-md border border-rose-400/40 bg-rose-500/10 px-4 py-3">
-          <span className="inline-flex items-center rounded-full border border-rose-300/50 bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-100">
-            Challenged
-          </span>
-          <p className="text-xs leading-relaxed text-rose-50">
-            {bannerText} Governance-adjusted score ({directionLabel}):{" "}
-            <strong className="font-semibold">
-              {adjustedSeverity} × {adjustedLikelihood} = {adjustedRisk ?? "-"}
-              {adjustedBand ? ` (${adjustedBand})` : ""}
-            </strong>
-            .
-          </p>
-        </div>
-      )}
+      {showChallenged && (() => {
+        // Phase 5A — challenge severity is centralised. REVIEW for any
+        // challenge by default; NOT-READY when adjusted band lands in High;
+        // ESCALATE when adjusted band lands in Extreme. Same rule as every
+        // other surface that surfaces a challenge.
+        const challengeStatus = statusFor(
+          deriveChallengedStatus({
+            severityChallenged,
+            likelihoodChallenged,
+            adjustedRiskBand: adjustedBand ?? "Low",
+          }),
+        );
+        const ChallengeIcon = challengeStatus.icon;
+        return (
+          <div
+            className={`mt-4 flex flex-wrap items-center gap-3 ${challengeStatus.classes.bannerOnDark}`}
+          >
+            <span className={challengeStatus.classes.pillOnDark}>
+              <ChallengeIcon />
+              {challengeStatus.shortLabel}
+            </span>
+            <p
+              className={`text-xs leading-relaxed ${challengeStatus.classes.bannerOnDarkText}`}
+            >
+              {bannerText} Governance-adjusted score ({directionLabel}):{" "}
+              <strong className="font-semibold">
+                {adjustedSeverity} × {adjustedLikelihood} = {adjustedRisk ?? "-"}
+                {adjustedBand ? ` (${adjustedBand})` : ""}
+              </strong>
+              .
+            </p>
+          </div>
+        );
+      })()}
       <dl className="mt-6 grid gap-x-8 gap-y-5 md:grid-cols-2">
         <SummaryField label="Hazard" value={answers.hazard} />
         <SummaryField label="Cause / failure mode" value={answers.cause} />
         <SummaryField label="Clinical consequence" value={answers.consequence} />
 
-        <div className="grid grid-cols-3 gap-4">
-          <SummaryStat
-            label="Severity"
-            value={answers.severity}
-            challenged={severityChallenged}
-            adjusted={severityChallenged ? adjustedSeverity : null}
-          />
-          <SummaryStat
-            label="Likelihood"
-            value={answers.likelihood}
-            challenged={likelihoodChallenged}
-            adjusted={likelihoodChallenged ? adjustedLikelihood : null}
-          />
-          <SummaryStat
-            label="Initial risk"
-            value={initialRisk}
-            extra={initialBand}
-            challenged={showChallenged}
-            adjusted={showChallenged ? adjustedRisk : null}
-            adjustedExtra={showChallenged ? adjustedBand : null}
-          />
-        </div>
+        {/* Phase 5A — challenge severity is computed once at the SummaryCard
+            level (where adjustedBand is in scope) and passed to every
+            challenged SummaryStat. Centralised so all three pills agree on
+            severity even if the underlying rule changes later. */}
+        {(() => {
+          const summaryChallengeLevel = showChallenged
+            ? deriveChallengedStatus({
+                severityChallenged,
+                likelihoodChallenged,
+                adjustedRiskBand: adjustedBand ?? "Low",
+              })
+            : "review";
+          return (
+            <div className="grid grid-cols-3 gap-4">
+              <SummaryStat
+                label="Severity"
+                value={answers.severity}
+                challenged={severityChallenged}
+                challengeLevel={summaryChallengeLevel}
+                adjusted={severityChallenged ? adjustedSeverity : null}
+              />
+              <SummaryStat
+                label="Likelihood"
+                value={answers.likelihood}
+                challenged={likelihoodChallenged}
+                challengeLevel={summaryChallengeLevel}
+                adjusted={likelihoodChallenged ? adjustedLikelihood : null}
+              />
+              <SummaryStat
+                label="Initial risk"
+                value={initialRisk}
+                extra={initialBand}
+                challenged={showChallenged}
+                challengeLevel={summaryChallengeLevel}
+                adjusted={showChallenged ? adjustedRisk : null}
+                adjustedExtra={showChallenged ? adjustedBand : null}
+              />
+            </div>
+          );
+        })()}
 
         <SummaryList
           label="Preventative controls"
@@ -2889,6 +2970,7 @@ function SummaryStat({
   value,
   extra,
   challenged,
+  challengeLevel,
   adjusted,
   adjustedExtra,
 }: {
@@ -2896,23 +2978,41 @@ function SummaryStat({
   value: number | null;
   extra?: string | null;
   challenged?: boolean;
+  /**
+   * Phase 5A — passed in by the SummaryCard parent, which knows the
+   * adjusted band and can therefore call deriveChallengedStatus once.
+   * Defaulted to "review" so older callers without this prop still render
+   * the amber "review required" pill (the default when challenge severity
+   * isn't otherwise specified).
+   */
+  challengeLevel?: StatusLevel;
   adjusted?: number | null;
   adjustedExtra?: string | null;
 }) {
+  const status = challenged ? statusFor(challengeLevel ?? "review") : null;
+  const StatusIcon = status?.icon;
   return (
     <div>
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-white">
         {value ?? "-"}
         {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
-        {challenged ? (
-          <span className="ml-2 inline-flex items-center rounded-full border border-rose-300/60 bg-rose-500/20 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-rose-100">
-            Challenged
+        {challenged && status && StatusIcon ? (
+          <span
+            className={`ml-2 align-middle ${status.classes.pillOnDark.replace(
+              "px-2 py-0.5 text-[10px]",
+              "px-1.5 py-0.5 text-[9px]",
+            )}`}
+          >
+            <StatusIcon />
+            {status.shortLabel}
           </span>
         ) : null}
       </dd>
-      {challenged && adjusted != null ? (
-        <p className="mt-1 text-[11px] font-medium text-rose-200">
+      {challenged && status && adjusted != null ? (
+        <p
+          className={`mt-1 text-[11px] font-medium ${status.classes.bannerOnDarkText}`}
+        >
           Governance-adjusted: {adjusted}
           {adjustedExtra ? ` (${adjustedExtra})` : ""}
         </p>
