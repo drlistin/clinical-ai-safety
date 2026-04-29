@@ -699,14 +699,43 @@ export type BadgeVariant =
  * Variant → status level + default label. Single source of truth for the
  * variant vocabulary. Update HERE to change a default label or to map a
  * variant to a different level.
+ *
+ * Phase 5A — Step 2.2. A variant MAY optionally override the colour tokens
+ * inherited from its status level. This is used by the CORRECTED variant
+ * to render in a neutral-blue palette so amber stays reserved for "needs
+ * a review" surfaces (challenged / warning) and cool blue communicates
+ * "this number was governance-adjusted, not a warning". The variant still
+ * maps to the review status level for severity-rank purposes (combine /
+ * deriveOverallStatus / etc still treat CORRECTED as a review-level
+ * signal); only the rendered colour fragments diverge.
  */
 export const BADGE_VARIANT_DEFINITIONS: Record<
   BadgeVariant,
-  { level: StatusLevel; defaultLabel: string }
+  { level: StatusLevel; defaultLabel: string; tokens?: StatusColorTokens }
 > = {
   ready: { level: "ready", defaultLabel: "Ready" },
   challenged: { level: "review", defaultLabel: "Challenged" },
-  corrected: { level: "review", defaultLabel: "Corrected" },
+  corrected: {
+    level: "review",
+    defaultLabel: "Corrected",
+    // Sky/neutral-blue palette. Distinct from amber (review/warning), red
+    // (not-ready/critical) and dark-red (escalate). Communicates "this
+    // number has been corrected" without the urgency colour-coding of a
+    // warning. Sky chosen over indigo/blue because it reads as informative
+    // and calm rather than action-oriented.
+    tokens: {
+      light: {
+        bg: "bg-sky-100",
+        text: "text-sky-900",
+        border: "border-sky-300",
+      },
+      dark: {
+        bg: "bg-sky-500/20",
+        text: "text-sky-50",
+        border: "border-sky-300/50",
+      },
+    },
+  },
   warning: { level: "review", defaultLabel: "Warning" },
   critical: { level: "not-ready", defaultLabel: "Critical" },
   blocked: { level: "not-ready", defaultLabel: "Blocked" },
@@ -807,7 +836,11 @@ export function Badge({
 }: BadgeProps) {
   const def = BADGE_VARIANT_DEFINITIONS[variant];
   const status = STATUS_DEFINITIONS[def.level];
-  const tokens = surface === "dark" ? status.tokens.dark : status.tokens.light;
+  // Phase 5A — Step 2.2. Variant-level colour-token override takes
+  // precedence over the level's default tokens. Used by CORRECTED to render
+  // in neutral-blue while still belonging to the review severity level.
+  const colorTokens = def.tokens ?? status.tokens;
+  const tokens = surface === "dark" ? colorTokens.dark : colorTokens.light;
   const Icon = status.icon;
   const text = label ?? def.defaultLabel;
 

@@ -262,7 +262,21 @@ function drawControlsTable(b: PdfBuilder, controls: ControlEntry[]): void {
     return;
   }
   const headers = ["Control", "Type", "Origin", "Status", "Verification"];
-  const widths = [CONTENT_W * 0.42, CONTENT_W * 0.13, CONTENT_W * 0.13, CONTENT_W * 0.16, CONTENT_W * 0.16];
+  // Phase 5A — Step 2.2. Type column widened from 0.13 to 0.15 of CONTENT_W
+  // so "Preventative" no longer wraps to a second line. With 9pt Helvetica
+  // (the body font in tableRow) and 16pt of horizontal cell padding, the
+  // previous 0.13 share gave an effective text width of ~51pt — measuring
+  // "Preventative" at the same font yields ~52pt, which is exactly why the
+  // word was breaking. The 0.02 reclaimed from the Control column still
+  // leaves the Control text the dominant column (0.39); Origin / Status /
+  // Verification are unchanged.
+  const widths = [
+    CONTENT_W * 0.39, // Control
+    CONTENT_W * 0.15, // Type — fits "Preventative" without wrap
+    CONTENT_W * 0.13, // Origin
+    CONTENT_W * 0.165, // Status
+    CONTENT_W * 0.165, // Verification
+  ];
   b.tableHeader(headers, widths);
   for (let i = 0; i < controls.length; i++) {
     const c = controls[i];

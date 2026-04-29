@@ -2864,10 +2864,22 @@ function SummaryCard({
           </div>
         );
       })()}
-      <dl className="mt-6 grid gap-x-8 gap-y-5 md:grid-cols-2">
+      {/* Phase 5A — Step 2.2. gap-y-4 (16px) replaces the previous gap-y-5
+          (20px). The earlier rhythm felt loose around the score and residual
+          rows. Combined with Clinical Consequence and Corrective controls
+          spanning both columns (so empty half-cells never sit before the
+          score / residual rows), the dl now reads as a tightly-packed
+          audit-grade register. */}
+      <dl className="mt-6 grid gap-x-8 gap-y-4 md:grid-cols-2">
         <SummaryField label="Hazard" value={answers.hazard} />
         <SummaryField label="Cause / failure mode" value={answers.cause} />
-        <SummaryField label="Clinical consequence" value={answers.consequence} />
+        {/* Phase 5A — Step 2.2. Span both columns so the score row that
+            follows sits flush with no dead half-cell of whitespace. */}
+        <SummaryField
+          label="Clinical consequence"
+          value={answers.consequence}
+          className="md:col-span-2"
+        />
 
         {/* Phase 5A — challenge severity is computed once at the SummaryCard
             level (where adjustedBand is in scope) and passed to every
@@ -2925,9 +2937,14 @@ function SummaryCard({
           label="Detective controls"
           items={[...splitLines(answers.existingDetective), ...splitLines(answers.proposedDetective)]}
         />
+        {/* Phase 5A — Step 2.2. Span both columns so the residual row that
+            follows sits flush with no dead half-cell of whitespace. The
+            three control types are an odd count, so without a span the
+            third one always leaves an empty cell beside it. */}
         <SummaryList
           label="Corrective controls"
           items={[...splitLines(answers.existingCorrective), ...splitLines(answers.proposedCorrective)]}
+          className="md:col-span-2"
         />
 
         {/* Phase 5A — Step 2.1. Same column-span fix as the initial-risk
@@ -2950,9 +2967,23 @@ function SummaryCard({
   );
 }
 
-function SummaryField({ label, value }: { label: string; value: string }) {
+function SummaryField({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  /**
+   * Phase 5A — Step 2.2. Optional grid-positioning className. Used by the
+   * SummaryCard to span fields across both parent dl columns (e.g. Clinical
+   * consequence, Corrective controls) so empty half-cells never sit in
+   * front of the score / residual rows.
+   */
+  className?: string;
+}) {
   return (
-    <div>
+    <div className={className}>
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1.5 text-sm leading-relaxed text-navy-50">
         {value || <span className="italic text-navy-400">(not provided)</span>}
@@ -2997,6 +3028,10 @@ function SummaryStat({
   // already escalates as the situation worsens, which keeps the visual
   // hierarchy intact).
   //
+  // Phase 5A — Step 2.2. CORRECTED now renders in neutral-blue (sky palette)
+  // via the variant-level token override. Amber stays reserved for genuine
+  // review/warning surfaces.
+  //
   // The caption text below the number ("Governance-adjusted: X") still uses
   // the underlying challenge-level colour via status.classes.bannerOnDarkText
   // so the secondary text remains aligned with the banner above.
@@ -3004,44 +3039,110 @@ function SummaryStat({
   // Compact mode is enabled because these chips sit in three narrow
   // SummaryCard columns where the default min-width caused overflow.
   const statBadgeVariant: "corrected" | null = challenged ? "corrected" : null;
+  // Phase 5A — Step 2.2. Symmetric columns.
+  //
+  // The three SummaryStat columns sit side-by-side in a grid. Without
+  // structural reservation, columns where `challenged` is false render a
+  // shorter sub-tree (no governance-adjusted caption) than challenged
+  // columns, which makes the row feel uneven and pulls the values out of
+  // alignment.
+  //
+  // The fix has three parts:
+  //   1. The number/badge row uses flex with items-baseline so the badge's
+  //      cap-height aligns with the number's cap-height across all three
+  //      columns regardless of whether each cell has a badge.
+  //   2. The whole stat is a column-flex with a fixed min-h floor so the
+  //      block height is constant across all three cells.
+  //   3. The governance-adjusted caption row is ALWAYS rendered (with an
+  //      invisible placeholder when absent) so the vertical space below
+  //      the number is identical in every column.
+  const captionContent =
+    challenged && status && adjusted != null
+      ? `Governance-adjusted: ${adjusted}${adjustedExtra ? ` (${adjustedExtra})` : ""}`
+      : null;
+  const captionColor = status
+    ? status.classes.bannerOnDarkText
+    : "text-transparent";
   return (
-    <div className="min-w-0">
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
-      <dd className="mt-1 text-2xl font-semibold text-white">
-        {value ?? "-"}
-        {extra ? <span className="ml-1.5 text-xs font-medium text-navy-200">{extra}</span> : null}
+    <div className="flex min-w-0 flex-col">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">
+        {label}
+      </dt>
+      <dd className="mt-1 flex min-h-[2.25rem] items-baseline gap-2">
+        <span className="text-2xl font-semibold leading-none text-white tabular-nums">
+          {value ?? "-"}
+          {extra ? (
+            <span className="ml-1.5 text-xs font-medium text-navy-200">
+              {extra}
+            </span>
+          ) : null}
+        </span>
         {statBadgeVariant ? (
           <Badge
             variant={statBadgeVariant}
             surface="dark"
             compact
-            className="ml-2"
+            className="self-center"
           />
         ) : null}
       </dd>
-      {challenged && status && adjusted != null ? (
-        <p
-          className={`mt-1 text-[11px] font-medium ${status.classes.bannerOnDarkText}`}
-        >
-          Governance-adjusted: {adjusted}
-          {adjustedExtra ? ` (${adjustedExtra})` : ""}
-        </p>
-      ) : null}
+      <p
+        className={`mt-1 min-h-[1rem] text-[11px] font-medium leading-tight ${captionColor}`}
+        aria-hidden={captionContent ? undefined : true}
+      >
+        {captionContent ?? " "}
+      </p>
     </div>
   );
 }
 
-function SummaryList({ label, items }: { label: string; items: string[] }) {
+function SummaryList({
+  label,
+  items,
+  className,
+}: {
+  label: string;
+  items: string[];
+  /**
+   * Phase 5A — Step 2.2. Optional grid-positioning className. Used by the
+   * SummaryCard to span the third (odd-numbered) controls list across both
+   * parent dl columns so the residual row sits flush below it instead of
+   * with an empty half-cell in between.
+   */
+  className?: string;
+}) {
   return (
-    <div>
+    <div className={className}>
       <dt className="text-[10px] font-semibold uppercase tracking-[0.22em] text-clinical-300">{label}</dt>
       <dd className="mt-1.5">
         {items.length === 0 ? (
           <span className="text-sm italic text-navy-400">(none)</span>
         ) : (
-          <ul className="space-y-1.5">
+          // Phase 5A — Step 2.2. Refined list rhythm:
+          //   - explicit bullet glyph (•) in a softer slate tone replaces
+          //     the inline "- " prefix, which kept hyphens stuck to text
+          //     and fought the leading
+          //   - flex layout aligns the bullet with the first line of each
+          //     wrapped item even when the item runs to multiple lines
+          //   - hairline white/8 divider between items so dense lists read
+          //     as a structured register rather than a paragraph
+          //   - generous space-y so each line of evidence breathes
+          <ul className="space-y-2 divide-y divide-white/5">
             {items.map((it, i) => (
-              <li key={i} className="text-sm leading-relaxed text-navy-50">- {it}</li>
+              <li
+                key={i}
+                className={`flex gap-2.5 text-sm leading-relaxed text-navy-50 ${
+                  i > 0 ? "pt-2" : ""
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className="select-none pt-[3px] text-navy-400"
+                >
+                  •
+                </span>
+                <span className="min-w-0 flex-1">{it}</span>
+              </li>
             ))}
           </ul>
         )}
