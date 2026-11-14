@@ -3,7 +3,7 @@ import Link from "next/link";
 import Container from "@/components/Container";
 
 export const metadata: Metadata = {
-  title: "Method | Clinical AI Safety",
+  title: "Safety Assessment Method",
   description: "The proposed clinical AI safety decision validation method. Evaluate scenarios, hazards, controls, residual risk and governance before deployment.",
 };
 
