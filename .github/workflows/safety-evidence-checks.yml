@@ -1,0 +1,30 @@
+name: Internal safety evidence regression checks
+
+on:
+  pull_request:
+    paths:
+      - 'lib/safety-decision/**'
+      - 'tests/safety-evidence.test.cjs'
+      - 'package.json'
+      - '.github/workflows/safety-evidence-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'lib/safety-decision/**'
+      - 'tests/safety-evidence.test.cjs'
+      - 'package.json'
+      - '.github/workflows/safety-evidence-checks.yml'
+
+jobs:
+  safety-evidence-regressions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:safety
