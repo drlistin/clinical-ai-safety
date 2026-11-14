@@ -7,10 +7,10 @@ const publicPaths = [
   "/",
   "/about",
   "/contact",
-  "/modules",
-  "/resources",
-  "/simulators",
-  "/simulators/hazard-log-builder",
+  "/method",
+  "/applications",
+  "/standards",
+  "/evidence",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
