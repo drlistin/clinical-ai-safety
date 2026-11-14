@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:safety": "node --test tests/safety-evidence.test.cjs"
+    "test:safety": "node --test tests/safety-*.test.cjs"
   },
   "dependencies": {
     "jspdf": "^2.5.1",
