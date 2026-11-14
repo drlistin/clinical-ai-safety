@@ -40,15 +40,14 @@ export default function HomePage() {
               <span className="h-px w-8 bg-clinical-600" aria-hidden="true" />
               Independent clinical AI safety
             </p>
-            <h1 className="mt-8 max-w-[820px] text-[clamp(3.3rem,6.5vw,6.15rem)] font-semibold leading-[1.055] tracking-[-0.055em] text-navy-950">
-              A correct answer can still be an unsafe decision.
+            <h1 className="mt-8 max-w-[820px] text-[clamp(2.45rem,4.2vw,4.4rem)] font-semibold leading-[1.14] tracking-[-0.035em] text-navy-950">
+              Stress-testing clinical AI safety decisions
             </h1>
             <p className="mt-9 max-w-xl text-lg leading-[1.7] text-navy-600 md:text-xl">
-              A system for stress-testing clinical AI safety decisions before deployment.
+              A structured method for testing clinical AI safety decisions before deployment.
             </p>
             <p className="mt-4 max-w-xl text-base leading-[1.75] text-navy-500">
-              We examine hazards, the effectiveness of safeguards, residual risk and
-              the decisions required for accountable deployment.
+              The assessment examines hazards, control effectiveness, residual risk and governance.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/#method" className="inline-flex min-h-12 items-center justify-center rounded-full bg-navy-950 px-7 text-sm font-semibold text-white transition-colors hover:bg-navy-700">
@@ -67,7 +66,7 @@ export default function HomePage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-[#88b6bc]" aria-hidden="true" />
               </div>
               <p className="mt-9 text-sm font-medium text-[#cad5e5]">Illustrative reasoning sequence</p>
-              <h2 className="mt-3 max-w-[320px] text-[2rem] font-medium leading-[1.22] tracking-[-0.035em]">Is the stated control sufficient?</h2>
+              <h2 className="mt-3 max-w-[320px] text-[1.65rem] font-semibold leading-[1.3] tracking-[-0.02em]">Control effectiveness review</h2>
               <div className="mt-11 space-y-0">
                 {[
                   ["Identified hazard", "Missed clinical deterioration"],
@@ -96,12 +95,10 @@ export default function HomePage() {
       <section className="border-y border-navy-100 bg-[#f7f9fb]">
         <Container className="grid gap-6 py-10 md:grid-cols-[1.1fr_1fr] md:items-center md:gap-20 md:py-14">
           <p className="text-2xl font-semibold leading-snug tracking-[-0.035em] text-navy-950 md:text-3xl">
-            Guideline consistency is not the same as clinical safety.
+            Clinical workflow risk
           </p>
           <p className="text-sm leading-[1.9] text-navy-600 md:text-base">
-            Safety depends on the complete workflow. Small omissions, delayed action and
-            weak human oversight can combine to produce harm, even when individual
-            recommendations appear reasonable.
+            A guideline-consistent output may still be unsafe. Missing information, delayed action and ineffective review can interact in clinical practice.
           </p>
         </Container>
       </section>
@@ -110,12 +107,11 @@ export default function HomePage() {
         <Container>
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">The method</p>
-            <h2 className="mt-6 text-4xl font-semibold leading-[1.13] tracking-[-0.045em] text-navy-950 md:text-6xl">
-              A structured challenge to the safety decision.
+            <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-[-0.025em] text-navy-950 md:text-4xl">
+              Safety assessment method
             </h2>
             <p className="mt-7 max-w-2xl text-lg leading-[1.8] text-navy-600">
-              The method takes a defined clinical AI scenario through hazard identification,
-              safeguard validation, residual risk assessment and governance review.
+              Each scenario is assessed for hazards, safeguards, residual risk and governance requirements.
             </p>
           </div>
           <div className="mt-16 grid border-t border-navy-200 md:grid-cols-5">
@@ -139,14 +135,12 @@ export default function HomePage() {
           <div className="grid gap-10 md:grid-cols-[1fr_1.05fr] md:gap-24">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Where it applies</p>
-              <h2 className="mt-6 max-w-lg text-4xl font-semibold leading-[1.12] tracking-[-0.045em] text-navy-950 md:text-5xl">
-                The failures that a checklist can miss.
+              <h2 className="mt-5 max-w-lg text-3xl font-semibold leading-[1.2] tracking-[-0.025em] text-navy-950 md:text-4xl">
+                Clinical AI applications
               </h2>
             </div>
             <p className="max-w-xl self-end text-lg leading-[1.75] text-navy-600">
-              The same broad assurance questions can expose different hazards across
-              clinical AI systems. Assessment must remain specific to the intended use,
-              setting and deployment workflow.
+              The method examines risks in the intended clinical setting and workflow.
             </p>
           </div>
           <div className="mt-14 grid gap-px overflow-hidden rounded-[1.25rem] border border-navy-100 bg-navy-100 lg:grid-cols-3">
@@ -167,13 +161,11 @@ export default function HomePage() {
         <Container className="grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-28">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Regulatory context</p>
-            <h2 className="mt-6 text-4xl font-semibold leading-[1.14] tracking-[-0.045em] text-navy-950 md:text-5xl">
-              Grounded in clinical risk management.
+            <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-[-0.025em] text-navy-950 md:text-4xl">
+              UK clinical safety standards
             </h2>
             <p className="mt-7 text-base leading-[1.9] text-navy-600">
-              The method is designed to support DCB0129-style safety case reasoning
-              and deployment review in the UK. It does not confer compliance, regulatory
-              approval or independent certification.
+              The approach draws on DCB0129-style safety case reasoning and considers DCB0160 and DTAC in context. It does not establish compliance or provide certification.
             </p>
           </div>
           <div className="border-t border-navy-200">
@@ -198,12 +190,11 @@ export default function HomePage() {
         <Container className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#aac8d2]">Professional enquiries</p>
-            <h2 className="mt-6 text-4xl font-semibold leading-[1.16] tracking-[-0.045em] md:text-5xl">
-              Does the safety case hold up in the real workflow?
+            <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-[-0.025em] md:text-4xl">
+              Independent safety case review
             </h2>
             <p className="mt-6 max-w-xl text-base leading-[1.85] text-[#c4d0df]">
-              For clinical safety leads, digital health teams and suppliers who need
-              to challenge the reasoning behind a proposed deployment.
+              Discuss hazards, control effectiveness and unresolved risks before deployment.
             </p>
           </div>
           <Link href="/contact" className="inline-flex min-h-12 shrink-0 items-center justify-center self-start rounded-full bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-100">
