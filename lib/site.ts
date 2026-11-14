@@ -2,26 +2,27 @@ export const site = {
   name: "Clinical AI Safety",
   domain: "clinicalaisafety.co.uk",
   url: "https://clinicalaisafety.co.uk",
-  tagline: "Practical clinical safety training for NHS AI deployment",
+  tagline: "Safety decision validation before clinical AI deployment",
   description:
-    "Practical clinical safety training for NHS Clinical Safety Officers deploying or evaluating AI-enabled digital health technologies. DCB0129, DCB0160, DTAC, PSIRF, ISO 14971 and AI safety frameworks applied in real clinical settings.",
+    "A system for stress-testing clinical AI safety decisions before deployment. Structured assessment of hazards, controls, residual risk and governance.",
   author: {
     name: "Dr Doju Cheriachan",
-    credentials:
-      "MBBS, GMC registered · Internal Medicine Trainee, Sheffield Teaching Hospitals NHS Foundation Trust · CSO certified",
+    credentials: "Clinician working on clinical AI safety evaluation",
   },
   disclaimer:
-    "Independent educational resource — not affiliated with NHS England or any regulatory body. For educational use only.",
+    "Independent project. Not affiliated with NHS England or a regulatory body. Does not replace formal clinical risk management or provide certification.",
 } as const;
 
 export const nav = [
   { href: "/", label: "Home" },
-  { href: "/modules", label: "Modules" },
-  { href: "/simulators", label: "Simulators" },
-  { href: "/resources", label: "Resources" },
+  { href: "/#method", label: "Method" },
+  { href: "/#application", label: "Applications" },
+  { href: "/#standards", label: "Standards" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ] as const;
+
+// Existing legacy content remains for the separate route-retirement review.
+// None of the following resources is promoted on the new homepage.
 
 export type Module = {
   number: number;
