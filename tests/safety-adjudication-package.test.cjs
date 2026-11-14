@@ -39,7 +39,7 @@ test("HSSIB e-RS non-AI evidence cannot become an AVT incident",()=>{
  assert.match(d.systemDomain,/non-AI/);
 });
 test("GOSH PDF source checking limitation is explicitly retained",()=>{
- assert.ok(dossiers.sourceReviewNotes.some(x=>/screenshot fetch failed/.test(x)));
+ assert.ok(dossiers.sourceReviewNotes.some(x=>/screenshot (fetch|retrieval) failed/.test(x)));
 });
 test("blank reviewer form cannot be mistaken for adjudicated assessment",()=>{
  assert.equal(reviewer.status,"blank-reviewer-form");
