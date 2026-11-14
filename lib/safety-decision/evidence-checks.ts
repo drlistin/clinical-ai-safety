@@ -201,7 +201,7 @@ function checkRisk(
       risk.acceptanceDecisionEvidenceId ? [risk.acceptanceDecisionEvidenceId] : [],
       [`Hazard ${risk.hazardId}`],
     ));
-  } else if (!refs.has(risk.acceptanceDecisionEvidenceId)) {
+  } else if (risk.acceptanceDecisionEvidenceId && !refs.has(risk.acceptanceDecisionEvidenceId)) {
     findings.push(makeFinding(
       "SDC-08",
       "identified-inconsistency",
