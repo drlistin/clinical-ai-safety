@@ -52,7 +52,7 @@ export default function MethodPage() {
           <h2 className="text-2xl font-semibold text-navy-950 md:text-3xl">Assessment boundaries</h2>
           <div className="space-y-4 text-sm leading-[1.9] text-navy-700">
             <p>The method is under development. Published material describes the proposed assessment structure, not a clinically validated or certified service.</p>
-            <p>It does not approve deployment, certify compliance, replace a Clinical Safety Officer or transfer a manufacturer's or deploying organisation's responsibility for clinical risk management.</p>
+            <p>It does not approve deployment, certify compliance, replace a Clinical Safety Officer or transfer a manufacturer&apos;s or deploying organisation&apos;s responsibility for clinical risk management.</p>
             <Link href="/evidence" className="inline-flex font-semibold text-clinical-700 hover:underline">Evidence and limitations →</Link>
           </div>
         </Container>
