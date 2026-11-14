@@ -3,60 +3,22 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
   body {
     @apply bg-white text-navy-900 antialiased;
     font-feature-settings: "ss01", "cv11";
   }
-  ::selection {
-    @apply bg-navy-900 text-white;
-  }
-  h1, h2, h3, h4 {
-    @apply tracking-tightish;
-  }
-  a:focus-visible,
-  button:focus-visible,
-  input:focus-visible {
+  ::selection { @apply bg-navy-900 text-white; }
+  h1, h2, h3, h4 { @apply tracking-tightish; }
+  a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
     @apply outline-none ring-2 ring-clinical-500 ring-offset-2 ring-offset-white;
   }
 }
 
 @layer components {
-  .prose-clinical p {
-    @apply text-navy-700 leading-relaxed;
-  }
+  .prose-clinical p { @apply text-navy-700 leading-relaxed; }
 }
 
-/* Soft teal/blue glow on the navbar shield icon.
- * 4-second cycle, eased — visible but never insistent.
- * Two stacked drop-shadows: a tighter teal highlight inside a wider clinical
- * blue halo. Both filters operate on the icon's alpha channel, so the glow
- * traces the shield silhouette rather than a rectangle.
- */
-@keyframes navlogo-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0))
-            drop-shadow(0 0 0 rgba(50, 114, 178, 0));
-  }
-  50% {
-    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7))
-            drop-shadow(0 0 16px rgba(50, 114, 178, 0.55));
-  }
-}
-
-@layer utilities {
-  .navlogo-glow {
-    animation: navlogo-glow 4s ease-in-out infinite;
-    will-change: filter;
-  }
-}
-
-/* Honour the user's OS-level motion preference. */
 @media (prefers-reduced-motion: reduce) {
-  .navlogo-glow {
-    animation: none;
-  }
+  html { scroll-behavior: auto; }
 }
