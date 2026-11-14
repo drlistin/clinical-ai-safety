@@ -1,0 +1,248 @@
+{
+  "schemaVersion": "0.1",
+  "collectedAt": "2026-11-14",
+  "status": "source-extracted-requires-independent-adjudication",
+  "purpose": "Evidence-anchored clinical AI safety decision challenge research, not patient-facing advice, clinical incident certification or a validated reference standard.",
+  "rules": {
+    "noInventedDecisions": true,
+    "noAutomaticRiskClassification": true,
+    "doNotTreatEvaluationAsIncident": true,
+    "doNotTreatOngoingInvestigationAsFinding": true,
+    "keepPublishedObservationsAndValidationQuestionsSeparate": true,
+    "independentAdjudicationRequired": true
+  },
+  "sources": {
+    "SRC-OUH-2026": {
+      "title": "Ambient Voice Technology (AVT) in Acute Services: An Evaluation",
+      "publisher": "TheHill and Oxford University Hospitals NHS Foundation Trust",
+      "publicationDate": "2026-02",
+      "documentVersion": "public evaluation",
+      "url": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+      "sourceType": "published-nhs-evaluation",
+      "reviewedOn": "2026-11-14"
+    },
+    "SRC-GOSH-2026": {
+      "title": "The use of Ambient Voice Technology with Generative Artificial Intelligence in Multiple Clinical Settings Across the NHS",
+      "publisher": "Great Ormond Street Hospital DRIVE",
+      "publicationDate": "2026-02-11",
+      "documentVersion": "1.3",
+      "url": "https://media.gosh.nhs.uk/documents/AAI_Phase_4_NHSE_Final_Report_1.3.pdf",
+      "sourceType": "published-nhs-evaluation",
+      "reviewedOn": "2026-11-14"
+    },
+    "SRC-HSSIB-ERS-2026": {
+      "title": "Electronic referrals for ongoing care: risk of losing patient referrals",
+      "publisher": "Health Services Safety Investigations Body",
+      "publicationDate": "2026-10-22",
+      "documentVersion": "second interim report",
+      "url": "https://www.hssib.org.uk/patient-safety-investigations/electronic-patient-record-systems-electronic-referrals-for-ongoing-care/second-interim-report/",
+      "sourceType": "published-investigation-interim-report",
+      "reviewedOn": "2026-11-14"
+    },
+    "SRC-HSSIB-AVT-2026": {
+      "title": "The use of Ambient Voice Technology in hospitals",
+      "publisher": "Health Services Safety Investigations Body",
+      "publicationDate": "2026-08-06",
+      "documentVersion": "investigation announcement; no final findings",
+      "url": "https://www.hssib.org.uk/patient-safety-investigations/the-use-of-ambient-voice-technology-in-hospitals/",
+      "sourceType": "ongoing-investigation-announcement",
+      "reviewedOn": "2026-11-14"
+    }
+  },
+  "records": [
+    {
+      "recordId": "REAL-AVT-001",
+      "sourceId": "SRC-OUH-2026",
+      "sourceLocator": "printed report pp. 5, 12; PDF pages 5 and 12 (zero-indexed 4, 11)",
+      "evidenceType": "observed-evaluation-finding",
+      "documentedObservation": "Oxford reports that 37.3% of 398 logged AVT uses required editing for accuracy; 126 logs cite clinical-information accuracy, 43 language accuracy and 24 invented-information editing. These are reported reason categories, not separately validated adverse clinical events.",
+      "decisionValidationQuestion": "Would a deployment's clinician-review control reliably identify consequential errors under the intended workflow?",
+      "knownMissingDecisionInformation": [
+        "Original supplier/local hazard log",
+        "actual local verification design",
+        "control-effectiveness evidence",
+        "individual event severity or patient outcome"
+      ],
+      "candidateCriteria": [
+        "SDC-05",
+        "SDC-07"
+      ],
+      "limitations": [
+        "Pilot log and self-report-based findings; category overlap and true hallucination classification uncertain.",
+        "Do not infer 37.3% patient harm, unsafe sign-off or an unmitigated deployment failure."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-AVT-002",
+      "sourceId": "SRC-OUH-2026",
+      "sourceLocator": "printed report pp. 5, 12; PDF pages 5 and 12 (zero-indexed 4, 11)",
+      "evidenceType": "observed-evaluation-finding",
+      "documentedObservation": "Oxford reports that accuracy difficulties and confabulation differed between structured one-to-one consultations and complex, qualitative or multi-voice workflows, including community paediatrics and critical care.",
+      "decisionValidationQuestion": "Can evidence and a claimed safeguard from one workflow be transferred to a different clinical environment without local verification?",
+      "knownMissingDecisionInformation": [
+        "Comparable local case mix and workflow",
+        "site-specific hazard log",
+        "applicability of original supplier evidence",
+        "local clinical reviewer findings"
+      ],
+      "candidateCriteria": [
+        "SDC-01",
+        "SDC-05",
+        "SDC-06"
+      ],
+      "limitations": [
+        "Associations in a heterogeneous pilot are not a validated causal model.",
+        "This is not proof any specific deployed product was noncompliant."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-AVT-003",
+      "sourceId": "SRC-GOSH-2026",
+      "sourceLocator": "section 5 Interview Data, printed report pp. 73-74 (PDF page indexes 72-73)",
+      "evidenceType": "observed-qualitative-evaluation",
+      "documentedObservation": "GOSH's multicentre evaluation records clinician interview concerns or observations involving fabricated diagnoses, incorrect clinical impressions and misattribution of symptoms or treatments.",
+      "decisionValidationQuestion": "Does the reviewed control evidence address clinically meaningful attribution and factual errors, rather than only transcription or completion time?",
+      "knownMissingDecisionInformation": [
+        "Clinical significance and frequency per failure subtype",
+        "local safeguards at each participating site",
+        "whether errors reached signed records",
+        "patient-harm outcomes"
+      ],
+      "candidateCriteria": [
+        "SDC-02",
+        "SDC-05"
+      ],
+      "limitations": [
+        "Qualitative themes and clinician reports are not independently adjudicated incident counts.",
+        "Do not infer a specific case of proven patient injury or regulatory violation."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-AVT-004",
+      "sourceId": "SRC-GOSH-2026",
+      "sourceLocator": "section 5 Interview Data, printed report pp. 73-74 (PDF page indexes 72-73)",
+      "evidenceType": "observed-qualitative-evaluation",
+      "documentedObservation": "GOSH reports that some clinicians found explicit negative findings difficult to retain in generated documentation, and described over-summarisation in complex, multi-problem consultations.",
+      "decisionValidationQuestion": "Do controls protect documentation of clinically important negative findings and contextual information, and is that protection tested against the intended population?",
+      "knownMissingDecisionInformation": [
+        "A priori definition of clinically significant omission",
+        "frequency and severity of omissions",
+        "local review effectiveness",
+        "case-level patient outcome"
+      ],
+      "candidateCriteria": [
+        "SDC-02",
+        "SDC-05",
+        "SDC-06"
+      ],
+      "limitations": [
+        "Interview evidence documents a concern; it does not quantify incidence or establish a patient-harm event.",
+        "Source details may vary by participating site and use case."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-DIGITAL-001",
+      "sourceId": "SRC-HSSIB-ERS-2026",
+      "sourceLocator": "second interim report, executive summary; sections 2.1-2.4",
+      "evidenceType": "investigated-digital-safety-finding",
+      "documentedObservation": "HSSIB investigated instances of referrals disappearing from e-RS worklists, including the automatic removal of unacted-on referrals after 180 days. The function was designed partly to limit worklist-related performance problems but introduced a patient-safety hazard.",
+      "decisionValidationQuestion": "Was a safety-related system function considered as both a protective control against service disruption and a potential hazard in a changed clinical context?",
+      "knownMissingDecisionInformation": [
+        "Original pre-deployment decision record and its dated assumptions",
+        "local risk-rating method and authorisation",
+        "records for every affected referral",
+        "whether the risk was reasonably knowable at each decision date"
+      ],
+      "candidateCriteria": [
+        "SDC-02",
+        "SDC-06",
+        "SDC-07"
+      ],
+      "limitations": [
+        "Not an AI/AVT incident. Use only as a transferable clinical digital safety assurance mechanism.",
+        "Do not attribute every referral dropped from a worklist to actual harm."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-DIGITAL-002",
+      "sourceId": "SRC-HSSIB-ERS-2026",
+      "sourceLocator": "second interim report, executive summary; sections 2.3-2.4",
+      "evidenceType": "investigated-governance-finding",
+      "documentedObservation": "HSSIB reported absence of the 180-day function in the reviewed national e-RS hazard log, gaps in local awareness and clinical-risk documentation, and recurring incidents where local administrative controls were weakened by capacity and unclear responsibilities.",
+      "decisionValidationQuestion": "Can supplier-level documentation and delegated local administrative controls justify a safety conclusion without evidence of local ownership and operational effectiveness?",
+      "knownMissingDecisionInformation": [
+        "Full historical supplier/deployer safety files for each organisation",
+        "individual control testing",
+        "complete contextual dates for local decision changes",
+        "case-level causal chain for each reported incident"
+      ],
+      "candidateCriteria": [
+        "SDC-03",
+        "SDC-04",
+        "SDC-05",
+        "SDC-06",
+        "SDC-08"
+      ],
+      "limitations": [
+        "This is HSSIB's documented investigation finding about non-AI clinical IT, not a finding that an AVT deployment failed.",
+        "Do not generalise specific institutional compliance failures beyond investigated settings."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    },
+    {
+      "recordId": "REAL-WATCH-001",
+      "sourceId": "SRC-HSSIB-AVT-2026",
+      "sourceLocator": "investigation page, background and summary; announcement 6 August 2026",
+      "evidenceType": "ongoing-investigation-no-findings",
+      "documentedObservation": "HSSIB announced an investigation into AVT in acute adult secondary care, including potential patient harm, safety risks and accountability. Its page states a report is expected in summer 2027.",
+      "decisionValidationQuestion": "Which hazards and governance findings should be revisited if HSSIB publishes substantive evidence?",
+      "knownMissingDecisionInformation": [
+        "Final or interim investigation findings",
+        "incident-level observations",
+        "defensible safety controls from investigated settings"
+      ],
+      "candidateCriteria": [
+        "CIR-01"
+      ],
+      "limitations": [
+        "Not an observed incident and not eligible for reference-case adjudication until material findings are published.",
+        "Do not transform the announcement or potential risks into a confirmed failure."
+      ],
+      "caseStatus": "evidence-extracted-not-adjudicated",
+      "authorisedReferenceStatus": "not-approved",
+      "clinicalOutcomeAsserted": false,
+      "riskAcceptanceInferred": false,
+      "reconstructedDecision": "not-reconstructed"
+    }
+  ],
+  "independenceNote": "Multiple extracted findings can originate from one report and must not be counted as independent source studies or separately adjudicated incidents."
+}
