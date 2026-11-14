@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "0.1",
+  "createdAt": "2026-11-14",
+  "status": "dossiers-draft-require-independent-source-review-and-adjudication",
+  "purpose": "Professional safety decision validation research; neither approved reference standard nor reconstructed real deployment decision.",
+  "sourcesChecked": [
+    "SRC-OUH-2026",
+    "SRC-GOSH-2026",
+    "SRC-HSSIB-ERS-2026"
+  ],
+  "sourceReviewNotes": [
+    "Oxford PDF pp.5 and 12 inspected visually and text checked.",
+    "GOSH version 1.3 published PDF text inspected at printed pp.73-74; remote screenshot retrieval failed, requiring independent PDF visual confirmation before source verification is signed.",
+    "HSSIB second interim report official HTML inspected, published 22 October 2026."
+  ],
+  "dossiers": [
+    {
+      "dossierId": "DOS-OUH-001",
+      "title": "Oxford AVT: output accuracy and clinician review",
+      "sourceIds": [
+        "SRC-OUH-2026"
+      ],
+      "evidenceRecordIds": [
+        "REAL-AVT-001",
+        "REAL-AVT-002"
+      ],
+      "evidenceClass": "published-evaluation-not-investigated-incident",
+      "systemDomain": "AI-enabled ambient documentation",
+      "sourceLocations": [
+        {
+          "sourceId": "SRC-OUH-2026",
+          "pdfPageIndex": 4,
+          "printedPage": "5",
+          "section": "1.2 Summary of Key Findings",
+          "claims": [
+            "Of 398 logged AVT uses, 37.3% required edits for accuracy.",
+            "Recorded reasons included clinical-information accuracy (126), language accuracy (43), and invented information (24).",
+            "The report cautions that staff did not always distinguish hallucinations from transcription or templating errors."
+          ]
+        },
+        {
+          "sourceId": "SRC-OUH-2026",
+          "pdfPageIndex": 11,
+          "printedPage": "12",
+          "section": "3.1 Accuracy",
+          "claims": [
+            "Users reported more challenges in complex, qualitative and multi-voice workflows than in structured one-to-one settings.",
+            "These are pilot findings, not adjudicated clinical-harm incidents."
+          ]
+        }
+      ],
+      "strengthOfSource": "Published real-world NHS pilot with logged use, surveys and interviews; heterogeneous implementation.",
+      "knownUnknowns": [
+        "Original supplier and local risk management file",
+        "A particular pre-deployment control decision and version",
+        "Clinician review effectiveness for consequential errors",
+        "Whether any observed inaccuracy survived authorisation",
+        "Specific patient harm or its absence"
+      ],
+      "candidateHazardHypotheses": [
+        {
+          "id": "OUH-HYP-01",
+          "mechanism": "An AVT note may contain inaccurate or invented clinical details that require correction.",
+          "potentialHarm": "An undetected inaccurate statement could influence downstream care.",
+          "status": "hypothesis-not-adjudicated"
+        },
+        {
+          "id": "OUH-HYP-02",
+          "mechanism": "Variable clinical workflows can alter the error-detection demands placed on clinician review.",
+          "potentialHarm": "Local review may fail to detect important omissions under particular conditions.",
+          "status": "hypothesis-not-adjudicated"
+        }
+      ],
+      "candidateControlQuestions": [
+        "What reviewed local evidence demonstrates that clinician sign-off detects important inaccuracies in routine practice?",
+        "Does that evidence cover the actual consultation complexity, staffing model and model version?",
+        "Are downstream record-transfer and post-sign-off error handling addressed?"
+      ],
+      "residualRiskQuestions": [
+        "Which clinical risk method and version governs the claimed residual risk?",
+        "What risk reduction is attributed to clinician review, and on what locally applicable effectiveness evidence?"
+      ],
+      "governanceQuestions": [
+        "Who owns the local review safeguard and incident-response process?",
+        "Who can accept the remaining risk and where is that decision recorded?"
+      ],
+      "hindsightBoundary": "Reported pilot observations cannot be assumed known to any earlier deployment reviewer; any prospective test incorporating them must be labelled real-world-informed synthetic.",
+      "sourceVerificationStatus": "pending-independent-verification",
+      "independentClinicalAdjudicationStatus": "not-started",
+      "adjudicatedFindings": null,
+      "originalDecisionReconstruction": "not-supported-from-public-record",
+      "automatedRiskClassification": null,
+      "retrospectiveFaultFinding": null
+    },
+    {
+      "dossierId": "DOS-GOSH-001",
+      "title": "GOSH multicentre AVT: attribution, negatives and over-summarisation",
+      "sourceIds": [
+        "SRC-GOSH-2026"
+      ],
+      "evidenceRecordIds": [
+        "REAL-AVT-003",
+        "REAL-AVT-004"
+      ],
+      "evidenceClass": "qualitative-evaluation-not-investigated-incident",
+      "systemDomain": "AI-enabled ambient documentation",
+      "sourceLocations": [
+        {
+          "sourceId": "SRC-GOSH-2026",
+          "pdfPageIndex": 72,
+          "printedPage": "73",
+          "section": "5 Interview Data: Accuracy, hallucinations and reliability",
+          "claims": [
+            "Clinician interview themes include fabricated diagnoses, inaccurate clinical impressions and attribution of symptoms or treatments to the wrong source.",
+            "The report discusses difficulty retaining explicit negatives, such as absence of symptoms or risk factors.",
+            "It also records the importance of proofreading and clinician accountability."
+          ]
+        },
+        {
+          "sourceId": "SRC-GOSH-2026",
+          "pdfPageIndex": 73,
+          "printedPage": "74",
+          "section": "5 Interview Data: Completeness and over-summarising",
+          "claims": [
+            "Some participants reported over-summarisation that omitted information regarded as clinically important in descriptive or multi-problem consultations.",
+            "The report also discusses positive experiences and benefits rather than uniform failures."
+          ]
+        }
+      ],
+      "strengthOfSource": "Published multicentre evaluation with clinician interviews; qualitative findings rather than independently adjudicated incident counts.",
+      "knownUnknowns": [
+        "Incidence denominator for each reported error subtype",
+        "Whether errors entered signed documents",
+        "Patient outcome for each reported issue",
+        "Local control performance in individual participating sites",
+        "A specific historic pre-deployment safety decision"
+      ],
+      "candidateHazardHypotheses": [
+        {
+          "id": "GOSH-HYP-01",
+          "mechanism": "Patient statements may be represented as a clinician's recommendation or incorrectly attributed.",
+          "potentialHarm": "Misleading record may influence subsequent clinical decisions.",
+          "status": "hypothesis-not-adjudicated"
+        },
+        {
+          "id": "GOSH-HYP-02",
+          "mechanism": "Explicit negatives or context may be omitted through summarisation.",
+          "potentialHarm": "Downstream clinicians may not see exclusions relevant to clinical risk.",
+          "status": "hypothesis-not-adjudicated"
+        }
+      ],
+      "candidateControlQuestions": [
+        "Is factual and speaker-attribution verification distinguished from simple transcript completeness?",
+        "Is review effectiveness tested for negatives and multi-problem or narrative consultations?",
+        "Do template configuration and EPR transfer alter safeguards?"
+      ],
+      "residualRiskQuestions": [
+        "Which errors and remaining uncertainty are accounted for by the local risk argument?",
+        "Can evidence from one setting or supplier configuration support another?"
+      ],
+      "governanceQuestions": [
+        "Who validates the scope and clinical materiality of omitted information?",
+        "What review process escalates recurrent misattribution or omission patterns?"
+      ],
+      "hindsightBoundary": "Interview observations must not be mislabelled as established patient-harm incidents or as information available to previous reviewers.",
+      "sourceVerificationStatus": "pending-independent-verification",
+      "independentClinicalAdjudicationStatus": "not-started",
+      "adjudicatedFindings": null,
+      "originalDecisionReconstruction": "not-supported-from-public-record",
+      "automatedRiskClassification": null,
+      "retrospectiveFaultFinding": null
+    },
+    {
+      "dossierId": "DOS-HSSIB-ERS-001",
+      "title": "HSSIB e-RS: 180-day removal and supplier-deployer controls",
+      "sourceIds": [
+        "SRC-HSSIB-ERS-2026"
+      ],
+      "evidenceRecordIds": [
+        "REAL-DIGITAL-001",
+        "REAL-DIGITAL-002"
+      ],
+      "evidenceClass": "investigated-clinical-it-incident-non-ai",
+      "systemDomain": "non-AI referral IT; transferable clinical safety reasoning only",
+      "sourceLocations": [
+        {
+          "sourceId": "SRC-HSSIB-ERS-2026",
+          "section": "Executive summary; 2.1 The hazard; 2.2 Changing level of risk; 2.4 Summary and learning",
+          "claims": [
+            "HSSIB identified referrals disappearing from worklists, including automatic removal after 180 days without action.",
+            "The function was intended to protect worklist performance but also created a patient-safety hazard.",
+            "The reviewed national e-RS risk documentation did not mention the 180-day hazard.",
+            "Local awareness, documentation and administrative control effectiveness varied, particularly with reduced capacity and unclear responsibility.",
+            "HSSIB described provider inability to evidence DCB0160 deployment compliance in the settings reviewed."
+          ]
+        }
+      ],
+      "strengthOfSource": "Published national safety investigation interim findings, not an AVT/AI evaluation.",
+      "knownUnknowns": [
+        "Complete original time-stamped decision files for each deploying organisation",
+        "Whether a particular reviewer could know the mechanism at that date",
+        "Risk ratings, acceptance minutes and local actual control outcomes",
+        "Patient-level outcomes for all referrals removed from worklists"
+      ],
+      "candidateHazardHypotheses": [
+        {
+          "id": "ERS-HYP-01",
+          "mechanism": "A worklist performance safeguard can cause pending referrals to disappear from operational visibility.",
+          "potentialHarm": "Missed or delayed specialty assessment.",
+          "status": "investigated-mechanism-prospective-application-not-adjudicated"
+        },
+        {
+          "id": "ERS-HYP-02",
+          "mechanism": "Local administrative controls may weaken when staffing and responsibility boundaries change.",
+          "potentialHarm": "Repeated loss of referral monitoring and delayed care.",
+          "status": "investigated-mechanism-prospective-application-not-adjudicated"
+        }
+      ],
+      "candidateControlQuestions": [
+        "Does the organisation reconcile disappearing referrals independently of visible worklists?",
+        "Are administrative processes formally implemented, owned and tested under reduced capacity?",
+        "Has the supplier communicated the hazard to all relevant deploying organisations?"
+      ],
+      "residualRiskQuestions": [
+        "Is the competing safety trade-off between worklist performance and referral visibility recognised?",
+        "Has residual risk been reviewed when referral volume and waiting times change?"
+      ],
+      "governanceQuestions": [
+        "Who owns and acts on referral drop-off monitoring and cross-organisation escalation?",
+        "Where is local DCB0160 risk assessment documented, and who signs off residual risk?"
+      ],
+      "hindsightBoundary": "A later investigation finding is not proof the original reviewer could foresee this hazard. Do not infer retrospective negligence or a specific regulatory breach beyond HSSIB's reported findings.",
+      "sourceVerificationStatus": "pending-independent-verification",
+      "independentClinicalAdjudicationStatus": "not-started",
+      "adjudicatedFindings": null,
+      "originalDecisionReconstruction": "not-supported-from-public-record",
+      "automatedRiskClassification": null,
+      "retrospectiveFaultFinding": null
+    }
+  ]
+}
