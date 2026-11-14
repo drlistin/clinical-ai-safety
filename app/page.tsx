@@ -129,7 +129,7 @@ export default function HomePage() {
           </div>
           <div className="mt-8 border-l-2 border-[#7babb3] bg-[#f7f9fb] px-6 py-5 text-sm leading-[1.85] text-navy-700 md:max-w-4xl">
             The output is a documented challenge, not a certificate of safety or a substitute
-            for a manufacturer's or deploying organisation's clinical risk management duties.
+            for a manufacturer&apos;s or deploying organisation&apos;s clinical risk management duties.
           </div>
         </Container>
       </section>
