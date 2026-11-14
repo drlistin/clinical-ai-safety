@@ -21,4 +21,5 @@ jobs:
       - run: npm run test:safety
       - run: node --test tests/safety-case-pack.test.cjs
       - run: node --test tests/safety-real-world-register.test.cjs
+      - run: node --test tests/safety-trace-independence.test.cjs
       - run: npm run build
