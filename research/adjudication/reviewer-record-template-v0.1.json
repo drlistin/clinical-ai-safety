@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "0.1",
+  "status": "blank-reviewer-form",
+  "dossierId": null,
+  "dossierVersion": "0.1",
+  "reviewerId": null,
+  "roleAndQualifications": null,
+  "conflictOfInterestDeclaration": null,
+  "independentReviewDate": null,
+  "sourceVerification": {
+    "sourceId": null,
+    "sourceVersion": null,
+    "sectionOrPage": null,
+    "verifiedBy": null,
+    "verifiedAt": null,
+    "verificationOutcome": null,
+    "notes": null
+  },
+  "reviewPhase": "independent-initial-review",
+  "findingRecords": [],
+  "findingRecordShape": {
+    "findingId": null,
+    "sourceFactIds": [],
+    "candidateHazardId": null,
+    "reviewerClassification": null,
+    "reasoning": null,
+    "uncertainty": null,
+    "alternativeExplanation": null,
+    "controlImplementationEvidenceAssessment": null,
+    "controlEffectivenessEvidenceAssessment": null,
+    "additionalEvidenceRequired": [],
+    "residualRiskReasoningAssessment": null,
+    "governanceAction": null,
+    "sourceTimeBoundaryChecked": null
+  },
+  "reviewerOverallConclusion": null,
+  "unresolvedQuestions": [],
+  "signatureOrApprovalEvidence": null,
+  "adjudicatorRecord": {
+    "adjudicatorId": null,
+    "adjudicationDate": null,
+    "independentReviewerRecordIds": [],
+    "agreements": [],
+    "disagreements": [],
+    "panelAdjudicatedFindings": [],
+    "dissentPreserved": null,
+    "approvalEvidenceId": null
+  },
+  "clinicalRiskAcceptance": "not-assessed",
+  "approvedReferenceStatus": "not-approved",
+  "cscQtUsedAsGoldStandard": false
+}
