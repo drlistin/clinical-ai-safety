@@ -3,7 +3,7 @@ import Link from "next/link";
 import Container from "@/components/Container";
 
 export const metadata: Metadata = {
-  title: "Safety Assessment Method",
+  title: "Safety Decision Challenge and Change Impact Review",
   description: "The proposed clinical AI safety decision validation method. Evaluate scenarios, hazards, controls, residual risk and governance before deployment.",
 };
 
@@ -22,12 +22,31 @@ export default function MethodPage() {
         <Container>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-navy-950 md:text-5xl">Safety assessment method</h1>
           <p className="mt-6 max-w-3xl text-lg leading-relaxed text-navy-700">
-            A structured method for stress-testing clinical AI safety decisions before deployment.
+            Two intended professional uses: challenge a proposed safety decision and identify what must be reassessed after a material change.
           </p>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-navy-600">
             Each assessment moves from a defined scenario to hazards, controls, residual risk and governance.
             The aim is to expose missing safeguards, inconsistent safety reasoning and decisions that lack sufficient evidence.
           </p>
+        </Container>
+      </section>
+
+      <section className="border-b border-navy-100 bg-[#f4f7f9] py-16">
+        <Container className="grid gap-6 lg:grid-cols-2">
+          <article id="decision-challenge" className="scroll-mt-28 rounded-xl border border-navy-200 bg-white p-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-clinical-700">Before deployment</p>
+            <h2 className="mt-4 text-2xl font-semibold text-navy-950">Safety Decision Challenge</h2>
+            <p className="mt-5 text-sm leading-[1.85] text-navy-700"><strong>Input:</strong> proposed decision, clinical workflow, hazards, controls and supporting evidence.</p>
+            <p className="mt-4 text-sm leading-[1.85] text-navy-700"><strong>Challenge:</strong> omitted or interacting hazards, unverified controls, operational dependencies and inconsistent residual risk claims.</p>
+            <p className="mt-4 text-sm leading-[1.85] text-navy-700"><strong>Proposed output:</strong> traceable findings, uncertainty, missing evidence and actions for accountable review.</p>
+          </article>
+          <article id="change-review" className="scroll-mt-28 rounded-xl border border-navy-200 bg-white p-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-clinical-700">After material changes</p>
+            <h2 className="mt-4 text-2xl font-semibold text-navy-950">Change Impact Review</h2>
+            <p className="mt-5 text-sm leading-[1.85] text-navy-700"><strong>Input:</strong> earlier decision and evidence, plus changes to the model, system, workflow, controls or guidance.</p>
+            <p className="mt-4 text-sm leading-[1.85] text-navy-700"><strong>Challenge:</strong> which previous hazards, control assumptions and residual risk conclusions may no longer hold.</p>
+            <p className="mt-4 text-sm leading-[1.85] text-navy-700"><strong>Proposed output:</strong> affected conclusions, evidence to revisit and governance review required.</p>
+          </article>
         </Container>
       </section>
       <section className="bg-white py-14 md:py-20">
@@ -51,7 +70,7 @@ export default function MethodPage() {
         <Container className="grid gap-8 md:grid-cols-[1fr_1.25fr] md:gap-16">
           <h2 className="text-2xl font-semibold text-navy-950 md:text-3xl">Assessment boundaries</h2>
           <div className="space-y-4 text-sm leading-[1.9] text-navy-700">
-            <p>The method is under development. Published material describes the proposed assessment structure, not a clinically validated or certified service.</p>
+            <p>The method is under development. Neither proposed capability is currently an operational, clinically validated or certified assessment service.</p>
             <p>It does not approve deployment, certify compliance, replace a Clinical Safety Officer or transfer a manufacturer&apos;s or deploying organisation&apos;s responsibility for clinical risk management.</p>
             <Link href="/evidence" className="inline-flex font-semibold text-clinical-700 hover:underline">Evidence and limitations →</Link>
           </div>
