@@ -49,20 +49,20 @@ export default function HomePage() {
         <Container className="relative flex min-h-[570px] items-center py-20 md:min-h-[620px] md:py-24">
           <div className="max-w-[690px] lg:max-w-[670px]">
             <h1 className="text-[clamp(2.65rem,4.5vw,4.55rem)] font-semibold leading-[1.13] tracking-[-0.035em] text-navy-950">
-              Validate safety decisions before deployment
+              Challenge clinical AI safety decisions. Reassess them when things change.
             </h1>
             <p className="mt-8 max-w-[620px] text-lg leading-[1.75] text-navy-700 md:text-xl">
               A system for stress-testing clinical AI safety decisions before deployment.
             </p>
             <p className="mt-4 max-w-[600px] text-base leading-[1.8] text-navy-600">
-              Identify hazards, assess controls, classify residual risk and establish governance requirements.
+              Identify missing hazards, question whether safeguards work, and determine which previous safety conclusions require review when technology or clinical workflows change.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/method" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-navy-950 px-7 text-sm font-semibold text-white transition-colors hover:bg-navy-800">
-                How the method works <span className="ml-3" aria-hidden="true">→</span>
+                Explore the two challenges <span className="ml-3" aria-hidden="true">→</span>
               </Link>
-              <Link href="/applications" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-navy-300 bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50">
-                Applications
+              <Link href="/contact" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-navy-300 bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50">
+                Professional enquiries
               </Link>
             </div>
           </div>
@@ -75,10 +75,10 @@ export default function HomePage() {
       <section className="border-y border-navy-100 bg-white">
         <Container className="grid gap-0 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:py-10">
           {[
-            ["UK standards", "DCB0129, DCB0160 and DTAC", "/standards"],
-            ["Clinical applications", "Decision support, triage and documentation", "/applications"],
-            ["Control effectiveness", "Validate safeguards and evidence", "/method"],
-            ["Governance decisions", "Risk ownership, review and escalation", "/method"],
+            ["Decision challenge", "Challenge a proposed safety decision", "/method#decision-challenge"],
+            ["Change impact", "Identify decisions requiring reassessment", "/method#change-review"],
+            ["Evidence", "Understand development status and limitations", "/evidence"],
+            ["Standards", "DCB0129, DCB0160 and DTAC", "/standards"],
           ].map(([title, detail, href]) => (
             <Link href={href} key={title} className="block border-b border-navy-100 px-0 py-5 last:border-b-0 sm:px-5 sm:first:pl-0 sm:nth-child-2:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0 lg:last:pr-0 lg:py-2">
               <h2 className="text-sm font-semibold text-navy-950">{title}</h2>
@@ -88,15 +88,69 @@ export default function HomePage() {
         </Container>
       </section>
 
+
+      <section className="border-b border-navy-100 bg-[#f4f7f9] py-20 md:py-28">
+        <Container>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Professional use</p>
+          <h2 className="mt-5 max-w-3xl text-3xl font-semibold leading-tight text-navy-950 md:text-4xl">Two reasons to use Clinical AI Safety</h2>
+          <p className="mt-5 max-w-3xl text-base leading-[1.8] text-navy-600">For Clinical Safety Officers, digital clinical safety leads and AI governance reviewers making or revisiting deployment decisions.</p>
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            <article className="flex flex-col rounded-xl border border-navy-200 bg-white p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-clinical-700">Before deployment</p>
+              <h3 className="mt-4 text-2xl font-semibold text-navy-950">Safety Decision Challenge</h3>
+              <p className="mt-4 text-sm leading-[1.85] text-navy-700">Does the evidence actually support the proposed safety decision?</p>
+              <ul className="mt-5 list-disc space-y-2 pl-5 text-sm leading-[1.8] text-navy-600">
+                <li>Identify missing or interacting hazards.</li>
+                <li>Challenge control ownership, implementation and effectiveness.</li>
+                <li>Examine unsupported reductions in residual risk.</li>
+                <li>Specify evidence gaps and accountable actions.</li>
+              </ul>
+              <Link href="/method#decision-challenge" className="mt-8 text-sm font-semibold text-clinical-700 hover:underline">Explore the method →</Link>
+            </article>
+            <article className="flex flex-col rounded-xl border border-navy-200 bg-white p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-clinical-700">After a change</p>
+              <h3 className="mt-4 text-2xl font-semibold text-navy-950">Change Impact Review</h3>
+              <p className="mt-4 text-sm leading-[1.85] text-navy-700">Does the previous safety conclusion still hold?</p>
+              <ul className="mt-5 list-disc space-y-2 pl-5 text-sm leading-[1.8] text-navy-600">
+                <li>Examine AI model, product and configuration changes.</li>
+                <li>Identify affected hazards and control assumptions.</li>
+                <li>Consider new evidence and revised guidance.</li>
+                <li>Determine which decisions need reassessment.</li>
+              </ul>
+              <Link href="/method#change-review" className="mt-8 text-sm font-semibold text-clinical-700 hover:underline">Explore the method →</Link>
+            </article>
+          </div>
+          <p className="mt-6 max-w-3xl text-sm leading-[1.75] text-navy-600">Both capabilities are under development. This website does not currently provide automated assessments, ongoing change monitoring or a validated assurance service.</p>
+        </Container>
+      </section>
+      <section className="bg-white py-20 md:py-28">
+        <Container className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Expected professional output</p>
+            <h2 className="mt-5 text-3xl font-semibold leading-tight text-navy-950 md:text-4xl">A specific finding, not another checklist.</h2>
+            <p className="mt-6 text-base leading-[1.85] text-navy-600">The proposed method connects a challenged safety assumption to missing evidence, residual risk implications and the governance response required.</p>
+          </div>
+          <div className="rounded-xl border border-navy-200 bg-[#f8fafb] p-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-navy-500">Hypothetical example / Ambient documentation</p>
+            <h3 className="mt-5 text-xl font-semibold text-navy-950">Clinician review is recorded as a safeguard.</h3>
+            <p className="mt-3 text-sm leading-[1.85] text-navy-700">The supplier assumes that clinicians check AI-generated notes before sign-off.</p>
+            <p className="mt-6 border-t border-navy-200 pt-5 text-sm font-semibold text-navy-950">Challenge finding</p>
+            <p className="mt-2 text-sm leading-[1.85] text-navy-700">No local evidence was supplied showing that routine review detects clinically significant omissions under normal workload.</p>
+            <p className="mt-5 border-t border-navy-200 pt-5 text-sm font-semibold text-navy-950">Required action</p>
+            <p className="mt-2 text-sm leading-[1.85] text-navy-700">Verify control ownership and effectiveness. Re-examine any residual risk reduction attributed to it.</p>
+            <p className="mt-5 text-xs leading-relaxed text-navy-500">Illustration only, not a completed assessment or evidence of method performance.</p>
+          </div>
+        </Container>
+      </section>
       <section id="method" className="scroll-mt-24 bg-white py-24 md:py-32">
         <Container>
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">The method</p>
             <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-[-0.025em] text-navy-950 md:text-4xl">
-              Safety assessment method
+              How the challenge is structured
             </h2>
             <p className="mt-7 max-w-2xl text-lg leading-[1.8] text-navy-600">
-              Each scenario is assessed for hazards, safeguards, residual risk and governance requirements.
+              Both proposed capabilities use the same five-stage method to examine hazards, controls, evidence, residual risk and governance.
             </p>
           </div>
           <div className="mt-16 grid border-t border-navy-200 md:grid-cols-5">
@@ -176,10 +230,10 @@ export default function HomePage() {
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#aac8d2]">Professional enquiries</p>
             <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-[-0.025em] md:text-4xl">
-              Independent safety case review
+              Contribute to professional validation
             </h2>
             <p className="mt-6 max-w-xl text-base leading-[1.85] text-[#c4d0df]">
-              Discuss hazards, control effectiveness and unresolved risks before deployment.
+              We welcome discussions with clinical safety professionals about reference cases, operational controls and independent method review.
             </p>
           </div>
           <Link href="/contact" className="inline-flex min-h-12 shrink-0 items-center justify-center self-start rounded-full bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-100">

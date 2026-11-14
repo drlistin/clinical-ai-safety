@@ -23,8 +23,7 @@ export default function ContactPage() {
             Contact Clinical AI Safety
           </h1>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-navy-600">
-            For professional enquiries about safety decision validation,
-            clinical workflow risks or potential research collaboration.
+            For professional discussion and research collaboration on Safety Decision Challenge, Change Impact Review and clinical workflow risks.
           </p>
         </Container>
       </section>
