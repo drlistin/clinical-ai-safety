@@ -19,4 +19,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test:safety
+      - run: node --test tests/safety-case-pack.test.cjs
       - run: npm run build
