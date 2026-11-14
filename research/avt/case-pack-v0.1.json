@@ -1,0 +1,370 @@
+{
+  "schemaVersion": "0.1",
+  "status": "draft-unadjudicated",
+  "generatedOn": "2026-11-14",
+  "intendedUse": "Internal reference-case development for professional safety decision validation; NOT clinical guidance or an authorised gold standard.",
+  "sourceRegister": {
+    "AVT-GUIDANCE-1.2": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "1.2",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-1.3": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "1.3",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-1.4": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "1.4",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-1.5": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "1.5",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-3.1": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "3.1",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-A2.1.1": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "A2.1.1",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-GUIDANCE-A2.8": {
+      "source": "NHS England AI-enabled ambient scribing product guidance v3",
+      "section": "A2.8",
+      "url": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "lastUpdated": "2026-07-29"
+    },
+    "AVT-MEDICAL-DEVICE-2026": {
+      "source": "NHS England and MHRA medical device regulation for AVT products",
+      "section": "regulatory status overview",
+      "url": "https://www.england.nhs.uk/long-read/medical-device-regulation-for-ambient-voice-technology-products/",
+      "lastUpdated": "2026-07-29"
+    },
+    "DCB-REVIEW-2026": {
+      "source": "NHS England national DCB0129/DCB0160 review supporting information",
+      "section": "evolving technologies and updates",
+      "url": "https://www.england.nhs.uk/long-read/national-review-of-clinical-risk-management-standardsdcb0129-and-dcb0160-supporting-information/",
+      "lastUpdated": "2026-06-29"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "AVT-001",
+      "title": "Clinician review under compressed appointment workflow",
+      "setting": "GP practice, 10-minute consultation slots",
+      "function": "Consultation note drafting only",
+      "proposedSafetyDecision": "Accept clinician review before signing as sufficient to reduce the documentation omission hazard.",
+      "scenarioFacts": [
+        "A local standard operating procedure assigns note review to the treating clinician.",
+        "A six-person pilot shows the note can be reviewed in the product interface.",
+        "The practice has no recorded evaluation of omission detection in consecutive routine sessions.",
+        "Clinicians report varying time available to compare the generated note with the conversation."
+      ],
+      "providedEvidenceDescriptions": [
+        "Supplier DCB0129 extract supplied",
+        "Local SOP supplied",
+        "Six-person pilot usability summary supplied"
+      ],
+      "reviewQuestion": "Does the recorded evidence establish implementation and effectiveness of the relied-on control under routine conditions?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.4",
+        "AVT-GUIDANCE-A2.1.1"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-002",
+      "title": "Reviewed note with documented local effectiveness evidence",
+      "setting": "Hospital outpatient clinic",
+      "function": "Draft outpatient letters for clinician sign-off",
+      "proposedSafetyDecision": "Record human review as a relied-on control within the organisation's risk assessment, subject to accountable acceptance.",
+      "scenarioFacts": [
+        "All outputs remain drafts until the responsible clinician signs.",
+        "A locally governed evaluation compares notes with source information and records omissions, errors and reviewer correction rates.",
+        "The evaluation includes routine clinic workloads and reports limitations.",
+        "The named clinical safety reviewer reviewed the evidence; the safety committee retains acceptance authority."
+      ],
+      "providedEvidenceDescriptions": [
+        "Versioned local validation report supplied",
+        "Signed SOP and audit sample supplied",
+        "Signed clinical safety review note supplied"
+      ],
+      "reviewQuestion": "Which conclusions can be supported by the described evidence and which still require an accountable risk-acceptance decision?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.4",
+        "AVT-GUIDANCE-1.5"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-003",
+      "title": "Attribution error with multilingual consultation",
+      "setting": "Primary care with interpreter-supported consultations",
+      "function": "Transcription and documentation summary",
+      "proposedSafetyDecision": "Use supplier overall word-accuracy results to justify equivalent documentation performance in this local population.",
+      "scenarioFacts": [
+        "The supplier validation dataset reports aggregate accuracy but does not stratify interpreter-supported consultations.",
+        "The local deployment includes discussions involving patient, clinician and interpreter.",
+        "The product may combine utterances into one summary.",
+        "No local speaker-attribution assessment is supplied."
+      ],
+      "providedEvidenceDescriptions": [
+        "Supplier general performance summary supplied",
+        "Local demographic and workflow profile supplied"
+      ],
+      "reviewQuestion": "Are performance and provenance claims applicable to the local setting, and is additional local control evidence required?",
+      "sourceIds": [
+        "AVT-GUIDANCE-A2.1.1",
+        "AVT-GUIDANCE-A2.8"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-004",
+      "title": "Patient record linkage across EPR integrations",
+      "setting": "Acute outpatient service using shared terminals",
+      "function": "Draft notes sent to EPR after approval",
+      "proposedSafetyDecision": "Accept a supplier integration test as sufficient to address wrong-patient documentation risk at this site.",
+      "scenarioFacts": [
+        "The supplier tested integration in a single-user test environment.",
+        "Local clinicians may switch between two patient charts and the AVT interface on shared terminals.",
+        "The local workflow includes identity reconciliation before transfer but no evidence of its actual use was submitted.",
+        "An accountable EPR integration owner is not specified."
+      ],
+      "providedEvidenceDescriptions": [
+        "Supplier test summary supplied",
+        "Local process map supplied"
+      ],
+      "reviewQuestion": "Does the shared test establish local identity-control implementation, ownership and effectiveness?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.3",
+        "AVT-GUIDANCE-A2.1.1"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-005",
+      "title": "Controlled EPR sign-off path with local verification",
+      "setting": "Elective specialty outpatient service",
+      "function": "Draft note transfer with clinician approval",
+      "proposedSafetyDecision": "Use the locally verified transfer and sign-off steps as part of a documented risk argument.",
+      "scenarioFacts": [
+        "The integration is configured to require patient-ID reconciliation.",
+        "A local validation records matched identity cases, mismatch handling and recovery.",
+        "The clinician must preview the final EPR note before sign-off.",
+        "The team has a named system owner and documents limitations, ongoing monitoring and review."
+      ],
+      "providedEvidenceDescriptions": [
+        "Local test results and failure-handling record supplied",
+        "Signed clinical workflow SOP supplied",
+        "Approval audit and monitoring plan supplied"
+      ],
+      "reviewQuestion": "Does the described record support the stated controls, without automatically equating their presence to risk acceptance?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.3",
+        "AVT-GUIDANCE-1.5"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-006",
+      "title": "Supplier control transfers to several practices",
+      "setting": "ICB-wide AVT rollout to multiple GP practices",
+      "function": "Clinical note summarisation",
+      "proposedSafetyDecision": "Treat the shared supplier risk controls as effective across all participating practices.",
+      "scenarioFacts": [
+        "The ICB has a shared hazard log and supplier safety case.",
+        "Each practice has different record-entry and clinician sign-off processes.",
+        "No documented local acceptance of clinician-review responsibilities is available for two practices.",
+        "One practice uses a non-integrated copy-and-paste transfer."
+      ],
+      "providedEvidenceDescriptions": [
+        "Shared hazard log supplied",
+        "Supplier assurance summary supplied",
+        "Partial local SOP inventory supplied"
+      ],
+      "reviewQuestion": "Which transferred controls are genuinely locally accepted and verified, and which require practice-specific review?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.2",
+        "AVT-GUIDANCE-1.3"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-007",
+      "title": "Monitoring plan without trigger ownership",
+      "setting": "Trust urgent-care service",
+      "function": "Draft consultation summary",
+      "proposedSafetyDecision": "Rely on monthly documentation audit and incident reporting as sufficient detection safeguards.",
+      "scenarioFacts": [
+        "A monitoring plan specifies overall documentation accuracy.",
+        "No escalation threshold or accountable person for significant omissions is stated.",
+        "The clinical safety officer receives quarterly summaries.",
+        "No procedure states what happens when an incident report suggests a systematic failure."
+      ],
+      "providedEvidenceDescriptions": [
+        "Monthly dashboard template supplied",
+        "Incident-reporting policy supplied"
+      ],
+      "reviewQuestion": "Does a monitoring metric alone constitute an actionable control when triggering and escalation are unspecified?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.5",
+        "AVT-GUIDANCE-A2.8"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-008",
+      "title": "Monitoring scheme with documented escalation",
+      "setting": "Hospital dermatology outpatients",
+      "function": "Draft consultation letters",
+      "proposedSafetyDecision": "Include the audit and incident-escalation controls as part of the safety argument.",
+      "scenarioFacts": [
+        "The monitoring process records documentation omissions with predefined local criteria.",
+        "Clinical safety ownership, review cadence and incident escalation triggers are documented.",
+        "A recent review exercised the escalation process and recorded actions.",
+        "The organisation's acceptance committee has not delegated approval to the software."
+      ],
+      "providedEvidenceDescriptions": [
+        "Versioned monitoring framework supplied",
+        "Reviewed audit findings supplied",
+        "Escalation rehearsal and clinical governance minutes supplied"
+      ],
+      "reviewQuestion": "What control claims are substantiated and what decisions remain with the designated authority?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.5",
+        "AVT-GUIDANCE-A2.8"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-009",
+      "title": "Product model update with a prior validation record",
+      "setting": "Primary care service with established AVT deployment",
+      "function": "Draft notes using a newly released summarisation model",
+      "proposedSafetyDecision": "Carry forward the earlier control-effectiveness evidence without reassessment after the model change.",
+      "scenarioFacts": [
+        "The supplier identifies changes to summarisation behaviour and output structure.",
+        "Prior local evaluation relates to the previous model version.",
+        "Clinical workflows and staff remain unchanged.",
+        "The change has not been mapped to earlier hazard/control evidence."
+      ],
+      "providedEvidenceDescriptions": [
+        "Supplier change summary supplied",
+        "Prior-version local safety report supplied"
+      ],
+      "reviewQuestion": "Which conclusions from the previous review depend on model behaviour, and what evidence is needed to reassess them?",
+      "sourceIds": [
+        "AVT-GUIDANCE-A2.8",
+        "DCB-REVIEW-2026"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-010",
+      "title": "Bounded software change with documented impact decision",
+      "setting": "Outpatient service",
+      "function": "Draft letter interface, unchanged generation model",
+      "proposedSafetyDecision": "Record targeted reassessment for an interface-only update while preserving unaffected evidence with rationale.",
+      "scenarioFacts": [
+        "The update changes button placement but not the summarisation model or EPR interface.",
+        "The team documents a change-impact mapping for accidental sign-off and review usability.",
+        "Local human-factors verification is recorded for the revised interface.",
+        "The previous clinical safety decision is retained with explicit version references."
+      ],
+      "providedEvidenceDescriptions": [
+        "Versioned change assessment supplied",
+        "Local interface test report supplied",
+        "Reviewed change record supplied"
+      ],
+      "reviewQuestion": "Can the documented change-impact scope be defended, and which outstanding decisions require governance review?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.4",
+        "AVT-GUIDANCE-A2.8"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-011",
+      "title": "Prompt-driven suggestion outside authorised purpose",
+      "setting": "General medical clinic",
+      "function": "Approved product intended only to draft notes",
+      "proposedSafetyDecision": "Continue under documentation-only controls when users begin prompting it to suggest diagnoses or treatment steps.",
+      "scenarioFacts": [
+        "The approved local intended purpose is clinical documentation only.",
+        "A new local template asks the product to propose differential diagnoses.",
+        "The supplier has not provided evidence that this use is within its intended purpose or applicable product regulatory scope.",
+        "No change-impact review has been performed."
+      ],
+      "providedEvidenceDescriptions": [
+        "Original intended-use statement supplied",
+        "New local template supplied"
+      ],
+      "reviewQuestion": "Does the change require a fresh intended-purpose, clinical hazard, control and regulatory status assessment rather than inherited approval?",
+      "sourceIds": [
+        "AVT-GUIDANCE-3.1",
+        "AVT-MEDICAL-DEVICE-2026"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    },
+    {
+      "caseId": "AVT-012",
+      "title": "Multiple modest dependencies during note correction",
+      "setting": "Busy multidisciplinary outpatient clinic",
+      "function": "Draft notes corrected in a separate EPR",
+      "proposedSafetyDecision": "Rely on final clinician sign-off as the sole control for source-to-record transfer and omission hazards.",
+      "scenarioFacts": [
+        "Corrections can be made in the AVT interface after initial generation.",
+        "An earlier version of the note can remain in the EPR draft cache until refreshed.",
+        "A clinician may review the AVT corrected version but sign an older EPR draft.",
+        "No single-failure test shows this path; the scenario combines version propagation, handoff and sign-off dependencies."
+      ],
+      "providedEvidenceDescriptions": [
+        "Synthetic integration sequence supplied",
+        "Draft workflow description supplied"
+      ],
+      "reviewQuestion": "Have interacting system and human workflow dependencies been examined together, and is the control argument substantiated?",
+      "sourceIds": [
+        "AVT-GUIDANCE-1.3",
+        "AVT-GUIDANCE-A2.1.1"
+      ],
+      "expertReferenceStatus": "draft",
+      "adjudicatedExpectedFindings": null,
+      "adjudicationAuthority": null
+    }
+  ]
+}
