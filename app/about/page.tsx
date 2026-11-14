@@ -13,8 +13,8 @@ export default function AboutPage() {
       <section className="bg-white py-24 md:py-32">
         <Container>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">About the project</p>
-          <h1 className="mt-7 max-w-4xl text-5xl font-semibold leading-[1.1] tracking-[-0.05em] text-navy-950 md:text-7xl">
-            Clinical safety depends on the decisions made before deployment.
+          <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] tracking-[-0.025em] text-navy-950 md:text-5xl">
+            About Clinical AI Safety
           </h1>
           <p className="mt-9 max-w-3xl text-lg leading-[1.85] text-navy-600">
             Clinical AI Safety is an independent project developing a structured method
@@ -27,8 +27,8 @@ export default function AboutPage() {
         <Container className="grid gap-14 md:grid-cols-[1fr_1.2fr] md:gap-24">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">The problem</p>
-            <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.04em] text-navy-950 md:text-4xl">
-              A plausible output is not sufficient evidence of safety.
+            <h2 className="mt-5 text-2xl font-semibold leading-tight tracking-[-0.02em] text-navy-950 md:text-3xl">
+              Why safety decisions need testing
             </h2>
           </div>
           <div className="space-y-6 text-base leading-[1.9] text-navy-700">
