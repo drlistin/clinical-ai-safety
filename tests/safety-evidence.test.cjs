@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- Node CommonJS test harness loads transpiled TypeScript without production dependencies. */
 /* Regression checks for the INTERNAL conservative evidence engine.
  * These fixtures are synthetic and are not a clinical validation study.
  */
