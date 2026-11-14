@@ -14,11 +14,11 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Clinical AI Safety | Safety Decision Assurance",
+    default: "Clinical AI Safety | Challenge and Reassess Safety Decisions",
     template: `%s · ${site.name}`,
   },
   description:
-    "A system for stress-testing clinical AI safety decisions before deployment. Examine hazards, control effectiveness, residual risk and governance in UK healthcare AI.",
+    "A system for stress-testing clinical AI safety decisions before deployment, with proposed decision challenge and change-impact review methods.",
   applicationName: site.name,
   icons: {
     icon: [{ url: "/logo-icon.png", type: "image/png" }],
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     locale: "en_GB",
     url: site.url,
     siteName: site.name,
-    title: "Clinical AI Safety | Safety Decision Assurance",
+    title: "Clinical AI Safety | Challenge and Reassess Safety Decisions",
     description:
-      "Stress-test clinical AI safety decisions before deployment, with evidence-linked assessment of hazards, controls, residual risk and governance.",
+      "Explore the proposed Safety Decision Challenge and Change Impact Review for hazards, controls, residual risk and clinical AI governance.",
   },
   twitter: {
     card: "summary_large_image",
