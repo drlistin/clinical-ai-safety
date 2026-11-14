@@ -58,10 +58,10 @@ export default function HomePage() {
               Identify hazards, assess controls, classify residual risk and establish governance requirements.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Link href="/#method" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-navy-950 px-7 text-sm font-semibold text-white transition-colors hover:bg-navy-800">
+              <Link href="/method" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-navy-950 px-7 text-sm font-semibold text-white transition-colors hover:bg-navy-800">
                 How the method works <span className="ml-3" aria-hidden="true">→</span>
               </Link>
-              <Link href="/#application" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-navy-300 bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50">
+              <Link href="/applications" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-navy-300 bg-white px-7 text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50">
                 Applications
               </Link>
             </div>
@@ -75,10 +75,10 @@ export default function HomePage() {
       <section className="border-y border-navy-100 bg-white">
         <Container className="grid gap-0 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:py-10">
           {[
-            ["UK standards", "DCB0129, DCB0160 and DTAC", "/#standards"],
-            ["Clinical applications", "Decision support, triage and documentation", "/#application"],
-            ["Control effectiveness", "Validate safeguards and evidence", "/#method"],
-            ["Governance decisions", "Risk ownership, review and escalation", "/#method"],
+            ["UK standards", "DCB0129, DCB0160 and DTAC", "/standards"],
+            ["Clinical applications", "Decision support, triage and documentation", "/applications"],
+            ["Control effectiveness", "Validate safeguards and evidence", "/method"],
+            ["Governance decisions", "Risk ownership, review and escalation", "/method"],
           ].map(([title, detail, href]) => (
             <Link href={href} key={title} className="block border-b border-navy-100 px-0 py-5 last:border-b-0 sm:px-5 sm:first:pl-0 sm:nth-child-2:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0 lg:last:pr-0 lg:py-2">
               <h2 className="text-sm font-semibold text-navy-950">{title}</h2>
