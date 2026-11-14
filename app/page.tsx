@@ -137,7 +137,7 @@ export default function HomePage() {
             <p className="mt-6 border-t border-navy-200 pt-5 text-sm font-semibold text-navy-950">Challenge finding</p>
             <p className="mt-2 text-sm leading-[1.85] text-navy-700">No local evidence was supplied showing that routine review detects clinically significant omissions under normal workload.</p>
             <p className="mt-5 border-t border-navy-200 pt-5 text-sm font-semibold text-navy-950">Required action</p>
-            <p className="mt-2 text-sm leading-[1.85] text-navy-700">Verify the control's ownership and effectiveness. Re-examine any residual risk reduction attributed to it.</p>
+            <p className="mt-2 text-sm leading-[1.85] text-navy-700">Verify control ownership and effectiveness. Re-examine any residual risk reduction attributed to it.</p>
             <p className="mt-5 text-xs leading-relaxed text-navy-500">Illustration only, not a completed assessment or evidence of method performance.</p>
           </div>
         </Container>
