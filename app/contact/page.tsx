@@ -1,91 +1,58 @@
 import type { Metadata } from "next";
-import PageHeader from "@/components/PageHeader";
-import Section from "@/components/Section";
-import Disclaimer from "@/components/Disclaimer";
+import Container from "@/components/Container";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description:
-    "Get in touch with Clinical AI Safety — for NHS trusts, CSOs, CCIOs, HealthTech founders, researchers, and collaborators.",
+  description: "Contact Clinical AI Safety regarding clinical AI safety case review, control effectiveness and research collaboration.",
 };
 
 const audiences = [
-  {
-    heading: "NHS Trusts and ICBs",
-    body: "Deploying AI and want an independent view of supplier safety case documentation, or training for CSOs and clinical digital teams.",
-  },
-  {
-    heading: "HealthTech suppliers",
-    body: "Preparing DCB0129 documentation, a DTAC submission, or MHRA AIaMD evidence and want to pressure-test it before a Trust does.",
-  },
-  {
-    heading: "CCIOs, CSOs, CNIOs",
-    body: "Navigating first AI deployments and want a thinking partner who has read the standards and worked in real clinical settings.",
-  },
-  {
-    heading: "Researchers and collaborators",
-    body: "Working on clinical AI safety and interested in joint projects, writing, or teaching.",
-  },
-];
+  ["Clinical safety leads", "Independent challenge of hazard reasoning, safeguard effectiveness and residual risk."],
+  ["Digital health teams", "Clinical workflow questions that should be resolved before deployment."],
+  ["Technology suppliers", "Review of safety case arguments and the evidence supporting proposed controls."],
+  ["Research collaborators", "Methods for identifying unsafe decisions and evaluating clinical AI safeguards."],
+] as const;
 
 export default function ContactPage() {
   return (
     <>
-      <PageHeader
-        kicker="Contact"
-        title="Get in touch."
-        lede="Clinical AI Safety is built by a frontline clinician. Direct, signal-rich conversations only — no marketing funnels."
-      />
-
-      <Section tone="light">
-        <div className="grid gap-16 md:grid-cols-5">
-          <div className="md:col-span-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-clinical-700">
-              Email
-            </p>
-            <p className="mt-4 text-xl font-semibold text-navy-900">
+      <section className="bg-white py-24 md:py-32">
+        <Container>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Contact</p>
+          <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] tracking-[-0.025em] text-navy-950 md:text-5xl">
+            Contact Clinical AI Safety
+          </h1>
+          <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-navy-600">
+            For professional enquiries about safety decision validation,
+            clinical workflow risks or potential research collaboration.
+          </p>
+        </Container>
+      </section>
+      <section className="border-t border-navy-100 bg-[#f5f7f9] py-20 md:py-28">
+        <Container className="grid gap-14 md:grid-cols-[0.9fr_1.1fr] md:gap-24">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Email enquiries</p>
+            <p className="mt-6 break-words text-xl font-semibold tracking-tight text-navy-950 md:text-2xl">
               hello@clinicalaisafety.co.uk
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-navy-600">
-              Email remains the most reliable way to get a thoughtful
-              response. Please include a sentence or two of context so I can
-              route your message.
-            </p>
-
-            <p className="mt-10 text-xs font-semibold uppercase tracking-[0.2em] text-clinical-700">
-              Press
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-navy-600">
-              I am happy to speak to journalists writing on NHS digital
-              clinical safety, AI governance, or CSO practice. Please identify
-              the outlet and deadline in your first message.
+            <p className="mt-5 max-w-md text-sm leading-[1.85] text-navy-600">
+              Please describe the system, intended clinical use and the question you
+              would like to discuss. Do not send patient-identifiable information.
             </p>
           </div>
-
-          <div className="md:col-span-3">
-            <h2 className="text-2xl font-semibold text-navy-900">
-              Who this resource is for
-            </h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              {audiences.map((a) => (
-                <div
-                  key={a.heading}
-                  className="rounded-lg border border-navy-100 bg-white p-6"
-                >
-                  <h3 className="text-base font-semibold text-navy-900">
-                    {a.heading}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-navy-700">
-                    {a.body}
-                  </p>
-                </div>
-              ))}
-            </div>
+          <div className="border-t border-navy-200">
+            {audiences.map(([title, detail]) => (
+              <div key={title} className="grid gap-2 border-b border-navy-200 py-6 sm:grid-cols-[170px_1fr]">
+                <h2 className="text-sm font-semibold text-navy-950">{title}</h2>
+                <p className="text-sm leading-[1.8] text-navy-600">{detail}</p>
+              </div>
+            ))}
+            <p className="mt-7 text-xs leading-relaxed text-navy-500">
+              Enquiries do not constitute a clinical safety assessment or an agreement to provide services.
+            </p>
           </div>
-        </div>
-      </Section>
-
-      <Disclaimer />
+        </Container>
+      </section>
     </>
   );
 }
