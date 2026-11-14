@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "0.1",
+  "status": "draft-analytical-links-require-cso-review",
+  "collectedAt": "2026-11-14",
+  "independentMethod": true,
+  "externalComparator": "CSC-QT may only be used in separate benchmark research; no algorithmic dependencies.",
+  "records": [
+    {
+      "traceId": "TRACE-AVT-001",
+      "evidenceRecordId": "REAL-AVT-001",
+      "sourceFact": "Accuracy-related editing was reported in AVT use logs; not a verified clinical harm count.",
+      "candidateHazard": "Clinically relevant content omitted or invented in a drafted clinical document.",
+      "candidateControl": "Clinician verification of drafted content before authorisation.",
+      "controlValidationQuestion": "Does local assessment provide evidence that verification detects important errors in ordinary conditions?",
+      "residualRiskQuestion": "What risk-reduction claim relies on that control, and is its effectiveness supported in this workflow?",
+      "governanceQuestion": "Who reviews the local control evidence and accepts residual risk under the organisation's criteria?",
+      "historicalDecisionEvidence": "unavailable",
+      "actualControlStatus": "unknown",
+      "timeKnowledgeBoundary": "Published pilot observations may postdate any original local pre-deployment decision.",
+      "classification": "research-hypothesis-not-incident",
+      "reviewStatus": "not-adjudicated"
+    },
+    {
+      "traceId": "TRACE-AVT-003",
+      "evidenceRecordId": "REAL-AVT-003",
+      "sourceFact": "GOSH reported clinician interview concerns about fabricated or misattributed clinical details.",
+      "candidateHazard": "Draft documentation falsely attributes an observation, diagnosis, symptom or treatment to the wrong speaker or patient context.",
+      "candidateControl": "Clinician cross-checking of documented attribution and clinical claims.",
+      "controlValidationQuestion": "Is evidence applicable to complex or multi-speaker clinical consultations?",
+      "residualRiskQuestion": "Does the proposed risk reduction assume an untested ability to identify wrong attribution?",
+      "governanceQuestion": "Who owns and reviews effectiveness evidence for this clinical use?",
+      "historicalDecisionEvidence": "unavailable",
+      "actualControlStatus": "unknown",
+      "timeKnowledgeBoundary": "Published interview themes do not establish an original supplier or deployer decision.",
+      "classification": "research-hypothesis-not-incident",
+      "reviewStatus": "not-adjudicated"
+    },
+    {
+      "traceId": "TRACE-DIGITAL-001",
+      "evidenceRecordId": "REAL-DIGITAL-001",
+      "sourceFact": "HSSIB investigated referrals disappearing from e-RS worklists, including a 180-day automatic removal feature.",
+      "candidateHazard": "A pending referral can become invisible to routine worklist monitoring without completed clinical follow-up.",
+      "candidateControl": "Explicit referral reconciliation and exception monitoring outside the normal worklist view.",
+      "controlValidationQuestion": "Does the deployed process identify aged or disappeared referrals when ordinary list views do not?",
+      "residualRiskQuestion": "Does an administrative or automatic clearance measure introduce a separate patient-safety hazard?",
+      "governanceQuestion": "Which supplier and deploying organisation roles own and escalate the combined system and workflow failure?",
+      "historicalDecisionEvidence": "unavailable",
+      "actualControlStatus": "unknown",
+      "timeKnowledgeBoundary": "HSSIB's later investigation must not be treated as knowledge demonstrably available at original deployment.",
+      "classification": "investigation-mechanism-non-ai",
+      "reviewStatus": "not-adjudicated"
+    },
+    {
+      "traceId": "TRACE-DIGITAL-002",
+      "evidenceRecordId": "REAL-DIGITAL-002",
+      "sourceFact": "HSSIB reported national hazard-log omissions and local assurance or administrative control weaknesses.",
+      "candidateHazard": "An assumed end-to-end referral safety control is ineffective because supplier and deployer responsibilities or operating capacity are misaligned.",
+      "candidateControl": "Documented transfer and local acceptance of ownership, monitoring and escalation controls.",
+      "controlValidationQuestion": "Are responsibilities and local implementation/effectiveness evidenced rather than inferred from a central safety document?",
+      "residualRiskQuestion": "Is risk-reduction attribution defensible when dependent organisational controls are unverified?",
+      "governanceQuestion": "Who formally reviews cross-boundary residual risk and closes disputed actions?",
+      "historicalDecisionEvidence": "unavailable",
+      "actualControlStatus": "unknown",
+      "timeKnowledgeBoundary": "The interim investigation provides retrospective findings; it is not proof of a specific pre-deployment reviewer omission.",
+      "classification": "investigation-mechanism-non-ai",
+      "reviewStatus": "not-adjudicated"
+    }
+  ]
+}
