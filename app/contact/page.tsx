@@ -19,8 +19,8 @@ export default function ContactPage() {
       <section className="bg-white py-24 md:py-32">
         <Container>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-clinical-700">Contact</p>
-          <h1 className="mt-7 max-w-4xl text-5xl font-semibold leading-[1.1] tracking-[-0.05em] text-navy-950 md:text-7xl">
-            Discuss a clinical AI safety question.
+          <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] tracking-[-0.025em] text-navy-950 md:text-5xl">
+            Contact Clinical AI Safety
           </h1>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-navy-600">
             For professional enquiries about safety decision validation,
