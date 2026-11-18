@@ -101,8 +101,8 @@ export default function HomePage() {
               <p className="mt-4 text-sm leading-[1.85] text-navy-700">Does the evidence actually support the proposed safety decision?</p>
               <ul className="mt-5 list-disc space-y-2 pl-5 text-sm leading-[1.8] text-navy-600">
                 <li>Identify missing or interacting hazards.</li>
-                <li>Challenge control ownership, implementation and effectiveness.</li>
-                <li>Examine unsupported reductions in residual risk.</li>
+                <li>Challenge whether a claimed safeguard actually interrupts the hazard and whether it is implemented and effective.</li>
+                <li>Trace unsupported initial-to-residual risk reductions to the controls and evidence relied upon.</li>
                 <li>Specify evidence gaps and accountable actions.</li>
               </ul>
               <Link href="/method#decision-challenge" className="mt-8 text-sm font-semibold text-clinical-700 hover:underline">Explore the method →</Link>
@@ -120,7 +120,7 @@ export default function HomePage() {
               <Link href="/method#change-review" className="mt-8 text-sm font-semibold text-clinical-700 hover:underline">Explore the method →</Link>
             </article>
           </div>
-          <p className="mt-6 max-w-3xl text-sm leading-[1.75] text-navy-600">Both capabilities are under development. This website does not currently provide automated assessments, ongoing change monitoring or a validated assurance service.</p>
+          <p className="mt-6 max-w-3xl text-sm leading-[1.75] text-navy-600">The first structured Safety Decision Challenge checks exist internally as research code; independent clinical validation is pending. This website does not offer automated assessments, ongoing change monitoring or a validated assurance service.</p>
         </Container>
       </section>
       <section className="bg-white py-20 md:py-28">
