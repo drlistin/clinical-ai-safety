@@ -1,67 +1,58 @@
-# clinicalaisafety.co.uk
+# Clinical AI Safety
 
-Practical clinical safety training for NHS Clinical Safety Officers deploying AI-enabled digital health technologies. DCB0129, DCB0160, DTAC, PSIRF, ISO 14971 and AI safety frameworks applied in real clinical settings.
+**A system for stress-testing clinical AI safety decisions before deployment.**
 
-Built by Dr Doju Cheriachan — Internal Medicine Trainee, Sheffield Teaching Hospitals NHS Foundation Trust. GMC registered. CSO certified.
+Independent, research-stage clinical safety decision validation method for Clinical Safety Officers, digital clinical safety leads and AI governance reviewers. It is informed by UK clinical risk management practice including DCB0129, DCB0160 and the clinical safety elements of DTAC, without claiming certification, compliance approval or NHS endorsement.
 
-## Stack
+## What is being developed
 
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Vercel-ready
+- **Safety Decision Challenge (SDC):** inspect a proposed decision through the chain scenario → hazards → controls and their supporting evidence → residual risk → governance. Surface unsupported reasoning, missing safeguards and review requirements.
+- **Change Impact Review (CIR):** identify earlier safety arguments requiring reconsideration after a material system, model, workflow, evidence or governance change.
 
-## Local development
+Outputs are reviewable concerns, uncertainty and required evidence/actions. The project does **not** approve deployments, certify compliance, assign automatic acceptability from a risk band, or replace a qualified Clinical Safety Officer.
 
-```bash
-npm install
-npm run dev
-```
+**Current status:** The public website explains proposed professional capabilities; it is not an operational validated evaluation service. Internally there are deterministic document/claim consistency checks, structurally gated expert-reference hazard/interaction checks, fictional test cases and draft real-world evidence dossiers. No case has received independent clinical gold-standard adjudication and no clinical performance metric is established.
 
-Open http://localhost:3000.
+## Technical stack
 
-## Project structure
+- Next.js **16.4.6** (App Router)
+- React **19.2.6**
+- TypeScript and Tailwind CSS
+- Vercel deployment
 
-```
-app/
-  layout.tsx                       Root layout with Header/Footer
-  page.tsx                         Homepage
-  about/page.tsx
-  modules/page.tsx
-  simulators/page.tsx
-  simulators/hazard-log-builder/page.tsx
-  resources/page.tsx
-  contact/page.tsx
-  not-found.tsx
-  globals.css
+## Repository structure
 
-components/
-  Header, Footer, Container, Section,
-  Hero, Problem, LaunchModules, ModuleCard,
-  SimulatorHighlight, FrameworksGrid,
-  EmailCapture, Disclaimer, PageHeader
+- app/: public information pages (/method, /applications, /standards, /evidence, /about, /contact)
+- lib/safety-decision/: internal contracts, evidence checks, guarded reference comparisons and trace validators
+- docs/: specifications, source boundaries, methodological independence and audit records
+- research/avt/: fictional, unadjudicated scenarios and protocol
+- research/real-world/: source-extracted evidence register and unadjudicated reasoning traces
+- research/adjudication/: three source dossiers, blank independent reviewer forms and verification protocols
+- tests/: synthetic software-regression and research-data integrity checks
 
-lib/
-  site.ts                          Site config, module and framework data
-```
+The former curriculum/simulator routes have been redirected away from public use. **Legacy simulator code remains only for controlled review and must not be reused for professional assessment:** its preliminary audit identifies unsafe control auto-verification and risk-acceptance defaults. See docs/legacy-engine-preliminary-safety-audit.md.
 
-## Deployment
+## Development
 
-1. Push to GitHub.
-2. Import the repo on Vercel.
-3. Framework preset: Next.js. No env vars required for the MVP.
-4. Deploy. Map `clinicalaisafety.co.uk` in Project → Settings → Domains.
+Run from the repository root:
 
-## Architectural notes for later phases
+    npm ci
+    npm run lint
+    npm run test:safety
+    npm run build
 
-The architecture is deliberately decoupled so backend, auth, payments, and the AI CSO Assistant can be added without restructuring:
+Software tests demonstrate bounded behaviour and structural integrity only; they do **not** establish clinical validity or fitness for deployment decisions.
 
-- **Content as data** — modules and frameworks live in `lib/site.ts` today. When the library grows, migrate to MDX or a CMS without touching pages.
-- **Server components by default** — every page is a server component, ready to `await` data from a database, Supabase, or a CMS without client-side rewrites.
-- **Auth seam** — a future `app/(authenticated)` route group and `middleware.ts` can gate paid content without disturbing the marketing surface.
-- **AI assistant seam** — the CSO Assistant will live under `app/assistant` with its own API route (`app/api/assistant/route.ts`) calling Claude. Nothing in the MVP blocks this.
-- **Simulators** — the Hazard Log Builder placeholder at `app/simulators/hazard-log-builder` is where the first interactive simulator will land. Interactive simulators will be client components mounted inside the existing page shell.
+## Evidence and governance
 
-## Disclaimer
+- Method specification: docs/safety-decision-validation-spec-v0.1.md
+- Independent methodological boundary: docs/methodological-independence-policy.md
+- Adjudication protocol: research/adjudication/source-review-and-adjudication-protocol-v0.1.md
+- Source desk audit: research/adjudication/source-audit-2026-11-18.md
+- Operational CSO gap review: docs/cso-operational-gap-review-2026-11-18.md
 
-Independent educational resource. Not affiliated with NHS England, MHRA, or any regulatory body. For educational use only — not a substitute for a Trust's own clinical safety processes or the judgement of a certified Clinical Safety Officer.
+No patient-identifiable data should be entered into the public site or public repository. Do not represent an extracted observation as an incident, an unreviewed hypothesis as an expert reference, or a clinical safety check as risk acceptance. CSC-QT is an **external research comparator** and is not a source of engine rules or reference truth.
+
+Website: https://clinicalaisafety.co.uk
+
+Independent project; not affiliated with or endorsed by NHS England, MHRA or another regulator.
