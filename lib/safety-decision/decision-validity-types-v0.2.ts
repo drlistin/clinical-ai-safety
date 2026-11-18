@@ -109,6 +109,7 @@ export type HazardRiskArgumentV02 = {
   riskMethodEvidenceId: string | null;
   initial: HazardRiskAssessmentV02;
   residual: HazardRiskAssessmentV02;
+  claimedRiskChange: "reduced" | "unchanged" | "increased" | "indeterminate";
   controlEffects: ControlRiskEffectV02[];
 };
 
