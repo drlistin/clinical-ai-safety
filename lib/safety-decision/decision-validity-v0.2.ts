@@ -205,6 +205,9 @@ function checkControlRiskEffect(
       [hazardId, c.id],
       "Risk reduction is credited to an activity without a substantiated hazard-interruption mechanism.",
       "Reclassify workflow steps separately from safeguards and obtain qualified causal review."));
+    results.push(finding("SDC-07", "evidence-insufficient", [hazardId, c.id],
+      "The proposed risk reduction relies on a workflow activity or an undefined safety mechanism.",
+      "Remove unsubstantiated risk-reduction credit until a genuine mechanism and effectiveness are established."));
   }
   if (effect.assertedEffectOn === "none" || !has(effect.rationale)) {
     results.push(finding("SDC-07", "identified-inconsistency", [hazardId, c.id],
@@ -248,6 +251,19 @@ function checkRisk(
       results.push(finding("SDC-07", "evidence-insufficient", [r.hazardId],
         "Initial or residual assessment category and its rationale are incomplete.",
         "Record both risk assessments under the relevant approved method; do not invent a category."));
+    }
+    if (r.claimedRiskChange === "reduced" &&
+      !r.controlEffects.some((effect) => effect.reductionClaimed)) {
+      results.push(finding("SDC-07", "evidence-insufficient", [r.hazardId],
+        "A risk reduction is claimed but no control-specific causal reduction is recorded.",
+        "Trace claimed reduction to a specific safeguard, risk component and effectiveness evidence."));
+    }
+    if (r.claimedRiskChange === "unchanged" &&
+      has(r.initial.category) && has(r.residual.category) &&
+      r.initial.category !== r.residual.category) {
+      results.push(finding("SDC-07", "potential-concern", [r.hazardId],
+        "Risk categories differ despite an unchanged risk assertion; the organisation method may need clarification.",
+        "Review the actual matrix and the stated risk-change logic."));
     }
     for (const effect of r.controlEffects) {
       checkControlRiskEffect(effect, r.hazardId, controls, refs, input.context, results);
