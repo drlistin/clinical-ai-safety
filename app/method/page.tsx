@@ -4,15 +4,15 @@ import Container from "@/components/Container";
 
 export const metadata: Metadata = {
   title: "Safety Decision Challenge and Change Impact Review",
-  description: "The proposed clinical AI safety decision validation method. Evaluate scenarios, hazards, controls, residual risk and governance before deployment.",
+  description: "Explore research-stage Safety Decision Challenge v0.2: clinical context, causal safeguards, evidence applicability, residual-risk reasoning and governance. Not a validated assessment service.",
 };
 
 const stages = [
-  { n: "01", title: "Scenario", purpose: "Set out the AI system, intended use, clinical setting and decision affected.", checks: "Define the workflow boundary, intended users, relevant patient groups, input data and escalation pathway.", output: "A documented assessment context." },
-  { n: "02", title: "Hazards", purpose: "Identify potential harm and the circumstances in which it could occur.", checks: "Consider missing information, interacting failures, delayed responses, automation bias and transferred risk.", output: "A traceable hazard and consequence statement." },
-  { n: "03", title: "Controls", purpose: "Test whether the proposed safeguards address the identified hazards.", checks: "Check implementation status, operational feasibility, available evidence, ownership and failure of human review.", output: "Control findings with evidence gaps and required action." },
-  { n: "04", title: "Residual risk", purpose: "Describe the risk remaining after controls are applied.", checks: "Challenge assumptions about severity, likelihood and risk acceptability. Do not infer risk reduction from an unverified control.", output: "An explicit residual risk judgement, including uncertainty." },
-  { n: "05", title: "Governance", purpose: "Record decisions, accountability and escalation requirements.", checks: "Identify unresolved hazards, review authority, monitoring, change control and circumstances requiring reassessment.", output: "A documented decision and open actions for accountable review." },
+  { n: "01", title: "Scenario", purpose: "Define the proposed decision, AI product and version, current practice and clinical workflow.", checks: "Check intended use, users, review timing, consultation scope, downstream documentation and material unknowns.", output: "A dated assessment context with explicit uncertainties." },
+  { n: "02", title: "Hazards", purpose: "Trace how conditions in the workflow could lead to patient harm.", checks: "Challenge omissions, wrong-patient transfer, misattribution and interactions between technical and human factors.", output: "Candidate hazard pathways for qualified clinical review." },
+  { n: "03", title: "Controls", purpose: "Check whether a proposed safeguard has a genuine mechanism for reducing the associated risk.", checks: "Distinguish a workflow activity from prevention, detection or recovery; check ownership, implementation and effectiveness evidence.", output: "Traceable candidate control-mechanism and evidence findings." },
+  { n: "04", title: "Residual risk", purpose: "Test whether the proposed change from initial to residual risk is justified.", checks: "Require the organisation's method, hazard-specific rationale and evidence for claimed control effects; do not assign risk bands.", output: "A challenged risk argument with uncertainty, not automatic acceptability." },
+  { n: "05", title: "Governance", purpose: "Separate clinical safety review, organisational risk acceptance and deployment authorisation.", checks: "Check recorded accountability, unresolved findings, incident pathways, monitoring and reassessment triggers.", output: "Required governance evidence and accountable review actions." },
 ] as const;
 
 export default function MethodPage() {
@@ -26,7 +26,7 @@ export default function MethodPage() {
           </p>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-navy-600">
             Each assessment moves from a defined scenario to hazards, controls, residual risk and governance.
-            The aim is to expose missing safeguards, inconsistent safety reasoning and decisions that lack sufficient evidence.
+            The aim is to expose missing safeguards, circular control claims, unsupported risk reduction and decisions that lack sufficient evidence.
           </p>
         </Container>
       </section>
@@ -63,6 +63,39 @@ export default function MethodPage() {
                 </div>
               </article>
             ))}
+          </div>
+        </Container>
+      </section>
+      <section className="border-t border-navy-100 bg-white py-14 md:py-20">
+        <Container>
+          <div className="grid gap-8 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-clinical-700">Research implementation · v0.2</p>
+              <h2 className="mt-4 text-2xl font-semibold leading-snug text-navy-950 md:text-3xl">What the internal checks currently test</h2>
+              <p className="mt-4 text-sm leading-[1.85] text-navy-600">
+                The first deterministic implementation is available in the research codebase. It examines documented
+                claims and evidence relationships; it is not a public clinical assessment service.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ["Control mechanism", "Challenges claimed safeguards that merely describe the activity creating the exposure, or lack an explained risk-reduction mechanism."],
+                ["Evidence and applicability", "Checks local evidence references, declared product and workflow scope, dated provenance and basic methodology metadata."],
+                ["Initial to residual risk", "Checks that hazard-specific risk changes refer to a documented method, control mechanism and supporting evidence."],
+                ["Governance separation", "Requests distinct evidence for CSO review, organisational risk acceptance, deployment authorisation and monitoring."],
+              ].map(([title, detail]) => (
+                <article key={title} className="rounded-lg border border-navy-200 bg-[#f8fafb] p-5">
+                  <h3 className="text-base font-semibold text-navy-950">{title}</h3>
+                  <p className="mt-3 text-sm leading-[1.75] text-navy-700">{detail}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="mt-10 border-l-2 border-[#7babb3] bg-[#f4f7f9] px-6 py-5 text-sm leading-[1.85] text-navy-700">
+            <strong className="font-semibold text-navy-950">Clinical validation is outstanding.</strong>
+            {" "}The implementation does not independently discover hazards, verify real-world control effectiveness,
+            authenticate decision-makers, determine risk acceptability or approve deployment. A finding requires
+            qualified professional review; no warning is not a safety verdict.
           </div>
         </Container>
       </section>
