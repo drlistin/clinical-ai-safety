@@ -29,6 +29,11 @@ export type EvidenceV02 = {
   kind: EvidenceKindV02;
   /** Exact publisher URL or controlled identifier, not proof of authenticity. */
   sourceId: string;
+  sourceVersion: string | null;
+  /** Defined outcomes, denominators and method; still reviewer-asserted metadata. */
+  methodDescription: string | null;
+  outcomeDefinition: string | null;
+  denominatorDefinition: string | null;
   sourceDate: string | null;
   reviewerId: string | null;
   reviewedAt: string | null;
