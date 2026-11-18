@@ -11,7 +11,7 @@ on:
     branches: [main]
     paths:
       - 'lib/safety-decision/**'
-      - 'tests/safety-evidence.test.cjs'
+      - 'tests/safety-*.test.cjs'
       - 'package.json'
       - '.github/workflows/safety-evidence-checks.yml'
 
@@ -28,3 +28,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:safety
+      - run: npm run lint
+      - run: npm run build
