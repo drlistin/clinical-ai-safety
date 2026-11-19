@@ -4,7 +4,7 @@
 
 | Priority | Item | Evidence obtained | Remaining verification | Release impact |
 | --- | --- | --- | --- | --- |
-| High | DCB0129 v4.2 + DCB0160 v3.2 | Official PDF source, specification version, exact selected clauses, PDF page screenshots checked | Second independent reviewer for material clauses; source-copy hash; legal/applicability review for any claim of non-compliance | Source quotations can inform *research questions*; no automated legal breach finding |
+| High | DCB0129 v4.2 + DCB0160 v3.2 | Official PDF text and selected page images checked, including §§6.1.2–6.1.3 (controls can create hazards), §§6.3.1–6.3.3 (implementation/effectiveness) and DCB0160 §2.2.2 (top-management acceptance) | Second independent source reviewer; controlled copy hash; qualified CSO applicability and legal-scope review | Verifiable normative research claims only; no automated legal breach or deployment finding |
 | High | Source-to-causal inference mappings | Seven candidate challenge patterns in foundation methodology | Qualified CSO checks hazard specificity, causal adequacy, counterexamples and proportionality | No automatic clinical hazard or approved rule promotion |
 | High | NHS standards legal status | 29 June 2026 NHS England review distinguishes section 250 amendments from operative application of existing standards | Review current operative legislation and legal scope with suitable expertise before any legal conclusion | No statutory compliance verdict |
 | Medium | GOSH AVT v1.3 | Publisher PDF extracted text and printed-page boundaries checked: report dated **9 July 2025**, v1.3 updated **11 February 2026**; printed pp.73–74 address interview themes | PDF image requests for pp.73–74 failed (cache miss); source-copy hash and independent second-person clinical extraction needed | Text-supported qualitative observation only; not a quantitative error-rate or adjudicated harm finding |
@@ -35,19 +35,21 @@
 
 ## Current foundation status
 
-**9 sources registered; 16 source-anchored claims updated to register v1.0.1; 7 unapproved candidate challenge patterns.** No independently approved clinical rules, adjudicated reference findings or automatic risk classifications. The earliest evidence audit is adequate to outline a bounded research foundation, **not** to declare a clinically validated rule library.
+**9 sources registered; 18 source-anchored claims in register v1.0.2; 7 unapproved candidate challenge patterns.** No independently approved clinical rules, adjudicated reference findings or automatic risk classifications. The earliest evidence audit is adequate to outline a bounded research foundation, **not** to declare a clinically validated rule library.
 
 Next: resolve high-priority verification gaps and preserve the one-case technical demonstration in GitHub Issue #19. This is a source-verification gate, not authorisation of additional software features.
 
 ## Specific qualified-review handoff (not yet assigned)
 
-A second source checker should verify the original PDF/HTML copy against the register's CL-013 (GOSH), CL-014 (HSSIB), and CL-015 (NHS AVT), recording exact page or section, error correction and controlled source-file hash. They should also independently check selected DCB0129/DCB0160 clauses (CL-001–CL-008) before any clause-driven professional warning.
+A second source checker should verify the original PDF/HTML copy against the register's CL-013 (GOSH), CL-014 (HSSIB), and CL-015 (NHS AVT), recording exact page or section, error correction and controlled source-file hash. They should independently check the selected DCB0129/DCB0160 clauses (CL-001–CL-008 and CL-017–CL-018), including DCB0129 §6.3.1's exception for controls implemented by another organisation, before any clause-driven professional warning.
 
 A qualified CSO should then assess **causal transferability and counterexamples**, particularly:
 
 - Does GOSH qualitative evidence reasonably prompt local review of clinically consequential documentation errors without implying a measured event rate?
 - Which HSSIB e-RS mechanism is genuinely transferable as a *systems-safety analytical pattern*, and where does its analogy to AVT break?
 - Which AVT guidance clauses are recommendatory guidance versus versioned DCB normative requirements, and what local assurance evidence would be needed?
+- Under DCB0129/DCB0160 §§6.1.2–6.1.3, how should the method challenge hazards *introduced by controls* without assuming that the presence of a new control always increases risk?
+- Under DCB0160 §2.2.2, how should professional review distinguish top-management risk acceptance and deployment authorisation from CSO document approval?
 - Would each of the seven candidate challenge patterns create meaningful, non-duplicative findings under a fully controlled scenario? What evidence would make them false alarms?
 
 **Review disposition fields:** reviewer role and qualification, source version, locator, direct quote up to necessary short excerpt or precise paraphrase, supported/unsupported inference, competing explanation, agreed correction, status [accepted as source-faithful / disputed / pending], date, and authenticated reviewer identity. Store identifiable reviewer records privately.
