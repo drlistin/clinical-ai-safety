@@ -55,3 +55,22 @@ A qualified CSO should then assess **causal transferability and counterexamples*
 **Review disposition fields:** reviewer role and qualification, source version, locator, direct quote up to necessary short excerpt or precise paraphrase, supported/unsupported inference, competing explanation, agreed correction, status [accepted as source-faithful / disputed / pending], date, and authenticated reviewer identity. Store identifiable reviewer records privately.
 
 **No CSO has been contacted or signed off, and this handoff does not approve the foundation.**
+
+## Newly discovered source-selection gaps (bounded search on 19 November 2026)
+
+See `foundation-first-pass-gap-audit-v1.0.md` and the exact 16 executed web search strings in `foundation-search-execution-log-v1.0.json`.
+
+| Priority | Gap | Next action | Boundary |
+| --- | --- | --- | --- |
+| High | **2018 review of 20 health IT safety case reports in England** was not among nine original seed sources | Obtain original author repository/publisher full text; extract exact methods, limitations and applicable review factors | May challenge novelty and baseline; not engine validation |
+| High | **2019 proactive health IT hazard-analysis software study** was absent | Inspect full study, tool workflow and control/hazard traceability, then write competitor/research antecedent comparison | Do not claim Clinical AI Safety uniquely performs software hazard analysis |
+| High | **SEIPS 2.0 and healthcare STPA** absent from explicit method bibliography | Appraise original foundational methods and test applicability to workflow-specific safety decision challenge | Neither automatically a DCB-mandated method |
+| High | **2026 England EPR-integrated ambient-scribe implementation evaluation** absent | Verify design, qualitative findings and context limits; consider candidate interaction mechanism | Qualitative integration evidence is not patient-harm incidence |
+| High | **2026 prospective ambient-note quality audit and ambient-scribe randomised trial** absent | Extract benefits, draft-error potential severities, denominators, review sampling and limits | Balance error concerns with benefits; no pooled safety rates |
+| Medium | 2025 scribe safety instrument validation and simulation-based platform comparisons | Critically review design and application as outcome-measurement comparators | Do not assume note quality validates residual-risk decisions |
+| Medium | HSSIB EPR thematic investigation and AVT investigation launched Aug 2026 | Review investigated themes; distinguish ongoing AVT study from completed report | HSSIB says AVT final report expected summer 2027; no final conclusions yet |
+| High | Protocol's exact PubMed [tiab] queries and Ovid Embase search | Run accessible PubMed interface and retrieve counts/search details; obtain licensed Embase if possible or record explicit access gap | Current web results are discovery only; no searchable-database flow numbers or completeness claims |
+
+**First-pass selected web candidates:** 19 provisional records (10 core candidates, 6 context-only, 3 excluded). This is not a full retrieved/screened universe. All inclusion decisions are preliminary and unadjudicated.
+
+**No new clinical rules are approved.** Continue research under PR #20. GitHub Issue #19 remains the separate technical demonstration gate.
