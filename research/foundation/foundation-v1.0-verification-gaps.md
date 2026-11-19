@@ -106,3 +106,26 @@ The protocol now distinguishes **MEDLINE (bibliographic database)** from **PubMe
 - Audit original nine seed sources and all newly found records using provenance-preserving deduplication by PMID, DOI and source/version.
 
 **Status:** These are **coverage requirements and untested candidate strategies**, not searches completed on 19 November 2026. The ledger explicitly records them as `not-executed`. Previous 16 web searches and two ranked PubMed-index retrievals remain the only executed discovery runs in the repository. No newly approved clinical claim or engine rule.
+
+## Official database retrieval attempt and hand-off (19 November 2026)
+
+**Actual execution attempt:** NCBI E-utilities/PubMed search and Europe PMC API were probed using normal HTTP tools and the available container. DNS resolution or page access failed before the exact query could be submitted. Cochrane search returned 403, IEEE Xplore 418, and ACM search could not be opened. **No MEDLINE/PubMed, Embase, Cochrane, IEEE or ACM database count was obtained.** These are access failures, not negative or zero-result searches.
+
+**Completed research preparation:**
+- Frozen S3A PubMed queries: `research/foundation/pubmed-queries-v1.1.json` (main MeSH/free-text, ambient-scribe sensitivity supplement, optional broader safety query).
+- Network-capable, dependency-free Python ESearch retriever: `research/foundation/run_pubmed_esearch.py`, which writes original API JSON, QueryTranslation, observed hit counts, PMID CSV, provenance-preserving union, UTC timestamps and SHA256 hashes. **Utility has not been executed or independently tested here**, and should be reviewed before a live run.
+- A range of MeSH descriptors was confirmed as existing in the public NLM MeSH database, including Large Language Models, Artificial Intelligence, Natural Language Processing, Documentation, Electronic Health Records and Medical Records Systems, Computerized. This **does not** validate the exact combined query translation or indexing recall.
+
+**Simple live execution on a computer with ordinary outbound internet** (from the GitHub draft branch, Python 3 installed):
+
+```powershell
+git clone --branch research/foundation-evidence-v1-20261119 https://github.com/drlistin/clinical-ai-safety.git
+cd clinical-ai-safety
+py -3 research/foundation/run_pubmed_esearch.py --output-dir pubmed-evidence-output
+```
+
+Inspect `pubmed-evidence-output/pubmed-run-manifest.json`. If `allDefaultQueriesComplete` is **false**, the script will not certify a complete union. Do not interpret `reportedHitCount` as screened/eligible studies. Review the exact `queryTranslation`, flagged errors/warnings and two query overlap counts. The utility explicitly halts complete export when the query exceeds the NCBI ESearch UID ceiling; use appropriately documented date partitioning rather than silent truncation.
+
+**Next researcher hand-off:** Provide the result directory (manifest, original per-query responses and PMID CSV files). Review the actual PubMed Search Details, MeSH mapping and known-paper recall; then screen exported records under the frozen criteria. Embase, Cochrane, IEEE and ACM remain separately unexecuted until platform access is available.
+
+**No research or clinical validity statement can be made from this runner alone; no changes to production software.**
