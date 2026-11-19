@@ -10,6 +10,7 @@ export type SourceClassification =
   | "published-standard-or-law"
   | "official-guidance"
   | "peer-reviewed-research"
+  | "published-service-evaluation"
   | "professional-recommendation"
   | "supplier-assertion"
   | "local-operational-evidence"
