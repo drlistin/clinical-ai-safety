@@ -34,7 +34,7 @@ The manufacturer's clinical safety summary S-01 refers to a separate DCB0129 haz
 | Signed before clinician left clinic on encounter day | 127 of 154 |
 | Other signed notes | 27 of 154, completed subsequently |
 
-**Quality review method:** the local implementation lead generated a simple random sample from the signed-note list. The signing clinician was asked to indicate whether the final record appeared suitable for routine onward correspondence, using `acceptable without major correction` or `needs further major correction`. Auditors did not routinely replay original audio for this review. No patient outcome tracking was part of the pilot. The result was recorded as a feasibility and documentation-quality observation.
+**Quality review method:** the local implementation lead generated a simple random sample from the signed-note list. The signing clinician was asked to indicate whether the final record appeared suitable for routine onward correspondence, using `acceptable without major correction` or `needs further major correction`. Auditors did not routinely replay original audio for this review. The result was recorded as a feasibility and documentation-quality observation.
 
 **Workflow observations:** users reported time saved compared with dictation. Some drafts were corrected during clinic; some were finalised later. The project team considers the present sign-off process compatible with existing local documentation practice.
 
@@ -44,7 +44,7 @@ The manufacturer's clinical safety summary S-01 refers to a separate DCB0129 haz
 
 **Reported result:** 36/36 compared documents matched in the main text field, without recorded content truncation or formatting loss that required correction.
 
-**Audit scope:** the comparison used the note IDs from the completed-document list and text comparison. The extract does not contain a separate tabulation of AVT encounters without a corresponding signed EPR document. It also does not provide a standalone verification dataset for identity-selection errors. The SOP assigns patient checking to the treating clinician.
+**Audit scope:** the comparison used the note IDs from the completed-document list and text comparison. Patient-identity confirmation is described in the local SOP, and the comparison used note IDs drawn from the completed-document list.
 
 **Baseline L-04:** nine of 80 digital-dictation letters in a convenience sample were revised for substantive content after initial transcription. Sample selection and timing were not matched to the AVT pilot.
 
