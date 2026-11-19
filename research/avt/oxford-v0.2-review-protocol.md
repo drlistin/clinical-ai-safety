@@ -18,6 +18,7 @@ This is a **safety decision validation exercise** for qualified CSOs. It is neit
 | File | Audience | Purpose |
 | --- | --- | --- |
 | `oxford-v0.2-reviewer-packet.md` | Qualified independent reviewer | Case and fictional source/evidence synopsis, with primary Oxford source link |
+| `oxford-v0.2-submitted-exhibits.md` | Qualified independent reviewer | Synthetic document extracts: supplier validation, local audit, SOP, risk method |
 | `oxford-v0.2-independent-review-form.md` | Qualified independent reviewer | Blank structured record; no suggested right answer |
 | This protocol | Project coordinator and reviewers where needed | Allocation, confidentiality, contamination and source handling |
 | `oxford-v0.2-case-manifest.json` | Project coordinator | Version, classification and source time boundary; no expected findings |
@@ -31,7 +32,7 @@ The source describes 398 logged AVT uses and 37.3% requiring an accuracy edit; r
 1. Obtain appropriate local/research governance determination and a privacy-safe method of capturing reviewer responses, proportional to the fact that the case is wholly synthetic.
 2. Select **two qualified independent CSOs** with relevant experience of DCB0160 and workflow/hazard-log assessment. Use separate reviewer IDs and record credentials, affiliations and conflicts.
 3. Exclude or classify as non-blind any reviewer who helped develop this case, reviewed v0.1, saw prior Oxford critique, engine output, case-author intentions or another reviewer's findings. The project author and a prior v0.1 reviewer are **not blind participants**.
-4. Supply the frozen reviewer packet and blank form directly. **Do not direct blind reviewers to the public GitHub repository** because v0.1 critiques and the engine design are discoverable there.
+4. Supply the frozen reviewer packet, submitted documentary extracts and blank form directly. **Do not direct blind reviewers to the public GitHub repository** because v0.1 critiques and the engine design are discoverable there.
 5. No project interpretation, coaching, target hazard count, change of prompt or interim reviewer comparison before the first independent returns. Clarification requests must be logged, answered consistently, and distributed without the hidden rationale.
 6. Obtain a **third qualified adjudicator** after both independent opinions are locked. The adjudicator receives the original case, the two independent records and source-verified facts, and records agreements and persistent dissent.
 7. Store signed forms, professional identifiers, conflict declarations and any adjudicated reference records in restricted project-managed access, **never in this public repository**.
