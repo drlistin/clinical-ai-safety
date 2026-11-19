@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.1",
+  "schemaVersion": "1.0.2",
   "asOfDate": "2026-11-19",
   "projectIdentity": "A system for stress-testing clinical AI safety decisions before deployment.",
   "status": "research-draft-not-independently-clinically-verified",
@@ -188,9 +188,9 @@
     {
       "id": "CL-002",
       "sourceId": "SRC-DCB0129",
-      "locator": "§§6.3.1–6.3.3; printed p.19",
-      "paraphrase": "The manufacturer is required to implement relevant allocated controls and to verify their implementation and effectiveness within the conditions stated by the specification.",
-      "doesNotEstablish": "That every proposed control is automatically effective in a different local deployment.",
+      "locator": "§§6.3.1–6.3.3, printed p.19 / PDF index 18",
+      "paraphrase": "Under DCB0129 §6.3, the manufacturer implements appropriate controls allocated to it (except controls to be implemented by another organisation) and verifies each control it implements and its effectiveness.",
+      "doesNotEstablish": "That the manufacturer has implemented a local deployer-owned control, or that any supplier evidence automatically establishes local control effectiveness.",
       "domain": "manufacturer-control-verification",
       "interpretation": "direct-source-paraphrase",
       "confidence": "direct-source-statement",
@@ -379,6 +379,32 @@
       "status": "desk-checked-awaiting-independent-CSO-review",
       "acceptedClinicalRule": false,
       "expertAdjudicated": false
+    },
+    {
+      "id": "CL-017",
+      "sourceId": "SRC-DCB0160",
+      "locator": "DCB0160 v3.2 §§6.1.2–6.1.3, printed p.19 / PDF index 18; manufacturer analogue DCB0129 v4.2 §§6.1.2–6.1.3, printed p.18 / PDF index 17",
+      "paraphrase": "Both specifications require the responsible organisation to assess whether its proposed clinical risk controls may introduce new hazards or affect risks from already-identified hazards, and manage new hazards or increased risks.",
+      "doesNotEstablish": "That any particular proposed control is dangerous, or that every possible interaction has been discovered; the exact duty depends on whether the actor is manufacturer or deploying organisation.",
+      "domain": "control-induced-hazards-and-interactions",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "published-standards-text-and-selected-PDF-pages-checked-independent-CSO-review-pending",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-018",
+      "sourceId": "SRC-DCB0160",
+      "locator": "DCB0160 v3.2 §2.2.2, printed p.13 / PDF index 12; contrast §§3.3.2 and 3.5.2, printed pp.15–16 / PDF indices 14–15",
+      "paraphrase": "DCB0160 allocates organisational deployment authorisation and acceptance of residual clinical risk to top management; it separately specifies CSO approval of each hazard-log version and each clinical safety case report.",
+      "doesNotEstablish": "That a CSO's signature itself constitutes top-management approval, or that this source authorises Clinical AI Safety software to accept risk or approve deployment.",
+      "domain": "governance-separation",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "published-standard-text-and-selected-PDF-pages-checked-independent-CSO-review-pending",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
     }
   ],
   "approvedRuntimeRuleIds": [],
@@ -404,6 +430,11 @@
       "sourceId": "ALL",
       "status": "no-independent-human-check",
       "nextAction": "A second source reviewer and appropriately qualified CSO review required before clinical rule promotion"
+    },
+    {
+      "sourceId": "SRC-DCB0129/SRC-DCB0160",
+      "status": "selected clauses 2.2,3.3,3.5,4.3,6.1,6.3 text and screenshots compared",
+      "nextAction": "independent second-person clause extraction and scope/legal applicability review"
     }
   ]
 }
