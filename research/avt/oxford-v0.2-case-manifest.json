@@ -36,7 +36,8 @@
   "files": {
     "reviewerPacket": "research/avt/oxford-v0.2-reviewer-packet.md",
     "blankReviewerForm": "research/avt/oxford-v0.2-independent-review-form.md",
-    "allocationAndBlinding": "research/avt/oxford-v0.2-review-protocol.md"
+    "allocationAndBlinding": "research/avt/oxford-v0.2-review-protocol.md",
+    "submittedEvidenceExhibits": "research/avt/oxford-v0.2-submitted-exhibits.md"
   },
   "fullSourceDocumentsAttached": false,
   "hiddenAnswerKeyCreated": false,
@@ -48,5 +49,6 @@
   "priorOxfordV01": "separate-transparent-case-not-for-blinded-reviewers",
   "dataProtection": "synthetic-only-no-patient-information",
   "publicRepoWarning": "Do not direct blinded reviewers to the public repo; distribute frozen packet and form directly.",
-  "referencesToAdjudicatedFindings": []
+  "referencesToAdjudicatedFindings": [],
+  "syntheticSupportingExtractsSupplied": true
 }
