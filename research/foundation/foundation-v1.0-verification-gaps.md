@@ -1,15 +1,15 @@
 # Foundation v1.0: verification gaps and source-release decisions
 
-**Date:** 19 November 2026. **All statuses provisional.** This is not a request to run a clinical safety assessment or to amend the v0.2 rules.
+**Date:** 19 November 2026. **Source verification update:** 19 November 2026, after checking available primary-publisher extracts. **All clinical interpretations remain provisional.** This is not a request to run a clinical safety assessment or to amend the v0.2 rules.
 
 | Priority | Item | Evidence obtained | Remaining verification | Release impact |
 | --- | --- | --- | --- | --- |
 | High | DCB0129 v4.2 + DCB0160 v3.2 | Official PDF source, specification version, exact selected clauses, PDF page screenshots checked | Second independent reviewer for material clauses; source-copy hash; legal/applicability review for any claim of non-compliance | Source quotations can inform *research questions*; no automated legal breach finding |
 | High | Source-to-causal inference mappings | Seven candidate challenge patterns in foundation methodology | Qualified CSO checks hazard specificity, causal adequacy, counterexamples and proportionality | No automatic clinical hazard or approved rule promotion |
 | High | NHS standards legal status | 29 June 2026 NHS England review distinguishes section 250 amendments from operative application of existing standards | Review current operative legislation and legal scope with suitable expertise before any legal conclusion | No statutory compliance verdict |
-| Medium | GOSH AVT v1.3 | Publisher PDF text pp.73–74 reviewed; qualitative interview themes inspected | Exact PDF visual page confirmation, document version verification, second clinical extraction | Cite as *text-checked, visual pending*; no adjudicated failure rate |
-| Medium | HSSIB e-RS second interim | Official search results/HSSIB news confirm 180-day worklist removal | Full publisher report retrieval, relevant sections/limitations, temporal context | Use only as a provisional evidence lead for cross-system interaction; no historical fault attribution |
-| Medium | NHS ambient scribing guidance v3 | Publisher version/date and search excerpt on CSO/DCB0160/DPIA | Full source text and exact sections/wording | No exact clause quotation or legal consequence from excerpt alone |
+| Medium | GOSH AVT v1.3 | Publisher PDF extracted text and printed-page boundaries checked: report dated **9 July 2025**, v1.3 updated **11 February 2026**; printed pp.73–74 address interview themes | PDF image requests for pp.73–74 failed (cache miss); source-copy hash and independent second-person clinical extraction needed | Text-supported qualitative observation only; not a quantitative error-rate or adjudicated harm finding |
+| Medium | HSSIB e-RS second interim | Publisher-indexed report text covers executive summary, findings and §§2.3.7, 2.3.14, 2.4.1–2.4.3, including 180-day worklist removal, hazard-log omission and weakened local processes | Direct full HTML page open failed (cache miss); obtain/retain and verify original publisher report with file hash and independent check | Verified publisher-indexed passages support an investigated *non-AI* mechanism; not proof of AVT harm or local historic approval |
+| Medium | NHS ambient scribing guidance v3 | Publisher-indexed substantive text checked at §§1.1–1.5, 3.1–3.2 and Appendix A2.1.1; version 3 updated **29 July 2026** | Full page open returned empty content; obtain independent full original copy and check additional qualifiers | Can paraphrase cited indexed sections as guidance; no automatic legal duty/medical-device determination |
 | Medium | Oxford AVT report | Official PDF p5 and p25 visually inspected; source limitations noted | Independent verification of original version, data categories/denominators and clinical interpretation | Can support desk-reviewed empirical observations, not local control effectiveness |
 | Medium | AMLAS and NHS GP clinical safety guidance | Official HTML headings/tables checked | Confirm page currency at next decision date; clinical method fit and sector applicability | Guidance informs candidate methods, not blanket mandatory techniques |
 | Low | Formal source library | Stable original links and source IDs captured | Archive permitted downloaded copies, cryptographic hash, citation manager metadata and change-monitor policy | Does not block transparent technical Oxford demonstration; needed for sustained governance |
@@ -35,6 +35,21 @@
 
 ## Current foundation status
 
-**9 sources registered; 16 source-anchored claims recorded; 7 unapproved candidate challenge patterns.** No independently approved clinical rules, adjudicated reference findings or automatic risk classifications. The earliest evidence audit is adequate to outline a bounded research foundation, **not** to declare a clinically validated rule library.
+**9 sources registered; 16 source-anchored claims updated to register v1.0.1; 7 unapproved candidate challenge patterns.** No independently approved clinical rules, adjudicated reference findings or automatic risk classifications. The earliest evidence audit is adequate to outline a bounded research foundation, **not** to declare a clinically validated rule library.
 
 Next: resolve high-priority verification gaps and preserve the one-case technical demonstration in GitHub Issue #19. This is a source-verification gate, not authorisation of additional software features.
+
+## Specific qualified-review handoff (not yet assigned)
+
+A second source checker should verify the original PDF/HTML copy against the register's CL-013 (GOSH), CL-014 (HSSIB), and CL-015 (NHS AVT), recording exact page or section, error correction and controlled source-file hash. They should also independently check selected DCB0129/DCB0160 clauses (CL-001–CL-008) before any clause-driven professional warning.
+
+A qualified CSO should then assess **causal transferability and counterexamples**, particularly:
+
+- Does GOSH qualitative evidence reasonably prompt local review of clinically consequential documentation errors without implying a measured event rate?
+- Which HSSIB e-RS mechanism is genuinely transferable as a *systems-safety analytical pattern*, and where does its analogy to AVT break?
+- Which AVT guidance clauses are recommendatory guidance versus versioned DCB normative requirements, and what local assurance evidence would be needed?
+- Would each of the seven candidate challenge patterns create meaningful, non-duplicative findings under a fully controlled scenario? What evidence would make them false alarms?
+
+**Review disposition fields:** reviewer role and qualification, source version, locator, direct quote up to necessary short excerpt or precise paraphrase, supported/unsupported inference, competing explanation, agreed correction, status [accepted as source-faithful / disputed / pending], date, and authenticated reviewer identity. Store identifiable reviewer records privately.
+
+**No CSO has been contacted or signed off, and this handoff does not approve the foundation.**
