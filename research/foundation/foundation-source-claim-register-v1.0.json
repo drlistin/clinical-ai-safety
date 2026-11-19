@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.0.1",
   "asOfDate": "2026-11-19",
   "projectIdentity": "A system for stress-testing clinical AI safety decisions before deployment.",
   "status": "research-draft-not-independently-clinically-verified",
@@ -84,11 +84,20 @@
       "version": "version 3 (29 July 2026)",
       "published": "2026-07-29",
       "sourceUrl": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
-      "deskReviewStatus": "publisher-search-summary-only",
-      "visualReviewStatus": "full text direct open did not return readable content; full document recheck outstanding",
+      "deskReviewStatus": "publisher-indexed-section-text-checked-direct-full-page-open-unavailable",
+      "visualReviewStatus": "Official NHS England page indexed with substantive section text and version/date; direct full HTML open returned only empty wrapper; no complete independent reading or archival",
       "locators": [
-        "1.1 Assign a Clinical Safety Officer and identify key risks (publisher search excerpt only)"
-      ]
+        "Version 3, date last updated 29 July 2026; England only",
+        "§1.1 Assign a Clinical Safety Officer and identify key risks",
+        "§1.2 Complete the DCB0160 documentation and a DPIA",
+        "§1.3 Plan for appropriate integration",
+        "§1.4 Ensure appropriate controls; user review before further actions",
+        "§1.5 Implement a monitoring framework",
+        "§3.1 Risk identification and assessment",
+        "§3.2 Medical-device regulatory compliance where applicable",
+        "Appendix A2.1.1 Safety risk considerations"
+      ],
+      "verificationAsOf": "2026-11-19"
     },
     {
       "id": "SRC-STANDARDS-REVIEW",
@@ -123,14 +132,23 @@
       "title": "The Use of Ambient Voice Technology with Generative Artificial Intelligence in Multiple Clinical Settings Across the NHS",
       "publisher": "Great Ormond Street Hospital DRIVE",
       "kind": "published-multicentre-evaluation",
-      "version": "GOSH DRIVE Final Report v1.3",
-      "published": "2026",
+      "version": "Report dated 9 July 2025; version 1.3 updated 11 February 2026",
+      "published": "2025-07-09",
       "sourceUrl": "https://media.gosh.nhs.uk/documents/AAI_Phase_4_NHSE_Final_Report_1.3.pdf",
-      "deskReviewStatus": "publisher-PDF-text-checked-visual-pending",
-      "visualReviewStatus": "PDF text pp.73–74 accessible; web screenshot retrieval failed; not fully visually verified",
+      "deskReviewStatus": "publisher-PDF-extracted-text-and-print-page-locators-checked-visual-pending",
+      "visualReviewStatus": "Publisher PDF text on printed pages 73-74 checked against section/table layout in extracted text; web PDF screenshot requests for pages 72 and 73 failed with cache miss; visual page verification remains pending",
       "locators": [
-        "printed pp.73–74; interview Table 6.1, completeness and accuracy themes"
-      ]
+        "cover: report date 9 July 2025, v1.3 updated 11 February 2026",
+        "printed p.73: 'Accuracy, hallucinations and reliability' in interview themes",
+        "printed p.74: 'Completeness and over-summarising' and 'Integration with EPR'"
+      ],
+      "lastUpdated": "2026-02-11",
+      "verificationAsOf": "2026-11-19",
+      "realStudyProperties": {
+        "provider": "TORTUS AI",
+        "setting": "nine London NHS sites in GOSH DRIVE evaluation",
+        "clinicalClaimsRequireIndependentExpertReview": true
+      }
     },
     {
       "id": "SRC-HSSIB",
@@ -140,11 +158,17 @@
       "version": "published 22 October 2026",
       "published": "2026-10-22",
       "sourceUrl": "https://www.hssib.org.uk/patient-safety-investigations/electronic-patient-record-systems-electronic-referrals-for-ongoing-care/second-interim-report/",
-      "deskReviewStatus": "publisher-search-result-checked-full-report-pending",
-      "visualReviewStatus": "publisher results confirm 180-day worklist removal; full report page retrieval failed",
+      "deskReviewStatus": "official-publisher-indexed-full-report-extract-checked-direct-page-open-failed",
+      "visualReviewStatus": "HSSIB publisher search index exposes report executive summary, findings, and sections 2.3.7, 2.3.14, 2.4.1–2.4.3; direct webpage open returned cache miss; full original directly retrieved / archived: no",
       "locators": [
-        "HSSIB second interim: opening summary / 180-day function; full report sections require recheck"
-      ]
+        "Executive summary: 180-day e-RS worklist removal and missed/delayed care",
+        "Findings: missing national hazard-log recognition, local control and capacity concerns",
+        "§2.3.7: January 2024 national hazard log v1.3 lacked reference",
+        "§2.3.14: repeated incidents associated with weakened local administrative controls",
+        "§2.4.1–2.4.3: risk mechanism and supplier/deployer control gap",
+        "Safety action A/2026/003"
+      ],
+      "verificationAsOf": "2026-11-19"
     }
   ],
   "claims": [
@@ -307,39 +331,39 @@
     {
       "id": "CL-013",
       "sourceId": "SRC-GOSH",
-      "locator": "printed pp.73–74, clinician interview themes",
-      "paraphrase": "Clinicians interviewed in the GOSH multicentre AVT evaluation reported concerns about misattribution, explicit negative findings and loss of important detail through summarisation.",
-      "doesNotEstablish": "Frequency of each error subtype, independently confirmed injury incidents, or demonstrated local control failure.",
+      "locator": "printed p.73: accuracy/hallucinations/negatives; printed p.74: completeness/over-summarising; interview themes",
+      "paraphrase": "Clinician interviews in GOSH DRIVE's nine-site TORTUS AVT evaluation discussed occasional fabricated or misattributed content, unreliable capture of explicit negatives, and over-summarisation, especially in complex or multi-problem consultations; users also described benefits.",
+      "doesNotEstablish": "Independent incidence denominators for these qualitative interview themes, adjudicated patient harm, or measured efficacy of local proofreading at another Trust.",
       "domain": "AVT-qualitative",
       "interpretation": "direct-source-paraphrase",
       "confidence": "direct-source-statement",
-      "status": "text-checked-visual-and-independent-review-pending",
+      "status": "publisher-PDF-text-and-locators-checked-visual-and-expert-review-pending",
       "acceptedClinicalRule": false,
       "expertAdjudicated": false
     },
     {
       "id": "CL-014",
       "sourceId": "SRC-HSSIB",
-      "locator": "second interim: summary about 180-day worklist behaviour",
-      "paraphrase": "The HSSIB publisher reports that e-RS entries may leave provider worklists after 180 days without action, potentially without staff recognition.",
-      "doesNotEstablish": "An AVT incident, transferability to another product without matching workflow, or original local risk acceptance circumstances.",
+      "locator": "HSSIB second interim executive summary; findings; §§2.3.7,2.3.14,2.4.1–2.4.3; safety action A/2026/003",
+      "paraphrase": "HSSIB's e-RS investigation describes automatic worklist removal after 180 days without action, its potential to cause missed or delayed care, and instances where limited organisational awareness, staffing pressures or unclear local responsibility weakened administrative management of that risk. The national e-RS hazard log reviewed did not identify the function as a patient hazard.",
+      "doesNotEstablish": "Any failure of an AVT product, applicability to a different clinical workflow without an equivalent mechanism, or a quantified risk or an individual historical approval decision.",
       "domain": "non-AI-system-interaction",
       "interpretation": "direct-source-paraphrase",
       "confidence": "direct-source-statement",
-      "status": "summary-checked-full-report-pending",
+      "status": "publisher-indexed-report-sections-checked-direct-original-retrieval-and-expert-review-pending",
       "acceptedClinicalRule": false,
       "expertAdjudicated": false
     },
     {
       "id": "CL-015",
       "sourceId": "SRC-AVT-GUIDANCE",
-      "locator": "publisher excerpt §1.1; version 3",
-      "paraphrase": "The NHS England ambient scribing guidance summary advises deploying organisations to assign CSO responsibility and complete relevant DCB0160 documentation and a DPIA.",
-      "doesNotEstablish": "Precise current wording or all legal consequences without full-document verification.",
+      "locator": "version 3 (updated 29 July 2026), §§1.1–1.5, 3.1–3.2, appendix A2.1.1",
+      "paraphrase": "NHS England's England-specific version 3 ambient scribing guidance recommends assigning a CSO, assessing hazards, completing DCB0160 documentation and DPIA, checking product output before further action, ensuring workflow integration and maintaining post-deployment monitoring.",
+      "doesNotEstablish": "That all guidance statements are unconditional legal requirements, that any given product is a medical device, a blanket conclusion about supplier or deployer liability, or adequate local implementation.",
       "domain": "ambient-scribe-governance",
       "interpretation": "direct-source-paraphrase",
       "confidence": "direct-source-statement",
-      "status": "publisher-snippet-only-full-text-recheck-pending",
+      "status": "publisher-indexed-original-section-text-checked-direct-open-and-independent-review-pending",
       "acceptedClinicalRule": false,
       "expertAdjudicated": false
     },
@@ -358,5 +382,28 @@
     }
   ],
   "approvedRuntimeRuleIds": [],
-  "independentlyAdjudicatedClinicalFindings": []
+  "independentlyAdjudicatedClinicalFindings": [],
+  "lastSourceAudit": "2026-11-19",
+  "reverificationOutcomes": [
+    {
+      "sourceId": "SRC-GOSH",
+      "status": "primary-PDF-text-location-verified; screenshots unavailable",
+      "nextAction": "Obtain a controlled original PDF copy, verify page 73–74 visually and hash it"
+    },
+    {
+      "sourceId": "SRC-HSSIB",
+      "status": "publisher-indexed-report-substantive-sections-verified; direct HTML fetch not completed",
+      "nextAction": "Reopen official original and archive/inspect relevant sections with date, version"
+    },
+    {
+      "sourceId": "SRC-AVT-GUIDANCE",
+      "status": "original-publisher-indexed-sections-verified; complete HTML fetch not completed",
+      "nextAction": "Reopen full original and inspect contextual/qualification language"
+    },
+    {
+      "sourceId": "ALL",
+      "status": "no-independent-human-check",
+      "nextAction": "A second source reviewer and appropriately qualified CSO review required before clinical rule promotion"
+    }
+  ]
 }
