@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "1.0.0",
+  "protocolPath": "research/foundation/foundation-evidence-search-and-selection-protocol-v1.0.md",
+  "createdDate": "2026-11-19",
+  "asOfUTC": "2026-11-19",
+  "status": "protocol-created-search-selection-not-executed",
+  "scope": "targeted source map, not completed systematic or scoping review",
+  "searchMethodsStatus": "planned-strategies-not-yet-platform-validated",
+  "seedSourceCount": 9,
+  "seedSources": [
+    {
+      "sourceId": "SRC-DCB0129",
+      "primaryStream": "S1",
+      "originalTitle": "Clinical Risk Management: its Application in the Manufacture of Health IT Systems — Specification",
+      "originalUrl": "https://digital.nhs.uk/binaries/content/assets/website-assets/data-and-information/information-standards/standards-and-collections/dcb0129-clinical-risk-management-its-application-in-the-manufacture-of-health-it-systems/0129242018spec.pdf",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-DCB0160",
+      "primaryStream": "S1",
+      "originalTitle": "Clinical Risk Management: its Application in the Deployment and Use of Health IT Systems — Specification",
+      "originalUrl": "https://digital.nhs.uk/binaries/content/assets/website-assets/data-and-information/information-standards/standards-and-collections/dcb0160/0160252018spec.pdf",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-AMLAS",
+      "primaryStream": "S2",
+      "originalTitle": "Healthcare supplementary guidance for Assurance of Machine Learning for use in Autonomous Systems",
+      "originalUrl": "https://digital.nhs.uk/services/clinical-safety/documentation/healthcare-supplementary-guidance-for-amlas",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-CLINICAL-SAFETY",
+      "primaryStream": "S1",
+      "originalTitle": "Digital clinical safety assurance (GP EPR good-practice guidance)",
+      "originalUrl": "https://www.england.nhs.uk/long-read/digital-clinical-safety-assurance/",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-AVT-GUIDANCE",
+      "primaryStream": "S1",
+      "originalTitle": "Guidance on the use of AI-enabled ambient scribing products in health and care settings",
+      "originalUrl": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-STANDARDS-REVIEW",
+      "primaryStream": "S1",
+      "originalTitle": "National review of clinical risk management standards DCB0129 and DCB0160: supporting information",
+      "originalUrl": "https://www.england.nhs.uk/long-read/national-review-of-clinical-risk-management-standardsdcb0129-and-dcb0160-supporting-information/",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-OUH",
+      "primaryStream": "S3",
+      "originalTitle": "Ambient Voice Technology (AVT) in Acute Services — An Evaluation",
+      "originalUrl": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-GOSH",
+      "primaryStream": "S3",
+      "originalTitle": "The Use of Ambient Voice Technology with Generative Artificial Intelligence in Multiple Clinical Settings Across the NHS",
+      "originalUrl": "https://media.gosh.nhs.uk/documents/AAI_Phase_4_NHSE_Final_Report_1.3.pdf",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    },
+    {
+      "sourceId": "SRC-HSSIB",
+      "primaryStream": "S4",
+      "originalTitle": "Electronic referrals for ongoing care: risk of losing patient referrals (second interim)",
+      "originalUrl": "https://www.hssib.org.uk/patient-safety-investigations/electronic-patient-record-systems-electronic-referrals-for-ongoing-care/second-interim-report/",
+      "identificationMethod": "project-developed-seed-before-search-protocol",
+      "currentStatus": "preliminary-registered-not-re-screened-under-v1.0-protocol",
+      "eligibilityDecision": null,
+      "exclusionReasonCode": null,
+      "independentSelectionReview": null,
+      "comment": "Previously entered into source-claim register; does not imply a completed systematic search, included record or independent source approval."
+    }
+  ],
+  "plannedStreams": [
+    {
+      "id": "S1",
+      "name": "versioned standards and official guidance",
+      "platform": "publisher-source-search",
+      "status": "not-executed-under-protocol",
+      "completedAtUTC": null,
+      "exactQueryUsed": null,
+      "recordsRetrieved": null,
+      "recordsExported": null
+    },
+    {
+      "id": "S2",
+      "name": "safety engineering and human factors",
+      "platform": "bibliographic-index-plus-source-methods",
+      "status": "not-executed-under-protocol",
+      "completedAtUTC": null,
+      "exactQueryUsed": null,
+      "recordsRetrieved": null,
+      "recordsExported": null
+    },
+    {
+      "id": "S3-MEDLINE",
+      "name": "PubMed MEDLINE ambient clinical documentation",
+      "platform": "PubMed",
+      "status": "not-executed-under-protocol",
+      "completedAtUTC": null,
+      "exactQueryUsed": null,
+      "recordsRetrieved": null,
+      "recordsExported": null
+    },
+    {
+      "id": "S3-EMBASE",
+      "name": "Embase ambient clinical documentation",
+      "platform": "Ovid-Embase-if-licensed",
+      "status": "not-executed-under-protocol-access-not-verified",
+      "completedAtUTC": null,
+      "exactQueryUsed": null,
+      "recordsRetrieved": null,
+      "recordsExported": null
+    },
+    {
+      "id": "S4",
+      "name": "independent clinical IT safety investigations",
+      "platform": "official-investigator-sites",
+      "status": "not-executed-under-protocol",
+      "completedAtUTC": null,
+      "exactQueryUsed": null,
+      "recordsRetrieved": null,
+      "recordsExported": null
+    }
+  ],
+  "executedRuns": [],
+  "screeningDecisions": [],
+  "exclusionDecisions": [],
+  "includedRecordsUnderProtocol": [],
+  "flowTotals": {
+    "identified": null,
+    "duplicates": null,
+    "screened": null,
+    "firstPassExcluded": null,
+    "fullTextsSought": null,
+    "fullTextsNotRetrieved": null,
+    "fullTextsAssessed": null,
+    "includedCore": null,
+    "includedContextOnly": null,
+    "fullTextExcluded": null
+  },
+  "sourceEvidenceIntegrity": {
+    "existingSourceClaims": 18,
+    "sourceClaimsClinicallyApproved": 0,
+    "independentMethodologyReviewerCompleted": false,
+    "independentCSOReviewerCompleted": false
+  },
+  "recordedCaveats": [
+    "Nine pre-protocol seed sources were previously desk-checked; none are relabelled as identified/included by an executed reproducible search.",
+    "Do not transform null fields to numeric zero. Counts and source inclusion are unknown until the corresponding run and screening are completed.",
+    "Past exploratory web searches do not constitute documented PubMed, Embase or full publisher search execution.",
+    "Full-version verification of some GOSH, HSSIB and NHS AVT passages is still pending, as described in the separate verification gaps log.",
+    "Access to Ovid Embase has not been demonstrated; if unavailable, document its absence and do not impute results."
+  ]
+}
