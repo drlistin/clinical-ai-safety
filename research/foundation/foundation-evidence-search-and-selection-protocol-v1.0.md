@@ -51,18 +51,18 @@ This is a **targeted evidence map** designed to establish an initial research fo
 
 ## 4. Exact *proposed* searches and execution rules
 
-The following are **search strings to run and validate**, not results. Every executed run must preserve the *actual platform-interpreted strategy*, platform, date/time (UTC), database coverage, interface, applied filters, reported hit count, export file/checksum and query changes in the companion \`foundation-search-execution-log-v1.0.json\`. Web-search ranking and counts are unstable: do not claim reproducible totals from screenshots/snippets or this protocol alone.
+The following are **search strings to run and validate**, not results. Every executed run must preserve the *actual platform-interpreted strategy*, platform, date/time (UTC), database coverage, interface, applied filters, reported hit count, export file/checksum and query changes in the companion `foundation-search-execution-log-v1.0.json`. Web-search ranking and counts are unstable: do not claim reproducible totals from screenshots/snippets or this protocol alone.
 
 ### S1: standards and guidance — publisher websites (planned)
 
 Search official publisher sources and follow links to **the exact downloadable specification/version**:
 
-- \`site:digital.nhs.uk DCB0129 clinical risk management specification amendment\`
-- \`site:digital.nhs.uk DCB0160 clinical risk management specification amendment\`
-- \`site:england.nhs.uk "ambient scribing" clinical safety risk\`
-- \`site:england.nhs.uk "clinical risk management standards" review\`
-- \`site:digital.nhs.uk "healthcare supplementary guidance" hazard\`
-- \`site:gov.uk MHRA software medical device intended purpose\`
+- `site:digital.nhs.uk DCB0129 clinical risk management specification amendment`
+- `site:digital.nhs.uk DCB0160 clinical risk management specification amendment`
+- `site:england.nhs.uk "ambient scribing" clinical safety risk`
+- `site:england.nhs.uk "clinical risk management standards" review`
+- `site:digital.nhs.uk "healthcare supplementary guidance" hazard`
+- `site:gov.uk MHRA software medical device intended purpose`
 
 For each standard: capture version, publication/effective dates, exact clause number, which actor it binds/addresses, and document status. A search result is a lead; **an original official source must be retrieved to verify a clause**.
 
@@ -72,13 +72,13 @@ Do not treat consultation proposals as implemented obligations. An uncertain sta
 
 Search methodological reviews and source documents using these conceptual terms, then record the exact interface-specific strings used:
 
-\`("clinical safety" OR "patient safety" OR healthcare) AND ("hazard analysis" OR "functional failure analysis" OR HAZID OR SWIFT OR "systems theoretic process analysis" OR STPA OR "functional resonance analysis method" OR FRAM OR "human factors" OR "safety assurance") AND (software OR digital OR "artificial intelligence" OR automation)\`
+`("clinical safety" OR "patient safety" OR healthcare) AND ("hazard analysis" OR "functional failure analysis" OR HAZID OR SWIFT OR "systems theoretic process analysis" OR STPA OR "functional resonance analysis method" OR FRAM OR "human factors" OR "safety assurance") AND (software OR digital OR "artificial intelligence" OR automation)`
 
 Search an accessible bibliographic index and the relevant publisher/source documents. Use citation chasing for influential methodological sources. Record method limitations and relevance, and **do not imply any named method is a universal DCB requirement**.
 
 ### S3: PubMed/MEDLINE — proposed, directly pasteable initial query
 
-\`\`\`text
+```text
 (
  "ambient scribe"[tiab] OR "ambient scribing"[tiab] OR
  "ambient clinical documentation"[tiab] OR "ambient voice technology"[tiab] OR
@@ -91,39 +91,39 @@ AND
  hallucinat*[tiab] OR misattribut*[tiab] OR workflow[tiab] OR
  "human factors"[tiab] OR review[tiab] OR verification[tiab]
 )
-\`\`\`
+```
 
 **Execution validation required:** Test that PubMed accepts the syntax, inspect term mapping and a small reference set; save the *platform-generated search details*, count and retrieved citation IDs. The query is intentionally bounded to ambient documentation; run a **separate broader safety-decision literature search** before making general clinical AI hazard-performance claims.
 
 **Broader methodological PubMed search (separate run):**
 
-\`\`\`text
+```text
 ("artificial intelligence"[tiab] OR "machine learning"[tiab] OR
  "clinical decision support"[tiab] OR "health information technology"[tiab])
 AND
 ("hazard analysis"[tiab] OR "safety case"[tiab] OR
  "clinical risk management"[tiab] OR "failure mode"[tiab] OR
  "safety assurance"[tiab] OR "human factors"[tiab])
-\`\`\`
+```
 
 ### S3: Embase — Ovid candidate translation **not yet platform-tested**
 
-\`\`\`text
+```text
 1. (ambient adj3 (scrib* or documentation or voice)).ti,ab,kw.
 2. ((clinical or medical) adj3 (note* or documentation)).ti,ab,kw.
 3. (automated or generative or "large language model*" or transcription).ti,ab,kw.
 4. 1 or (2 and 3)
 5. (safety or error* or omission* or accuracy or hallucinat* or misattribut* or workflow or "human factors" or verification).ti,ab,kw.
 6. 4 and 5
-\`\`\`
+```
 
 If Ovid Embase is unavailable, record **not run / access unavailable**, rather than claiming zero matches. If Embase.com is used instead of Ovid, translate and save the actual executable syntax; do not label an Ovid strategy an Embase.com strategy. Consider checking synonyms, controlled vocabulary and PRESS peer review with an information specialist before formal evaluation.
 
 ### S4: official safety investigations — planned publisher searches
 
-- \`site:hssib.org.uk patient safety investigation electronic referral worklist 180 days\`
-- \`site:hssib.org.uk "electronic patient record" "clinical risk"\`
-- \`site:hssib.org.uk "digital" "patient safety" investigation\`
+- `site:hssib.org.uk patient safety investigation electronic referral worklist 180 days`
+- `site:hssib.org.uk "electronic patient record" "clinical risk"`
+- `site:hssib.org.uk "digital" "patient safety" investigation`
 
 Record publisher page, report date/version, whether the publication is final/interim, investigated context, specific mechanism, recommendations and any retrospective-versus-prospective knowledge differences. Citation chasing may locate analogous published investigations. An investigation of **non-AI software is not evidence of an AI-specific incident**.
 
@@ -137,9 +137,9 @@ For each influential included source, screen cited primary work and forward cita
 
 **Deduplication:** Match DOI/PMID/report URL, then title/author/version. Preserve original records and deduplication decisions, rather than deleting versions needed for dated legal/source applicability.
 
-**Title/abstract stage:** Screen against stream-specific relevance using \`include for full-text\`, \`exclude\`, or \`uncertain\`. A missing abstract is not an automatic rejection for official reports.
+**Title/abstract stage:** Screen against stream-specific relevance using `include for full-text`, `exclude`, or `uncertain`. A missing abstract is not an automatic rejection for official reports.
 
-**Full-text stage:** Record \`include-core\`, \`include-context-only\`, \`exclude\`, or \`pending-access\` with one primary reason and optional secondary reasons. Do not count inaccessible reports as assessed full texts. Apply reasons:
+**Full-text stage:** Record `include-core`, `include-context-only`, `exclude`, or `pending-access` with one primary reason and optional secondary reasons. Do not count inaccessible reports as assessed full texts. Apply reasons:
 
 - EX-01: wrong subject / no causal connection to decision-validation problem
 - EX-02: non-original commentary without verifiable primary source
@@ -158,7 +158,7 @@ For each influential included source, screen cited primary work and forward cita
 
 ## 6. Data extraction, appraisal and claim promotion
 
-For each \`include-core\` source:
+For each `include-core` source:
 
 1. Primary citation: publisher, title, exact version/date, stable URL/DOI, retrieval date, source hash if applicable.
 2. Exact supporting locator, paraphrase and relevant population, system version, geography, clinical setting and as-of decision date.
@@ -195,6 +195,6 @@ Pilot deliverables:
 - JBI Manual for Evidence Synthesis, *Searching for the evidence* (scoping review methodology): https://jbi-global.atlassian.net/wiki/spaces/MANUAL/pages/355862749/10.2.6+Searching+for+the+evidence — explicit eligibility, multi-source/grey literature searching and selection.
 - NHS England, *Digital clinical safety assurance*: https://www.england.nhs.uk/long-read/digital-clinical-safety-assurance/ — systematic hazard identification methods.
 - DCB0129 and DCB0160 originals: https://digital.nhs.uk/services/clinical-safety/clinical-risk-management-standards — version and direct specification retrieval.
-- This project's methodological independence policy: \`docs/methodological-independence-policy.md\`.
+- This project's methodological independence policy: `docs/methodological-independence-policy.md`.
 
 **Verification statement:** Writing this protocol does **not** mean that searches, review screening, source retrieval or clinical source-sign-off have been completed. Counts remain unreported until logged from executed platforms.
