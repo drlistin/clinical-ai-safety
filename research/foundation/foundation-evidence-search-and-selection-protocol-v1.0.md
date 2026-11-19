@@ -148,9 +148,9 @@ The v1.0 PubMed title/abstract query and Ovid Embase free-text translation above
 
 #### S3A: PubMed including MEDLINE — clinical AI documentation sensitivity set (candidate syntax)
 
-PubMed supports \`[mh]\`/MeSH and \`[tiab]\` fields. MEDLINE is the largest component but PubMed also includes other citations; don't apply \`medline[sb]\` to the main search, or recently added/non-MEDLINE records could be lost. Check the validity and scope of the proposed MeSH descriptors in the current MeSH browser before publication of a final search.
+PubMed supports `[mh]`/MeSH and `[tiab]` fields. MEDLINE is the largest component but PubMed also includes other citations; don't apply `medline[sb]` to the main search, or recently added/non-MEDLINE records could be lost. Check the validity and scope of the proposed MeSH descriptors in the current MeSH browser before publication of a final search.
 
-\`\`\`text
+```text
 (
   "Artificial Intelligence"[MeSH Terms] OR
   "Natural Language Processing"[MeSH Terms] OR
@@ -175,22 +175,22 @@ AND
   "medical records"[tiab] OR "scribe"[tiab] OR "scribes"[tiab] OR
   "transcription"[tiab] OR "consultation summary"[tiab]
 )
-\`\`\`
+```
 
 **High-sensitivity supplement:** run the following independently and take the **union** with the above, to avoid requiring both broad MeSH concepts when an ambient-scribe record is new, unindexed, or does not say “clinical documentation” in its abstract:
 
-\`\`\`text
+```text
 "ambient scribe"[tiab] OR "ambient scribes"[tiab] OR
 "ambient scribing"[tiab] OR "ambient voice technology"[tiab] OR
 "AI scribe"[tiab] OR "AI scribes"[tiab] OR
 "ambient documentation"[tiab] OR "ambient listening"[tiab]
-\`\`\`
+```
 
 Then classify safety/error/control-relevant records **during screening**. If an additional precision-focused safety search is run, document it as a supplementary run rather than using it to exclude records from the wider set.
 
 **S3A thematic safety supplement** (optional, to retrieve safety research beyond ambient scribes):
 
-\`\`\`text
+```text
 (
   "Artificial Intelligence"[MeSH Terms] OR "Natural Language Processing"[MeSH Terms]
   OR "clinical decision support"[tiab] OR "health information technology"[tiab]
@@ -204,22 +204,22 @@ AND
   "clinical risk management"[tiab] OR "safety assurance"[tiab] OR
   "failure mode"[tiab] OR "human factors"[tiab]
 )
-\`\`\`
+```
 
-**Required checks:** inspect Search Details and subject-heading mappings; confirm PubMed recognises the descriptors and phrases; test recall of known records such as SMART, CREOLA and the 2026 integrated AVT paper (some may require the methodological branch or citation chasing); store actual PubMed total, \`medline[sb]\` breakdown if needed, PMIDs, date, applied filters and exact search history. No results or coverage claims are asserted here.
+**Required checks:** inspect Search Details and subject-heading mappings; confirm PubMed recognises the descriptors and phrases; test recall of known records such as SMART, CREOLA and the 2026 integrated AVT paper (some may require the methodological branch or citation chasing); store actual PubMed total, `medline[sb]` breakdown if needed, PMIDs, date, applied filters and exact search history. No results or coverage claims are asserted here.
 
 #### S3B: Embase through Ovid — free-text candidate plus Emtree mapping
 
-Embase uses **Emtree**, which must be selected by browsing that platform's thesaurus; **do not paste PubMed MeSH descriptors as if they were verified Emtree subject headings**. Ovid \`adj3\` and \`.ti,ab,kw.\` differ from Embase.com's \`NEAR/n\` and \`:ti,ab,kw\` syntax.
+Embase uses **Emtree**, which must be selected by browsing that platform's thesaurus; **do not paste PubMed MeSH descriptors as if they were verified Emtree subject headings**. Ovid `adj3` and `.ti,ab,kw.` differ from Embase.com's `NEAR/n` and `:ti,ab,kw` syntax.
 
-\`\`\`text
+```text
 1. (ambient adj3 (scrib* or voice or documentation or listen*)).ti,ab,kw.
 2. ((clinical or medical) adj3 (note* or documentation or record*)).ti,ab,kw.
 3. (("large language model*" or "generative AI" or "artificial intelligence" or "digital scribe*" or transcription)).ti,ab,kw.
 4. 1 or (2 and 3)
 5. (safety or error* or hallucinat* or omission* or accuracy or review* or workflow or "human factors" or verification).ti,ab,kw.
 6. 4 and 5
-\`\`\`
+```
 
 **Run set 4 as the broad candidate search**, and set 6 as a *supplementary precision set*, not the only records screened. Add platform-verified Emtree headings for AI, clinical documentation/electronic records and patient safety with the correct explosion choices **after thesaurus validation**. Preserve the exact resulting executed line history; if using Embase.com, translate syntax on that site. Licensed access currently unavailable.
 
@@ -227,26 +227,26 @@ Embase uses **Emtree**, which must be selected by browsing that platform's thesa
 
 Use Cochrane Search Manager and record whether searching **CDSR**, **CENTRAL**, or both. Proposed free-text set:
 
-\`\`\`text
+```text
 ("ambient scribe" OR "ambient scribing" OR "ambient voice technology" OR
  "ambient documentation" OR "AI scribe" OR "clinical documentation" OR
  "artificial intelligence" OR "generative AI"):ti,ab,kw
-\`\`\`
+```
 
 A second focused concept, if the broad set is noisy:
 
-\`\`\`text
+```text
 (safety OR accuracy OR omission* OR workflow OR "medical record" OR
  documentation OR "electronic health record"):ti,ab,kw
-\`\`\`
+```
 
-Use the union of a targeted ambient-scribe query with an AI-documentation combination; avoid an unhelpfully broad OR of all AI terminology as a claimed AVT search. Browse Cochrane MeSH separately for confirmed descriptors such as \`[mh "Artificial Intelligence"]\`, \`[mh "Electronic Health Records"]\`, \`[mh "Patient Safety"]\`; add only those validated on the current platform. **CENTRAL may include records imported from MEDLINE and Embase**; deduplicate at study/record level. This is a targeted review/controlled-study search, not the primary source of all AI safety research.
+Use the union of a targeted ambient-scribe query with an AI-documentation combination; avoid an unhelpfully broad OR of all AI terminology as a claimed AVT search. Browse Cochrane MeSH separately for confirmed descriptors such as `[mh "Artificial Intelligence"]`, `[mh "Electronic Health Records"]`, `[mh "Patient Safety"]`; add only those validated on the current platform. **CENTRAL may include records imported from MEDLINE and Embase**; deduplicate at study/record level. This is a targeted review/controlled-study search, not the primary source of all AI safety research.
 
 #### S2A: IEEE Xplore — engineering and assurance literature
 
 Use **Command Search** or **Advanced Search**, specifying document title/abstract/metadata rather than the full-text corpus when possible. Candidate Boolean concepts (translate into the actual selected interface fields):
 
-\`\`\`text
+```text
 ("hazard analysis" OR "safety case" OR "safety assurance" OR
  "systems theoretic process analysis" OR "STPA" OR "failure mode" OR
  "human factors" OR "assurance case")
@@ -254,40 +254,40 @@ AND
 (healthcare OR "health information technology" OR medical OR clinical)
 AND
 ("artificial intelligence" OR "machine learning" OR software OR digital OR automation)
-\`\`\`
+```
 
 If this is too narrow, run a **two-concept** variant combining the first two groups and screen for AI/IT applicability; log both. Do not claim that this untested string automatically uses IEEE's selected search fields. Search originals/conference proceedings and identify versions/duplicate publications.
 
 #### S2B: ACM Digital Library — computer science, interaction and safety methods
 
 In **Advanced Search**, select and record **ACM Guide to Computing Literature** versus ACM Full-Text Collection. Enter:
-- Row 1, grouped alternatives: \`"hazard analysis" OR "safety assurance" OR "safety case" OR "systems theoretic" OR "human factors"\`
-- Row 2, grouped alternatives: \`healthcare OR clinical OR "health information technology" OR "medical software"\`
-- Row 3, optional technology refinement: \`"artificial intelligence" OR "machine learning" OR software OR "clinical decision support"\`
+- Row 1, grouped alternatives: `"hazard analysis" OR "safety assurance" OR "safety case" OR "systems theoretic" OR "human factors"`
+- Row 2, grouped alternatives: `healthcare OR clinical OR "health information technology" OR "medical software"`
+- Row 3, optional technology refinement: `"artificial intelligence" OR "machine learning" OR software OR "clinical decision support"`
 
-Apply \`AND\` across rows, record the chosen field selectors (prefer Title, Abstract and Author Keyword; document full-text inclusion if used) and export bibliographic metadata. Rerun without optional row 3 if the search misses established engineering methods. These are **conceptual input groups**, not an untested ACM-specific command string.
+Apply `AND` across rows, record the chosen field selectors (prefer Title, Abstract and Author Keyword; document full-text inclusion if used) and export bibliographic metadata. Rerun without optional row 3 if the search misses established engineering methods. These are **conceptual input groups**, not an untested ACM-specific command string.
 
 #### S2/S3 supplementary: Scopus OR Web of Science
 
 If licensed, choose **one first** for cross-disciplinary coverage and forward-citation tracing. Candidate Scopus advanced-search syntax:
 
-\`\`\`text
+```text
 TITLE-ABS-KEY(
   ("hazard analysis" OR "safety case" OR "safety assurance" OR STPA OR "human factors")
   AND (healthcare OR clinical OR "health information technology")
   AND (software OR "artificial intelligence" OR "machine learning")
 )
-\`\`\`
+```
 
 Web of Science Core Collection candidate translation:
 
-\`\`\`text
+```text
 TS=(
   ("hazard analysis" OR "safety case" OR "safety assurance" OR STPA OR "human factors")
   AND (healthcare OR clinical OR "health information technology")
   AND (software OR "artificial intelligence" OR "machine learning")
 )
-\`\`\`
+```
 
 Record the subscribed index coverage and field translation; these are **not** interchangeable database counts. Supplement with backward/forward citation searching of 2018 safety-case study, SMART, SEIPS 2.0, STPA and CREOLA.
 
@@ -301,7 +301,7 @@ Record the subscribed index coverage and field translation; these are **not** in
 
 #### Official search and syntax documentation (checked as contextual methodological sources)
 
-- NLM: https://pubmed.ncbi.nlm.nih.gov/about/ and https://pubmed.ncbi.nlm.nih.gov/help/ (MEDLINE as a subset, field tags and \`medline[sb]\`).
+- NLM: https://pubmed.ncbi.nlm.nih.gov/about/ and https://pubmed.ncbi.nlm.nih.gov/help/ (MEDLINE as a subset, field tags and `medline[sb]`).
 - Cochrane: https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-04 and https://onlinelibrary.wiley.com/cochranelibrary/search/mesh/quick (database-specific strategies, MeSH and Search Manager).
 - Elsevier: https://www.elsevier.com/en-gb/products/embase/content and https://service.elsevier.com/app/answers/detail/a_id/17875/supporthub/embase/kw/proximity/ (Embase coverage and platform syntax).
 - IEEE Xplore: https://ieeexplore.ieee.org/Xplorehelp/searching-ieee-xplore/search-tips (Command/Advanced searches).
