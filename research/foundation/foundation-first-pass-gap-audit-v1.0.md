@@ -87,3 +87,22 @@ These are **research priorities and candidate validation questions only**. They 
 6. Only then consider promoting new candidate evidence-anchored claims into the controlled register, and return to locked Oxford technical Issue #19.
 
 **No new clinically approved source claims, deployed features, findings, residual-risk classifications, or real Trust safety case decisions are authorised by this audit.**
+
+## 7. Follow-up execution and focused appraisal, 19 November 2026
+
+**This dated addendum does not retroactively change the original 16-web-query / 19-candidate first pass above.**
+
+- Ran **two supplementary ranked PubMed-index literature searches through Arca** (each returned its configured maximum **20 ranked records**, not an official PubMed full-result count, export, or exact field-tagged search).
+- Logged the exact natural-language queries, fixed `maxYear=2026`, returned counts and provider continuations. One was bounded to ambient scribe safety; the other to clinical HIT safety-case/hazard analysis.
+- Added **two material candidate records**: **Liberati et al. (2024)** on real-world limitations of transferring safety cases to clinical pathways; and **Asgari et al. (2025)** on the CREOLA structured clinician-annotated clinical error/harm framework, including supplier employment conflicts. These each have explicit single-reviewer provisional dispositions.
+- New combined **purposively retained discovery candidate set: 21 records**, with **12 provisional core**, **6 context only**, **3 provisional exclusions**. These 21 are **not all search hits or full-text screened records**.
+- Re-screened all **nine original seeds** against the newly documented inclusion criteria without relabelling them as search hits: **7 core** and **2 context-only**, all **provisional**, with original pre-protocol discovery preserved. No independent selection review yet.
+- Completed a ten-study source-specific appraisal with original publisher links, study design, appraisal-access tier, inference limits, methodological implications and independent-check requirements at `foundation-priority-critical-appraisal-v1.0.md`.
+
+**Important quantitative calibration:** The published CREOLA framework reports **191/12,999 (1.47%) generated-note sentences with hallucinations** and **1,712/49,590 (3.45%) consultation transcript sentences omitted**. The denominators differ, and the repeated synthetic transcript experiments are not patient-harm incidences.
+
+**The exact PubMed [tiab] searches remain unexecuted.** Direct interactive PubMed/E-utilities access and container network resolution failed; Arca's ranked PubMed-index search **does not replace** the original platform search and cannot supply PubMed full hit totals, retrieved record exports or search history. Ovid Embase still has no connected licensed access.
+
+**Clinical claim status:** All 18 initial source claims remain unchanged and **unapproved**. The appraisals are research evidence, not expert reference cases, positive predictive values, compliance declarations or evidence of a deployed decision-validation tool.
+
+**Priority next action:** Retrieve usable official PubMed search history/exports and licensed Embase where possible; second-person check the priority full-text interpretations before external CSO methodological review. Do not widen the evidence-review remit or add software features until the selected evidence is demonstrably decision-relevant.
