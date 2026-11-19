@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "1.3.1",
+  "schemaVersion": "1.4.0",
   "protocolPath": "research/foundation/foundation-evidence-search-and-selection-protocol-v1.0.md",
   "createdDate": "2026-11-19",
   "asOfUTC": "2026-11-19",
-  "status": "search-protocol-v1.1-expanded; previous-ranked-discovery-logged; formal-database-execution-pending",
+  "status": "actual-2026-11-19-ncbi-pubmed-search-complete-for-two-frozen-queries; other-databases-pending",
   "scope": "targeted source map, not completed systematic or scoping review",
-  "searchMethodsStatus": "16 ranked web searches + 2 ranked PubMed-index discovery searches previously recorded; no formal PubMed MEDLINE fielded query, Ovid Embase, Cochrane, IEEE, ACM, Scopus or Web of Science database search executed",
+  "searchMethodsStatus": "16 ranked web + 2 ranked index discovery runs, plus 2 actual NCBI PubMed ESearch fielded queries via GitHub Actions with full PMID export and date-partition verification",
   "seedSourceCount": 9,
   "seedSources": [
     {
@@ -151,11 +151,11 @@
       "id": "S3-MEDLINE",
       "name": "PubMed including MEDLINE and additional PubMed citations (MeSH + free text)",
       "platform": "PubMed / National Library of Medicine",
-      "status": "not-executed-under-v1.1-protocol",
-      "completedAtUTC": null,
-      "exactQueryUsed": null,
-      "recordsRetrieved": null,
-      "recordsExported": null,
+      "status": "completed-PubMed-main-and-ambient-20261119-frozen-queries",
+      "completedAtUTC": "2026-11-19",
+      "exactQueryUsed": "see frozen query config and GitHub action artifact",
+      "recordsRetrieved": 29153,
+      "recordsExported": 29153,
       "queryFamily": "S3A",
       "medlineSubsetOfPubMed": true,
       "independentDatabaseCount": 1
@@ -500,6 +500,45 @@
       "exportFileHash": null,
       "claimOfExhaustiveRetrieval": false,
       "providerContinuationUrl": "https://www.arca.inc/research/chat/1c41a1d2-a229-4eee-8a0c-a36bc1afafc5"
+    },
+    {
+      "id": "NCBI-PUBMED-S3A-MAIN-20261119",
+      "stream": "S3",
+      "method": "NCBI ESearch E-utilities PubMed via networked GitHub Actions runner",
+      "queryId": "S3A-main",
+      "exactQueryFile": "research/foundation/pubmed-queries-v1.1.json",
+      "executionDateUTC": "2026-11-19",
+      "startUTC": "2026-11-19T17:39:00Z",
+      "exactTimeUTC": null,
+      "filters": "sort=pub date; no date/language filters; disjoint EDAT partitions to overcome 9,999 UID cap",
+      "reportedHitCount": 29110,
+      "recordsExported": 29110,
+      "queryTranslationStoredIn": "action artifact pubmed-research-results/S3A-main-audit.json",
+      "resultPopulation": "complete UID set for the exact query as executed on 19 November 2026; not screened articles",
+      "exportFileSha256": null,
+      "sourceArtifactUrl": "https://github.com/drlistin/clinical-ai-safety/actions/runs/44579536655/artifacts/14557693294",
+      "allPMIDsExported": true,
+      "confirmedDisjointPartitions": 8,
+      "claimOfExhaustiveRetrieval": "complete for the submitted query, not an exhaustive domain search"
+    },
+    {
+      "id": "NCBI-PUBMED-S3A-AMBIENT-20261119",
+      "stream": "S3",
+      "method": "NCBI ESearch E-utilities PubMed via networked GitHub Actions runner",
+      "queryId": "S3A-ambient",
+      "exactQueryFile": "research/foundation/pubmed-queries-v1.1.json",
+      "executionDateUTC": "2026-11-19",
+      "startUTC": "2026-11-19T17:40:00Z",
+      "exactTimeUTC": null,
+      "filters": "sort=pub date; no date/language filters",
+      "reportedHitCount": 366,
+      "recordsExported": 366,
+      "queryTranslationStoredIn": "action artifact pubmed-research-results/S3A-ambient-audit.json",
+      "resultPopulation": "complete UID set for the exact query as executed on 19 November 2026; not screened articles",
+      "exportFileSha256": "2185dc118f977413d06fe5d0b405c7b9c397802adf044d66e09211f1ab9bfbae",
+      "sourceArtifactUrl": "https://github.com/drlistin/clinical-ai-safety/actions/runs/44579536655/artifacts/14557693294",
+      "allPMIDsExported": true,
+      "claimOfExhaustiveRetrieval": "complete for the submitted query, not an exhaustive domain search"
     }
   ],
   "screeningDecisions": [],
@@ -540,7 +579,9 @@
     "v1.1 PubMed MeSH/free-text and Cochrane, Ovid Embase, engineering and citation-index query strings are candidate strategies and require platform validation and known-study recall checks before formal use.",
     "On 19 Nov 2026 NCBI, PubMed and Europe PMC direct endpoints were blocked by available outbound network routes. A runnable NCBI ESearch export utility and frozen two primary S3A queries have been added but not executed. Formal search result counts remain unknown.",
     "NCBI MeSH headings were checked via publicly indexed official NLM MeSH pages, but the configured combined query has not received a PubMed QueryTranslation response; controlled-vocabulary mapping still requires live validation.",
-    "Direct Cochrane, IEEE Xplore and ACM search-page access checks also failed (403/418/inaccessible respectively). No exact strategy was submitted to these database search interfaces, and no counts were returned."
+    "Direct Cochrane, IEEE Xplore and ACM search-page access checks also failed (403/418/inaccessible respectively). No exact strategy was submitted to these database search interfaces, and no counts were returned.",
+    "19 Nov 2026 success: direct NCBI PubMed ESearch performed through GitHub Actions, main 29,110, ambient 366, overlap 323, union 29,153 unique PMIDs. Both query translations recorded, no NCBI syntax warnings. Main UID set retrieved through 8 disjoint EDAT windows with count consistency check.",
+    "Search result count is NOT full study eligibility: 29,110 broad records are highly nonspecific, no title/abstract screening or inclusion has occurred, and remaining Embase/Cochrane/engineering databases remain unexecuted."
   ],
   "platformAccessAttempts": [
     {
@@ -974,8 +1015,8 @@
     "queryConfigPath": "research/foundation/pubmed-queries-v1.1.json",
     "source": "NCBI ESearch, database PubMed including MEDLINE",
     "createdDate": "2026-11-19",
-    "executionStatus": "prepared-not-executed",
-    "scriptSyntaxTesting": "not independently executed in this tooling environment",
+    "executionStatus": "completed-2026-11-19-via-github-actions",
+    "scriptSyntaxTesting": "executed successfully under GitHub Actions Python 3.11 on the second run; original first run intentionally stopped when broad result exceeded ESearch UID cap",
     "requiresNetworkAccess": true,
     "capturesOnSuccessfulExecution": [
       "count",
@@ -988,9 +1029,46 @@
       "UTC execution timestamps"
     ],
     "ncbiEsearchUIDLimit": 9999,
-    "countsFromPubMed": null,
-    "pmidsExported": 0,
+    "countsFromPubMed": {
+      "main": 29110,
+      "ambient": 366,
+      "overlap": 323,
+      "mainOnly": 28787,
+      "ambientOnly": 43,
+      "uniqueUnion": 29153
+    },
+    "pmidsExported": 29153,
     "meSHValidationStatus": "official NLM MeSH record discovery (Large Language Models, AI, NLP, Documentation, EHR, Computerized Records); exact PubMed querytranslation pending",
-    "notAnOperationalClinicalRule": true
+    "notAnOperationalClinicalRule": true,
+    "githubRunUrl": "https://github.com/drlistin/clinical-ai-safety/actions/runs/44579536655",
+    "githubArtifactId": 14557693294,
+    "githubArtifactUrl": "https://github.com/drlistin/clinical-ai-safety/actions/runs/44579536655/artifacts/14557693294",
+    "queryConfigSha256": "a8a2b5f11a9d270a1675a430da21ffc2b7c5e7d35cd5da75e8d4567c5b9b8d5c",
+    "originalAPIResponsePreservedInActionArtifact": true,
+    "allPrimaryQueriesComplete": true,
+    "edatPartitionLeafWindows": 8,
+    "edatPartitionManifestEntries": 15,
+    "unionExportSha256": "41f3d466dc817e48506dc04663f7d81dbbc6fa841a6a523396812afbf4886551",
+    "medlineIndexedSubsetCount": null
+  },
+  "pubmedExecutedQuerySummary": {
+    "dateUTC": "2026-11-19",
+    "database": "PubMed including MEDLINE",
+    "runId": 44579536655,
+    "queryIds": [
+      "S3A-main",
+      "S3A-ambient"
+    ],
+    "counts": [
+      29110,
+      366
+    ],
+    "overlap": 323,
+    "unionUniquePMIDs": 29153,
+    "allQueryUIDsRetrieved": true,
+    "unionSha256": "41f3d466dc817e48506dc04663f7d81dbbc6fa841a6a523396812afbf4886551",
+    "screenedTitlesOrAbstracts": 0,
+    "eligibleStudies": null,
+    "sourceArtifactRetentionDays": 30
   }
 }
