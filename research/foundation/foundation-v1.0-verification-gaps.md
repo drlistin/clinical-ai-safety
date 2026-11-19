@@ -74,3 +74,19 @@ See `foundation-first-pass-gap-audit-v1.0.md` and the exact 16 executed web sear
 **First-pass selected web candidates:** 19 provisional records (10 core candidates, 6 context-only, 3 excluded). This is not a full retrieved/screened universe. All inclusion decisions are preliminary and unadjudicated.
 
 **No new clinical rules are approved.** Continue research under PR #20. GitHub Issue #19 remains the separate technical demonstration gate.
+
+## Step 1–2 evidence audit update (19 November 2026)
+
+**Completed:** two additional Arca ranked PubMed-index retrievals (20 returned papers each, without full PubMed hit totals), provisional re-screen of all nine pre-protocol seed sources (seven core / two context only), and a **ten-source preliminary critical appraisal** in `foundation-priority-critical-appraisal-v1.0.md`.
+
+**Still blocked, high priority:** execute and save the exact field-tagged PubMed queries and official PubMed result counts/exports. PubMed direct queries/E-utilities could not be opened through the available browsing and the container lacked external DNS access. Ovid Embase requires licensed access; no such database execution occurred. Do not conflate ranked paper-index retrieval with an official reproducible PubMed search.
+
+**New high-priority methodological comparisons:**
+- `CA-02` SMART already performs structured clinically grounded hazard/initial-risk/residual-risk/safety-case modelling. Novelty must be tested as **independent challenge and incremental findings**, not as having a software hazard log.
+- `CA-08` CREOLA already performs clinician-annotated assessment of clinical documentation errors/potential harm. Distinguish this from review of an organisation's risk-management decision; note supplier affiliations.
+- `CA-09` Liberati and colleagues (2024) raise substantial caution about translating industrial safety-case approaches to complex clinical pathways.
+- `CA-06` Taylor and colleagues' note-quality results are from a **nonrandom clinician-scored 356/7,545-note subset**, not a patient-harm or clinician-review-sensitivity estimate.
+
+**Independent verification outstanding:** Original PDF page images for 2018/2019 accepted manuscripts could not be retrieved by web screenshot. Full text of SEIPS 2.0, Weber/Costa 2020, the ambient-scribe RCT and the 2024 multisite safety-cases paper require further access and inspection. Ten studies were appraised from available original HTML, accepted-manuscript text, or clearly labelled abstracts, *not* signed off by an external CSO.
+
+**No promotion:** Existing 18 research source claims remain provisional, all seven challenge patterns remain **non-approved**, no clinical sensitivity/specificity numbers are computed, and no software changes were authorised.
