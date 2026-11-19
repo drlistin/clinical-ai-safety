@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "createdOn": "2026-11-19",
+  "queryStatus": "proposed-not-executed-in-NLM-interface",
+  "database": "PubMed including MEDLINE and additional PubMed citations",
+  "accessMethod": "NCBI ESearch API",
+  "protocol": "research/foundation/foundation-evidence-search-and-selection-protocol-v1.0.md",
+  "queries": [
+    {
+      "id": "S3A-main",
+      "sourceSection": "Protocol v1.1: S3A clinical AI documentation sensitivity set",
+      "query": "(\n  \"Artificial Intelligence\"[MeSH Terms] OR\n  \"Natural Language Processing\"[MeSH Terms] OR\n  \"Large Language Models\"[MeSH Terms] OR\n  \"ambient scribe\"[tiab] OR\n  \"ambient scribes\"[tiab] OR\n  \"ambient scribing\"[tiab] OR\n  \"ambient voice technology\"[tiab] OR\n  \"ambient documentation\"[tiab] OR\n  \"ambient listening\"[tiab] OR\n  \"AI scribe\"[tiab] OR\n  \"AI scribes\"[tiab] OR\n  \"digital scribe\"[tiab] OR\n  \"digital scribes\"[tiab] OR\n  \"automated documentation\"[tiab] OR\n  \"generative artificial intelligence\"[tiab] OR\n  \"large language model\"[tiab] OR\n  \"large language models\"[tiab]\n)\nAND\n(\n  \"Documentation\"[MeSH Terms] OR\n  \"Electronic Health Records\"[MeSH Terms] OR\n  \"Medical Records Systems, Computerized\"[MeSH Terms] OR\n  \"clinical documentation\"[tiab] OR\n  \"clinical note\"[tiab] OR\n  \"clinical notes\"[tiab] OR\n  \"medical note\"[tiab] OR\n  \"medical notes\"[tiab] OR\n  \"medical record\"[tiab] OR\n  \"medical records\"[tiab] OR\n  \"scribe\"[tiab] OR\n  \"scribes\"[tiab] OR\n  \"transcription\"[tiab] OR\n  \"consultation summary\"[tiab]\n)"
+    },
+    {
+      "id": "S3A-ambient",
+      "sourceSection": "Protocol v1.1: S3A high-sensitivity ambient supplement",
+      "query": "\"ambient scribe\"[tiab] OR\n\"ambient scribes\"[tiab] OR\n\"ambient scribing\"[tiab] OR\n\"ambient voice technology\"[tiab] OR\n\"AI scribe\"[tiab] OR\n\"AI scribes\"[tiab] OR\n\"ambient documentation\"[tiab] OR\n\"ambient listening\"[tiab]"
+    },
+    {
+      "id": "S3A-safety-optional",
+      "sourceSection": "Protocol v1.1: S3A thematic safety supplement",
+      "query": "(\n\"Artificial Intelligence\"[MeSH Terms] OR\n\"Natural Language Processing\"[MeSH Terms] OR\n\"clinical decision support\"[tiab] OR\n\"health information technology\"[tiab] OR\n\"machine learning\"[tiab] OR\n\"large language model\"[tiab]\n)\nAND\n(\n\"Patient Safety\"[MeSH Terms] OR\n\"Risk Management\"[MeSH Terms] OR\n\"Medical Errors\"[MeSH Terms] OR\n\"hazard analysis\"[tiab] OR\n\"safety case\"[tiab] OR\n\"clinical risk management\"[tiab] OR\n\"safety assurance\"[tiab] OR\n\"failure mode\"[tiab] OR\n\"human factors\"[tiab]\n)",
+      "defaultRun": false
+    }
+  ],
+  "executionRequirements": [
+    "Verify MeSH terms and PubMed QueryTranslation against the original PubMed interface",
+    "Save result count, all PMIDs up to ESearch retrieval ceiling, API response and SHA256",
+    "Union main and ambient supplement with provenance-preserving deduplication",
+    "Do not interpret PubMed hit count as unique clinically eligible sources",
+    "Do not claim complete MEDLINE search if requested data not obtained"
+  ]
+}
