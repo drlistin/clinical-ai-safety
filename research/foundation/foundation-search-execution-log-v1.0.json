@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.3.0",
+  "schemaVersion": "1.3.1",
   "protocolPath": "research/foundation/foundation-evidence-search-and-selection-protocol-v1.0.md",
   "createdDate": "2026-11-19",
   "asOfUTC": "2026-11-19",
@@ -537,7 +537,9 @@
     "Original publisher full-text appraisals performed selectively and recorded in foundation-priority-critical-appraisal-v1.0.md, not a complete risk-of-bias systematic assessment.",
     "Search coverage v1.1 formalises MEDLINE via PubMed as one principal biomedical database family, with additional PubMed records; Ovid MEDLINE would be an alternate interface rather than a distinct source to double count.",
     "Cochrane CDSR/CENTRAL, IEEE Xplore, ACM Digital Library, and Scopus/Web of Science were added to planned coverage only. No result counts or exports were generated from them.",
-    "v1.1 PubMed MeSH/free-text and Cochrane, Ovid Embase, engineering and citation-index query strings are candidate strategies and require platform validation and known-study recall checks before formal use."
+    "v1.1 PubMed MeSH/free-text and Cochrane, Ovid Embase, engineering and citation-index query strings are candidate strategies and require platform validation and known-study recall checks before formal use.",
+    "On 19 Nov 2026 NCBI, PubMed and Europe PMC direct endpoints were blocked by available outbound network routes. A runnable NCBI ESearch export utility and frozen two primary S3A queries have been added but not executed. Formal search result counts remain unknown.",
+    "NCBI MeSH headings were checked via publicly indexed official NLM MeSH pages, but the configured combined query has not received a PubMed QueryTranslation response; controlled-vocabulary mapping still requires live validation."
   ],
   "platformAccessAttempts": [
     {
@@ -561,6 +563,38 @@
       "dateUTC": "2026-11-19",
       "type": "licensed-interface",
       "status": "no connection or licence available; not attempted as an executed search",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "NCBI E-utilities ESearch",
+      "dateUTC": "2026-11-19",
+      "type": "urllib HTTPS connectivity test using short PubMed term",
+      "status": "container Python requests DNS resolution failed; not an executed search",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "NCBI E-utilities ESearch",
+      "dateUTC": "2026-11-19",
+      "type": "web open API URL",
+      "status": "public web tool returned URL inaccessible / internal error; no NCBI response",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "PubMed public search",
+      "dateUTC": "2026-11-19",
+      "type": "web open fielded query URL",
+      "status": "public web tool returned URL inaccessible; no PubMed search history or count",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "Europe PMC REST endpoint",
+      "dateUTC": "2026-11-19",
+      "type": "container Python requests and web open connectivity test",
+      "status": "container DNS failure and web open URL inaccessible; no records retrieved",
       "databaseSearchExecuted": false,
       "reportedResultCount": null
     }
@@ -907,5 +941,31 @@
     "recordNullNotZeroWhenNoRun": true,
     "databaseProvenanceMustSurviveDeduplication": true,
     "originalSeedSourceProvenancePreserved": true
+  },
+  "lastExecutionAttemptDate": "2026-11-19",
+  "lastExecutionAttemptResult": "blocked-at-network-access-before-fielded-query-execution",
+  "pubmedExecutionPackage": {
+    "scriptPath": "research/foundation/run_pubmed_esearch.py",
+    "queryConfigPath": "research/foundation/pubmed-queries-v1.1.json",
+    "source": "NCBI ESearch, database PubMed including MEDLINE",
+    "createdDate": "2026-11-19",
+    "executionStatus": "prepared-not-executed",
+    "scriptSyntaxTesting": "not independently executed in this tooling environment",
+    "requiresNetworkAccess": true,
+    "capturesOnSuccessfulExecution": [
+      "count",
+      "querytranslation",
+      "errorlist",
+      "warninglist",
+      "PMID list",
+      "SHA256 of responses",
+      "union PMID provenance",
+      "UTC execution timestamps"
+    ],
+    "ncbiEsearchUIDLimit": 9999,
+    "countsFromPubMed": null,
+    "pmidsExported": 0,
+    "meSHValidationStatus": "official NLM MeSH record discovery (Large Language Models, AI, NLP, Documentation, EHR, Computerized Records); exact PubMed querytranslation pending",
+    "notAnOperationalClinicalRule": true
   }
 }
