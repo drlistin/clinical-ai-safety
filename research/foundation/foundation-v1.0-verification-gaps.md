@@ -90,3 +90,19 @@ See `foundation-first-pass-gap-audit-v1.0.md` and the exact 16 executed web sear
 **Independent verification outstanding:** Original PDF page images for 2018/2019 accepted manuscripts could not be retrieved by web screenshot. Full text of SEIPS 2.0, Weber/Costa 2020, the ambient-scribe RCT and the 2024 multisite safety-cases paper require further access and inspection. Ten studies were appraised from available original HTML, accepted-manuscript text, or clearly labelled abstracts, *not* signed off by an external CSO.
 
 **No promotion:** Existing 18 research source claims remain provisional, all seven challenge patterns remain **non-approved**, no clinical sensitivity/specificity numbers are computed, and no software changes were authorised.
+
+## Search coverage correction v1.1: MEDLINE, Cochrane and engineering literature (19 November 2026)
+
+The protocol now distinguishes **MEDLINE (bibliographic database)** from **PubMed (interface and broader citation collection)**. The primary free biomedical search covers MEDLINE *via PubMed*, plus PubMed citations not indexed in MEDLINE. Ovid MEDLINE is an alternate MEDLINE interface, not an independent third biomedical database.
+
+**Planned primary/targeted source coverage:** MEDLINE via PubMed with MeSH plus free text; Embase with verified Emtree plus free text; Cochrane Library (CDSR and CENTRAL); IEEE Xplore; ACM Digital Library. **Supplementary:** one of Scopus or Web of Science if access supports cross-disciplinary citation discovery. Official standards/HSSIB/MHRA publisher records remain separate and essential.
+
+**Unresolved platform work:**
+- Validate proposed MeSH descriptors against the current NLM browser, check known-study recall, then execute PubMed queries and archive Search Details, results/PMIDs and true count. PubMed research-index ranked retrieval is **not** the required run.
+- Map Emtree subject headings in Ovid Embase/Embase.com after obtaining licensed access; record exact interface and generated query translation. No Embase result counts exist.
+- Execute and save CDSR/CENTRAL separately and avoid duplicate trial counting.
+- Execute IEEE Xplore/ACM within their fielded search interfaces; record collection, field choices, query history, result exports, and versioned conference/journal duplicates.
+- Select Scopus or Web of Science for complementary citation tracing **only if it materially improves coverage**; document licence/access if unavailable.
+- Audit original nine seed sources and all newly found records using provenance-preserving deduplication by PMID, DOI and source/version.
+
+**Status:** These are **coverage requirements and untested candidate strategies**, not searches completed on 19 November 2026. The ledger explicitly records them as `not-executed`. Previous 16 web searches and two ranked PubMed-index retrievals remain the only executed discovery runs in the repository. No newly approved clinical claim or engine rule.
