@@ -1,0 +1,92 @@
+{
+  "status": "single-researcher-non-blinded-structured-extraction",
+  "originalCase": {
+    "repo": "drlistin/clinical-ai-safety",
+    "draftPR": 14,
+    "sourceCommit": "2a96b478c8d18e1572a44c0bdea63a0e4e6736d9",
+    "sourceBlobSha": "ad85cb2fabf510d473481a56415d3dc723f29ed8",
+    "frozenFile": "research/proof/oxford-prospective-case-v0.1-frozen.json",
+    "sha256": "9e8aa3cb95aacd889e9294437e535353fbd48f2990ddf26b55ad1a211640263f",
+    "sourceDecisionDate": "2026-11-18",
+    "notRealOxfordCase": true
+  },
+  "extractionFields": [
+    {
+      "field": "context.decision/workflow/product/setting",
+      "source": "assessmentInput.context, proposedDecision",
+      "treatment": "source-direct; workflowId assigned by extractor"
+    },
+    {
+      "field": "context.materialContextDimensionIds",
+      "source": "syntheticScenarioFacts[0:2]; controls[0].localDependencies",
+      "treatment": "researcher-selected material facts; known speaker/copy details; review opportunity unknown"
+    },
+    {
+      "field": "hazards",
+      "source": "assessmentInput.hazards",
+      "treatment": "source-supplied hazard IDs and harms, NOT independently discovered by engine"
+    },
+    {
+      "field": "controls.role, mechanism",
+      "source": "assessmentInput.controls[].statement",
+      "treatment": "researcher classification: review proposed detection; manual copy activity; susceptible to interpretation bias"
+    },
+    {
+      "field": "controls.status",
+      "source": "assessmentInput.controls[].status",
+      "treatment": "effectiveness-supported→effectiveness-claimed; declared→proposed; not verified effectiveness"
+    },
+    {
+      "field": "evidence[].kind",
+      "source": "assessmentInput.evidence[].classification",
+      "treatment": "explicit source-type map; no assumptions promoted to local evidence"
+    },
+    {
+      "field": "evidence[].reviewerId/reviewedAt",
+      "source": "no named independent source reviewer documented",
+      "treatment": "left null; desk-check date not misrepresented as reviewed independent record"
+    },
+    {
+      "field": "evidence[].sourceDate",
+      "source": "publishedOrEffectiveDate",
+      "treatment": "month-only dates left null; exact case-date synthetic records kept"
+    },
+    {
+      "field": "riskArguments[].initial",
+      "source": "not provided in residualRiskClaims",
+      "treatment": "left null rather than inventing initial risk"
+    },
+    {
+      "field": "riskArguments[].claimedRiskChange",
+      "source": "review makes Low statement for H-DOC-01",
+      "treatment": "researcher interprets reduction as claimed for documentation hazard only; alternative interpretation could differ"
+    },
+    {
+      "field": "riskArguments[].controlEffects[].assertedEffectOn",
+      "source": "not specified",
+      "treatment": "none; no likelihood/severity mechanism invented"
+    },
+    {
+      "field": "riskMethodEvidenceId",
+      "source": "methodId present but no applicable risk method record in evidence[]",
+      "treatment": "null, not invented evidence"
+    },
+    {
+      "field": "independenceClaims",
+      "source": "none stated",
+      "treatment": "[]; engine therefore cannot test shared dependency independence"
+    },
+    {
+      "field": "governance",
+      "source": "residualRiskClaims[].acceptanceAuthority, no signed records",
+      "treatment": "keep proposed board label, no invented CSO/review or approval evidence"
+    }
+  ],
+  "limitations": [
+    "Source case itself is a visibly flaw-rich researcher-designed synthetic packet, not a blind validation case.",
+    "Context relevance and classification are provided by a human extractor. Engine cannot identify missing hazard classes.",
+    "Data completeness finding may reflect source's deliberate omissions, not clinically material real-world failure.",
+    "Source URL is context-only public OUH evaluation, not proof of local control effectiveness.",
+    "No Q1–Q7 independent clinical adjudication or case reviewer data are used."
+  ]
+}
