@@ -1,0 +1,362 @@
+{
+  "schemaVersion": "1.0.0",
+  "asOfDate": "2026-11-19",
+  "projectIdentity": "A system for stress-testing clinical AI safety decisions before deployment.",
+  "status": "research-draft-not-independently-clinically-verified",
+  "intendedUse": "source-to-claim traceability and research-only safety-reasoning questions; not engine rules",
+  "notUsedFor": [
+    "statutory-breach-determination",
+    "automatic-risk-classification",
+    "clinical-hazard-completeness-certification",
+    "clinical-risk-acceptance",
+    "deployment-authorisation"
+  ],
+  "versionIntegrity": {
+    "sourceDocumentHashesRecorded": false,
+    "normativePdfPagesVisuallySampled": true,
+    "goshPdfVisualVerificationPending": true,
+    "hssibFullOriginalVerificationPending": true,
+    "avtFullGuidanceVerificationPending": true,
+    "independentClinicalReviewerSignedOff": false
+  },
+  "sources": [
+    {
+      "id": "SRC-DCB0129",
+      "title": "Clinical Risk Management: its Application in the Manufacture of Health IT Systems — Specification",
+      "publisher": "NHS Digital",
+      "kind": "published-information-standard",
+      "version": "v4.2 / Amd 24/2018",
+      "published": "2018-06-07",
+      "sourceUrl": "https://digital.nhs.uk/binaries/content/assets/website-assets/data-and-information/information-standards/standards-and-collections/dcb0129-clinical-risk-management-its-application-in-the-manufacture-of-health-it-systems/0129242018spec.pdf",
+      "deskReviewStatus": "publisher-PDF-text-and-visual-desk-checked",
+      "visualReviewStatus": "selected relevant PDF pages inspected; independent clause review outstanding",
+      "locators": [
+        "§§3.5,4.2–4.3,6.3; printed pp.15,16,19"
+      ]
+    },
+    {
+      "id": "SRC-DCB0160",
+      "title": "Clinical Risk Management: its Application in the Deployment and Use of Health IT Systems — Specification",
+      "publisher": "NHS Digital",
+      "kind": "published-information-standard",
+      "version": "v3.2 / Amd 25/2018",
+      "published": "2018-06-07",
+      "sourceUrl": "https://digital.nhs.uk/binaries/content/assets/website-assets/data-and-information/information-standards/standards-and-collections/dcb0160/0160252018spec.pdf",
+      "deskReviewStatus": "publisher-PDF-text-and-visual-desk-checked",
+      "visualReviewStatus": "selected relevant PDF pages inspected; independent clause review outstanding",
+      "locators": [
+        "§§2.5.1,3.3,3.5,4.2–4.4,5.1,6.3,7.1–7.3; printed pp.13,15–21"
+      ]
+    },
+    {
+      "id": "SRC-AMLAS",
+      "title": "Healthcare supplementary guidance for Assurance of Machine Learning for use in Autonomous Systems",
+      "publisher": "NHS England Digital",
+      "kind": "official-implementation-guidance",
+      "version": "webpage (updated 2023-02-02)",
+      "published": "2023-02-02",
+      "sourceUrl": "https://digital.nhs.uk/services/clinical-safety/documentation/healthcare-supplementary-guidance-for-amlas",
+      "deskReviewStatus": "publisher-HTML-desk-checked",
+      "visualReviewStatus": "HTML tables and paragraphs checked, underlying supplemental PDF not independently reviewed",
+      "locators": [
+        "Whole system safety, 'Considerations for identifying full range of hazards', Table 1, 'Performance metrics vs soft constraints'"
+      ]
+    },
+    {
+      "id": "SRC-CLINICAL-SAFETY",
+      "title": "Digital clinical safety assurance (GP EPR good-practice guidance)",
+      "publisher": "NHS England",
+      "kind": "official-guidance",
+      "version": "v1.2 / 3 March 2025",
+      "published": "2025-03-04",
+      "sourceUrl": "https://www.england.nhs.uk/long-read/digital-clinical-safety-assurance/",
+      "deskReviewStatus": "publisher-HTML-desk-checked",
+      "visualReviewStatus": "publisher HTML checked; not itself complete DCB specification",
+      "locators": [
+        "What are DCB0129 and DCB0160?; Clinical risk management activities"
+      ]
+    },
+    {
+      "id": "SRC-AVT-GUIDANCE",
+      "title": "Guidance on the use of AI-enabled ambient scribing products in health and care settings",
+      "publisher": "NHS England",
+      "kind": "official-guidance",
+      "version": "version 3 (29 July 2026)",
+      "published": "2026-07-29",
+      "sourceUrl": "https://www.england.nhs.uk/long-read/guidance-on-the-use-of-ai-enabled-ambient-scribing-products-in-health-and-care-settings/",
+      "deskReviewStatus": "publisher-search-summary-only",
+      "visualReviewStatus": "full text direct open did not return readable content; full document recheck outstanding",
+      "locators": [
+        "1.1 Assign a Clinical Safety Officer and identify key risks (publisher search excerpt only)"
+      ]
+    },
+    {
+      "id": "SRC-STANDARDS-REVIEW",
+      "title": "National review of clinical risk management standards DCB0129 and DCB0160: supporting information",
+      "publisher": "NHS England",
+      "kind": "consultation-context-not-new-standard",
+      "version": "29 June 2026",
+      "published": "2026-06-29",
+      "sourceUrl": "https://www.england.nhs.uk/long-read/national-review-of-clinical-risk-management-standardsdcb0129-and-dcb0160-supporting-information/",
+      "deskReviewStatus": "publisher-HTML-desk-checked",
+      "visualReviewStatus": "official page reviewed; legal-effect question must be independently reconciled",
+      "locators": [
+        "Why standards were introduced; Rationale for review; Summary of focus group findings"
+      ]
+    },
+    {
+      "id": "SRC-OUH",
+      "title": "Ambient Voice Technology (AVT) in Acute Services — An Evaluation",
+      "publisher": "TheHill and Oxford University Hospitals NHS Foundation Trust",
+      "kind": "published-service-evaluation",
+      "version": "February 2026 public report",
+      "published": "2026-02",
+      "sourceUrl": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+      "deskReviewStatus": "publisher-PDF-text-and-visual-desk-checked",
+      "visualReviewStatus": "PDF p5 and p25 screenshots inspected; no independent clinical review",
+      "locators": [
+        "printed p.5 / PDF index 4; printed p.25 / PDF index 24"
+      ]
+    },
+    {
+      "id": "SRC-GOSH",
+      "title": "The Use of Ambient Voice Technology with Generative Artificial Intelligence in Multiple Clinical Settings Across the NHS",
+      "publisher": "Great Ormond Street Hospital DRIVE",
+      "kind": "published-multicentre-evaluation",
+      "version": "GOSH DRIVE Final Report v1.3",
+      "published": "2026",
+      "sourceUrl": "https://media.gosh.nhs.uk/documents/AAI_Phase_4_NHSE_Final_Report_1.3.pdf",
+      "deskReviewStatus": "publisher-PDF-text-checked-visual-pending",
+      "visualReviewStatus": "PDF text pp.73–74 accessible; web screenshot retrieval failed; not fully visually verified",
+      "locators": [
+        "printed pp.73–74; interview Table 6.1, completeness and accuracy themes"
+      ]
+    },
+    {
+      "id": "SRC-HSSIB",
+      "title": "Electronic referrals for ongoing care: risk of losing patient referrals (second interim)",
+      "publisher": "Health Services Safety Investigations Body",
+      "kind": "independent-safety-investigation-non-AI",
+      "version": "published 22 October 2026",
+      "published": "2026-10-22",
+      "sourceUrl": "https://www.hssib.org.uk/patient-safety-investigations/electronic-patient-record-systems-electronic-referrals-for-ongoing-care/second-interim-report/",
+      "deskReviewStatus": "publisher-search-result-checked-full-report-pending",
+      "visualReviewStatus": "publisher results confirm 180-day worklist removal; full report page retrieval failed",
+      "locators": [
+        "HSSIB second interim: opening summary / 180-day function; full report sections require recheck"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-001",
+      "sourceId": "SRC-DCB0129",
+      "locator": "§4.3.1; printed p.16",
+      "paraphrase": "The manufacturer is required by the specification to identify and document known and foreseeable hazards in normal and fault conditions with respect to the intended use.",
+      "doesNotEstablish": "That an assessor has found every possible hazard or that a particular manufacturer is compliant.",
+      "domain": "manufacturer-hazard-analysis",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-002",
+      "sourceId": "SRC-DCB0129",
+      "locator": "§§6.3.1–6.3.3; printed p.19",
+      "paraphrase": "The manufacturer is required to implement relevant allocated controls and to verify their implementation and effectiveness within the conditions stated by the specification.",
+      "doesNotEstablish": "That every proposed control is automatically effective in a different local deployment.",
+      "domain": "manufacturer-control-verification",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-003",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§§4.2.1–4.2.3; printed p.17",
+      "paraphrase": "The health organisation is required to define clinical scope, intended use, operational environment and intended users of the system being deployed.",
+      "doesNotEstablish": "That a generic supplier description fully specifies the local workflow.",
+      "domain": "deployer-context",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-004",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§4.3.1; printed p.17",
+      "paraphrase": "The health organisation is required to document known and foreseeable patient hazards for introduction and use, in normal and fault conditions.",
+      "doesNotEstablish": "That the system or our review can certify hazard completeness.",
+      "domain": "deployer-hazard-analysis",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-005",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§§6.3.1–6.3.3; printed p.20",
+      "paraphrase": "The deploying health organisation is required to implement its risk controls and verify their implementation and effectiveness.",
+      "doesNotEstablish": "That a signed SOP or claim of clinician sign-off is sufficient clinical effectiveness evidence.",
+      "domain": "deployer-control-assurance",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-006",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§§3.3.1–3.3.3 and 3.5.1–3.5.2; printed pp.15–16",
+      "paraphrase": "The specification requires a maintained hazard log and lifecycle safety case reports with the stipulated CSO approval.",
+      "doesNotEstablish": "That CSO approval to a document is the same as separate organisational deployment authority.",
+      "domain": "deployer-governance",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-007",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§2.5.1; printed p.13",
+      "paraphrase": "During procurement, the health organisation is required under the specification to ensure manufacturer/system DCB0129 compliance, with relevant supplier safety case reports available for local analysis.",
+      "doesNotEstablish": "That a supplier safety summary substitutes for local DCB0160 assessment.",
+      "domain": "supplier-deployer-interface",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-008",
+      "sourceId": "SRC-DCB0160",
+      "locator": "§§7.2.1–7.2.5, 7.3.1–7.3.3; printed p.21",
+      "paraphrase": "The health organisation must review safety concerns and changes for continuing validity of the safety case and manage safety-related modifications.",
+      "doesNotEstablish": "That incident reporting alone demonstrates mitigation effectiveness.",
+      "domain": "lifecycle-change",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-009",
+      "sourceId": "SRC-AMLAS",
+      "locator": "Whole system safety, points 1–5; Table 1",
+      "paraphrase": "The guidance frames healthcare ML safety as a whole-system issue involving technology, healthcare professionals and information, and presents multiple hazard-analysis techniques.",
+      "doesNotEstablish": "That SHARD, FRAM, SWIFT or any named technique is mandated for every deployment.",
+      "domain": "safety-engineering",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-010",
+      "sourceId": "SRC-AMLAS",
+      "locator": "Performance metrics vs soft constraints",
+      "paraphrase": "High aggregate model performance does not establish safety for important rare conditions and intended clinical use without appropriate case-specific performance measures.",
+      "doesNotEstablish": "That any particular AI's high accuracy metric is inaccurate or that a fixed sensitivity threshold is universally required.",
+      "domain": "metrics-and-safety",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-011",
+      "sourceId": "SRC-OUH",
+      "locator": "printed p.5 / PDF index 4",
+      "paraphrase": "37.3% of 398 logged AVT uses required accuracy edits; the report lists 126 clinical-information, 43 language and 24 invented-information editing reasons.",
+      "doesNotEstablish": "A disjoint sum of error categories, clinical injury incidence, signed-note harm rates, or sensitivity of clinician review.",
+      "domain": "AVT-record-accuracy",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-012",
+      "sourceId": "SRC-OUH",
+      "locator": "printed p.25 / PDF index 24",
+      "paraphrase": "The report identifies non-randomised, uncontrolled, self-reported and heterogeneous evaluation limitations and does not offer direct patient outcomes or systematic error tracking.",
+      "doesNotEstablish": "That its edit numbers can quantify patient injury risk or control effectiveness at another Trust.",
+      "domain": "AVT-evidence-limitations",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-013",
+      "sourceId": "SRC-GOSH",
+      "locator": "printed pp.73–74, clinician interview themes",
+      "paraphrase": "Clinicians interviewed in the GOSH multicentre AVT evaluation reported concerns about misattribution, explicit negative findings and loss of important detail through summarisation.",
+      "doesNotEstablish": "Frequency of each error subtype, independently confirmed injury incidents, or demonstrated local control failure.",
+      "domain": "AVT-qualitative",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "text-checked-visual-and-independent-review-pending",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-014",
+      "sourceId": "SRC-HSSIB",
+      "locator": "second interim: summary about 180-day worklist behaviour",
+      "paraphrase": "The HSSIB publisher reports that e-RS entries may leave provider worklists after 180 days without action, potentially without staff recognition.",
+      "doesNotEstablish": "An AVT incident, transferability to another product without matching workflow, or original local risk acceptance circumstances.",
+      "domain": "non-AI-system-interaction",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "summary-checked-full-report-pending",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-015",
+      "sourceId": "SRC-AVT-GUIDANCE",
+      "locator": "publisher excerpt §1.1; version 3",
+      "paraphrase": "The NHS England ambient scribing guidance summary advises deploying organisations to assign CSO responsibility and complete relevant DCB0160 documentation and a DPIA.",
+      "doesNotEstablish": "Precise current wording or all legal consequences without full-document verification.",
+      "domain": "ambient-scribe-governance",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "publisher-snippet-only-full-text-recheck-pending",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    },
+    {
+      "id": "CL-016",
+      "sourceId": "SRC-STANDARDS-REVIEW",
+      "locator": "Why the standards were introduced; Rationale for review",
+      "paraphrase": "NHS England lists DCB0129 v4.2/DCB0160 v3.2 as current in June 2026 and describes consultation concerns about AI governance and complex system interactions.",
+      "doesNotEstablish": "That the consultation has replaced either published standard or that we can decide a statutory breach.",
+      "domain": "standards-currency-and-consultation",
+      "interpretation": "direct-source-paraphrase",
+      "confidence": "direct-source-statement",
+      "status": "desk-checked-awaiting-independent-CSO-review",
+      "acceptedClinicalRule": false,
+      "expertAdjudicated": false
+    }
+  ],
+  "approvedRuntimeRuleIds": [],
+  "independentlyAdjudicatedClinicalFindings": []
+}
