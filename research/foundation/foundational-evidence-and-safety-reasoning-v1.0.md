@@ -1,6 +1,6 @@
 # Clinical AI Safety: Foundational Evidence and Safety Reasoning Framework v1.0
 
-**Prepared:** 19 November 2026 | **Status:** Research draft, source audit in progress, **not independently CSO-verified** | **Scope:** Safety Decision Challenge (SDC) | **No software or website release**
+**Prepared:** 19 November 2026 | **Source recheck:** 19 November 2026 | **Status:** Research draft, source audit in progress, **not independently CSO-verified** | **Scope:** Safety Decision Challenge (SDC) | **No software or website release**
 
 **Identity:** A system for stress-testing clinical AI safety decisions before deployment.
 
@@ -106,9 +106,9 @@ Only a reviewed, tested, bounded finding type may be considered for the runtime 
 
 ## 7. Verification blockers logged on 19 November 2026
 
-1. **GOSH report v1.3:** full PDF text was accessible, and the relevant clinician-interview passages were found at printed pp.73–74; PDF image screenshot calls failed. Mark `pdf-visual-pending`; independently recheck page layout, context and version before claiming fully verified source extraction.
-2. **HSSIB e-RS second interim:** official search result and dated HSSIB publication page corroborate the 180-day worklist removal mechanism, but the detailed page could not be reopened in this web session. Mark `full-original-retrieval-pending`; do not derive specific risk ratings or historical control decisions.
-3. **Ambient scribing guidance v3:** official version/date and key DCB0160/CSO/DPIA summary were available from publisher search results but full text access did not succeed; mark `full-document-recheck-pending`. Do not overstate procurement or liability implications.
+1. **GOSH report:** the original report is dated 9 July 2025; version 1.3 was updated 11 February 2026. Publisher PDF extracted text was rechecked at printed pp.73–74 for accuracy, explicit negatives, over-summarisation and integration themes. PDF image screenshot calls failed (cache miss). Mark `pdf-visual-pending`; independently verify actual page images, version and context before claiming full PDF verification.
+2. **HSSIB e-RS second interim:** primary-publisher indexed report text includes executive summary, findings, §§2.3.7, 2.3.14 and 2.4.1–2.4.3. These describe 180-day worklist removal, absence from the national hazard log reviewed and limitations of local administrative safeguards. Direct page open returned a cache miss. Mark `full-original-direct-retrieval-pending`; do not derive specific risk ratings, an AVT incident or historical approval decisions.
+3. **Ambient scribing guidance v3:** NHS England publisher-indexed text was rechecked for the version/date and substantive §§1.1–1.5, 3.1–3.2 and Appendix A2.1.1. Direct full-page open returned empty content. Mark `full-document-direct-retrieval-pending`. Distinguish the document's recommendations from DCB specification requirements; do not make a device-status or liability determination from summary text.
 4. **Standards legal duty:** June 2026 NHS England review notes changes to section 250 and states that existing bodies exercising health/care functions continue to have regard to the current standards. Other NHS pages use `mandatory`. Treat as a legal/applicability question requiring current legal/CSO review, **not** a generic automated claim of statutory breach.
 5. **Independent CSO verification:** not started. No source claim is marked independently expert-approved, regardless of project desk checks.
 
