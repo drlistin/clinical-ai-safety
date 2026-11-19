@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "0.2",
+  "caseId": "CAS-SDC-AVT-02",
+  "version": "0.2.0",
+  "status": "independent-review-packet-unadjudicated",
+  "caseType": "real-world-informed-synthetic-prospective-decision",
+  "decisionAsOfDate": "2026-11-19",
+  "realWorldExternalEvidence": [
+    {
+      "id": "E-01",
+      "title": "Ambient Voice Technology (AVT) in Acute Services - An Evaluation",
+      "publisher": "TheHill and Oxford University Hospitals NHS Foundation Trust",
+      "published": "2026-02",
+      "url": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+      "printedPages": [
+        5,
+        12,
+        25
+      ],
+      "verifiedAt": "2026-11-19",
+      "verification": "project-visual-desk-check-not-independent"
+    }
+  ],
+  "syntheticEvidenceIds": [
+    "S-01",
+    "S-02",
+    "L-01",
+    "L-02",
+    "L-03",
+    "L-04",
+    "G-01",
+    "G-02",
+    "G-03",
+    "G-04"
+  ],
+  "files": {
+    "reviewerPacket": "research/avt/oxford-v0.2-reviewer-packet.md",
+    "blankReviewerForm": "research/avt/oxford-v0.2-independent-review-form.md",
+    "allocationAndBlinding": "research/avt/oxford-v0.2-review-protocol.md"
+  },
+  "fullSourceDocumentsAttached": false,
+  "hiddenAnswerKeyCreated": false,
+  "panelAdjudication": "not-started",
+  "sourceIndependentVerification": "not-completed",
+  "riskAcceptance": "not-assessed",
+  "deploymentApproval": "not-assessed",
+  "methodComparison": "not-performed",
+  "priorOxfordV01": "separate-transparent-case-not-for-blinded-reviewers",
+  "dataProtection": "synthetic-only-no-patient-information",
+  "publicRepoWarning": "Do not direct blinded reviewers to the public repo; distribute frozen packet and form directly.",
+  "referencesToAdjudicatedFindings": []
+}
