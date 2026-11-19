@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "0.1",
+  "caseId": "OUH-PROSPECTIVE-SDC-001",
+  "caseVersion": "0.1.0",
+  "status": "real-world-informed-synthetic-unadjudicated",
+  "purpose": "Internal feasibility test of proposed safety decision reasoning, not a historic Oxford safety case, a patient incident or an expert reference.",
+  "asOfDecisionDate": "2026-11-18",
+  "sourcePublicationDate": "2026-02",
+  "temporalDesign": "The original OUH evaluation was published before the fictional 18 November 2026 proposed deployment decision, so its public findings are permissible external background, but not evidence of local product/control effectiveness.",
+  "linkedDossierId": "DOS-OUH-001",
+  "sourceGroundedFacts": [
+    {
+      "factId": "OUH-F1",
+      "locator": "PDF index 4 / printed p.5, executive summary",
+      "summary": "37.3% of 398 logged AVT uses reportedly required accuracy edits; reasons noted as 126 clinical accuracy, 43 spelling/grammar, 24 invented information.",
+      "caveat": "Categories should not be summed as independent cases; figures are reported usage/editing entries, not patient harm."
+    },
+    {
+      "factId": "OUH-F2",
+      "locator": "PDF index 11 / printed p.12, section 3.1",
+      "summary": "More challenging inaccuracies were described in complex, qualitative and multi-voice encounters, compared with structured consultations.",
+      "caveat": "Heterogeneous observational associations; not a validated model-specific risk multiplier."
+    },
+    {
+      "factId": "OUH-F3",
+      "locator": "PDF index 24 / printed p.25, limitations",
+      "summary": "The report describes no randomisation or controls, considerable self-report and no direct patient outcome/systematic error tracking.",
+      "caveat": "Not valid to infer true error incidence or clinician-review sensitivity."
+    },
+    {
+      "factId": "OUH-F4",
+      "locator": "PDF index 26 / printed p.27, recommendations",
+      "summary": "OUH recommends phased use-case deployment and timely review of outputs after encounters.",
+      "caveat": "A recommendation to review does not establish that any separate organisation has implemented or verified the control."
+    }
+  ],
+  "sourceUrl": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+  "reviewedFromOriginalPdfOn": "2026-11-18",
+  "sourceVerificationStatus": "researcher-desk-check-only-independent-verification-pending",
+  "allLocalFactsSynthetic": true,
+  "syntheticScenarioFacts": [
+    "Fictional appointments are 15 minutes long; some involve multiple problems or a relative speaking.",
+    "Fictional service proposes standalone AVT browser workflow with manual copy to EPR.",
+    "An SOP says each treating clinician must review the note before sign-off, but no genuine signed operational implementation evidence is supplied.",
+    "Fictional six-user feasibility walkthrough shows users can operate the interface but contains no rigorous seeded-error detection assessment.",
+    "Supplier accuracy and OUH publication are cited as support for review effectiveness, although neither demonstrates the local control's clinical effectiveness.",
+    "No local audit of corrected AVT drafts versus signed EPR notes or controlled test of multi-speaker attribution is supplied.",
+    "No recorded accountable owner is provided for the AVT-to-EPR transfer safeguard.",
+    "The team proposes a Low category for one hazard without providing an actual risk-method document or evidence of accepted risk."
+  ],
+  "assessmentInput": {
+    "context": {
+      "id": "CTX-OXFORD-INFORMED-001",
+      "systemName": "Fictional AVT Note Drafting Service",
+      "productVersion": "candidate-1.0",
+      "modelVersion": "candidate-model-2026.11",
+      "intendedPurpose": "Draft outpatient consultation notes for treating clinician review before entry into the EPR; no diagnosis, triage, prescribing or autonomous actions.",
+      "careSetting": "Fictional adult general-medicine follow-up outpatient clinics, England",
+      "deploymentOrganisation": "Fictional Acute Trust A (entirely synthetic)",
+      "workflowDescription": "Fictional 15-minute outpatient appointments; some multi-problem consultations involve a relative. AVT creates a draft in a stand-alone browser interface. The treating clinician reviews and edits it, copies the final text into the EPR and signs it. No automated EPR integration.",
+      "relevantPopulation": "Adult outpatient attendees, including encounters with more than one speaker",
+      "scopeLimits": [
+        "Synthetic prospective scenario as at 18 November 2026, NOT an Oxford deployment decision",
+        "No real supplier, trust, patient or internal local safety case",
+        "Not for clinical recommendations or automated action"
+      ]
+    },
+    "proposedDecision": "Fictional project team proposes proceeding with deployment across these clinics on the basis that mandated clinician sign-off and a local SOP sufficiently mitigate inaccurate notes, and assigns a provisional 'Low' residual-risk category.",
+    "hazards": [
+      {
+        "id": "H-DOC-01",
+        "description": "An AVT-generated note may omit, misattribute or invent clinically relevant encounter details.",
+        "potentialHarm": "An undetected inaccurate signed record could influence subsequent management or safety-netting."
+      },
+      {
+        "id": "H-TRANSFER-02",
+        "description": "A note edited in the stand-alone AVT interface may differ from the content finally copied into and signed in the EPR.",
+        "potentialHarm": "An incorrect or outdated final record could affect downstream care."
+      }
+    ],
+    "controls": [
+      {
+        "id": "C-REVIEW-01",
+        "hazardIds": [
+          "H-DOC-01",
+          "H-TRANSFER-02"
+        ],
+        "statement": "Treating clinician reviews and signs each generated note, including comparison of clinically significant details before copying to EPR.",
+        "claimedBy": "Fictional project team",
+        "accountableOwner": "Fictional clinical service lead",
+        "status": "effectiveness-supported",
+        "implementationEvidenceIds": [
+          "E-SOP-01"
+        ],
+        "effectivenessEvidenceIds": [
+          "E-OUH-01",
+          "E-SUPPLIER-01",
+          "E-WALKTHROUGH-01"
+        ],
+        "localDependencies": [
+          "Time and opportunity to check the note",
+          "Availability of accurate encounter information",
+          "Multi-speaker attribution",
+          "Corrected note matching the EPR version"
+        ],
+        "reviewerNotes": "Fictional team relies on an SOP, a basic workflow walkthrough, an external NHS evaluation and an unspecified supplier claim; no local sensitivity-to-clinically-consequential-error testing is provided."
+      },
+      {
+        "id": "C-TRANSFER-02",
+        "hazardIds": [
+          "H-TRANSFER-02"
+        ],
+        "statement": "Manual copying of the edited note into the EPR followed by clinician sign-off.",
+        "claimedBy": "Fictional project team",
+        "accountableOwner": null,
+        "status": "declared",
+        "implementationEvidenceIds": [
+          "E-SOP-01"
+        ],
+        "effectivenessEvidenceIds": [],
+        "localDependencies": [
+          "AVT and EPR draft versions remain aligned",
+          "Final text is the reviewed text"
+        ],
+        "reviewerNotes": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E-OUH-01",
+        "title": "TheHill and Oxford University Hospitals: Ambient Voice Technology in Acute Services - An Evaluation",
+        "classification": "published-service-evaluation",
+        "sourceUriOrDocumentId": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+        "version": "February 2026 public evaluation",
+        "publishedOrEffectiveDate": "2026-02",
+        "reviewedAt": "2026-11-18",
+        "jurisdiction": "England",
+        "applicabilityNote": "Published experience across four AVT products and heterogeneous OUH workflows; not this fictional trust, product/model version, or local verification process.",
+        "limitations": [
+          "Service evaluation; no randomisation or control group",
+          "Self-reported, heterogeneous and not designed for systematic patient-outcome or error tracking",
+          "Editing frequency is not patient-harm frequency or local clinician-review sensitivity",
+          "Reported reason categories may overlap; source calls 24/398 6.2% although this ratio does not exactly equal 6.2%"
+        ]
+      },
+      {
+        "id": "E-SOP-01",
+        "title": "Fictional proposed note-review SOP (not a reviewed real document)",
+        "classification": "assumption",
+        "sourceUriOrDocumentId": "SYNTHETIC:E-SOP-01",
+        "version": "draft-0.1",
+        "publishedOrEffectiveDate": "2026-11-18",
+        "reviewedAt": null,
+        "jurisdiction": "England",
+        "applicabilityNote": "Case stipulates that the project team says an SOP exists; no signed or operationally verified local evidence is supplied.",
+        "limitations": [
+          "Fabricated for methodological challenge; not a genuine trust policy"
+        ]
+      },
+      {
+        "id": "E-SUPPLIER-01",
+        "title": "Fictional supplier accuracy assertion",
+        "classification": "supplier-assertion",
+        "sourceUriOrDocumentId": "SYNTHETIC:E-SUPPLIER-01",
+        "version": "unspecified",
+        "publishedOrEffectiveDate": null,
+        "reviewedAt": null,
+        "jurisdiction": null,
+        "applicabilityNote": "Fictional general accuracy claim without demonstrated applicability to this model, population or workflow.",
+        "limitations": [
+          "Synthetic placeholder, not a real manufacturer claim or evaluation"
+        ]
+      },
+      {
+        "id": "E-WALKTHROUGH-01",
+        "title": "Fictional six-user feasibility walkthrough description",
+        "classification": "assumption",
+        "sourceUriOrDocumentId": "SYNTHETIC:E-WALKTHROUGH-01",
+        "version": "draft-0.1",
+        "publishedOrEffectiveDate": "2026-11-18",
+        "reviewedAt": null,
+        "jurisdiction": "England",
+        "applicabilityNote": "Fictional usability walkthrough demonstrates that draft review/sign-off can be completed, but not clinically consequential error-detection sensitivity.",
+        "limitations": [
+          "No raw observations, adjudicated reference errors or independent reviewer evidence"
+        ]
+      }
+    ],
+    "residualRiskClaims": [
+      {
+        "hazardId": "H-DOC-01",
+        "methodId": "FICT-TRUST-RISK-METHOD",
+        "methodVersion": "draft-1",
+        "claimedCategory": "Low (proposed, not independently substantiated)",
+        "claimedReasoning": "The project team asserts that mandatory clinician review makes residual documentation inaccuracy risk Low. This is a synthetic claim, not a clinical risk assessment.",
+        "reliedOnControlIds": [
+          "C-REVIEW-01"
+        ],
+        "acceptanceAuthority": "Fictional digital clinical safety board (proposed)",
+        "acceptanceDecisionEvidenceId": null
+      },
+      {
+        "hazardId": "H-TRANSFER-02",
+        "methodId": "FICT-TRUST-RISK-METHOD",
+        "methodVersion": "draft-1",
+        "claimedCategory": null,
+        "claimedReasoning": "No separately supported residual-risk category is presented for the manual AVT-to-EPR handoff.",
+        "reliedOnControlIds": [
+          "C-REVIEW-01",
+          "C-TRANSFER-02"
+        ],
+        "acceptanceAuthority": null,
+        "acceptanceDecisionEvidenceId": null
+      }
+    ]
+  },
+  "independentReviewerQuestions": [
+    "Is the stated intended use and scenario boundary sufficiently defined for a DCB0160 local decision challenge?",
+    "What patient-harm mechanisms, including interacting workflow dependencies, should be considered or justifiably excluded?",
+    "For each claimed safeguard, what is actually evidenced: existence, implementation, verification or clinical effectiveness?",
+    "Can an external OUH service evaluation or fictional supplier assertion support the local effectiveness claim? Why or why not?",
+    "What does the proposed residual-risk reasoning establish under an organisation-approved, versioned method? What remains indeterminate?",
+    "What review, escalation, additional local evidence or governance decision would be required? Identify accountable parties without inventing authorisation.",
+    "Which concerns are clinically material, unsubstantiated, or potentially false alarms? Record competing explanations and disagreements."
+  ],
+  "noHiddenReferenceKey": true,
+  "expectedClinicalFindings": null,
+  "independentAdjudicationStatus": "not-started",
+  "clinicalRiskAcceptance": "not-assessed",
+  "deploymentApproval": "not-assessed",
+  "patientOutcomes": "not-evaluated",
+  "notes": [
+    "This is NOT the original Oxford trust, supplier, model, staff or clinical safety decision.",
+    "The reported Oxford findings are external background; all local assumptions, intended workflow and risk claims are fabricated and clearly labelled.",
+    "No patient-identifiable information.",
+    "Do not publish or score expert findings before blind independent CSO adjudication."
+  ]
+}

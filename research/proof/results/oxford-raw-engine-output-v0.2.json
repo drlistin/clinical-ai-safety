@@ -1,0 +1,190 @@
+{
+  "ruleSetVersion": "0.2.0-proposal",
+  "reviewStatus": "unadjudicated",
+  "deploymentApproval": "not-assessed",
+  "residualRiskClassification": "not-determined",
+  "findings": [
+    {
+      "criterionId": "SDC-01",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "CTX-OXFORD-INFORMED-001",
+        "review-opportunity"
+      ],
+      "reason": "A context dimension declared material to this decision is unknown, missing, or lacks a reason for exclusion.",
+      "requiredAction": "Document the relevant workflow detail or provide a reviewed not-applicable rationale.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-001",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-04",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "C-REVIEW-01"
+      ],
+      "reason": "An implemented safeguard is claimed, but no applicable reviewed local implementation record is referenced.",
+      "requiredAction": "Supply genuine local implementation evidence and verify relevance to this workflow.",
+      "evidenceIds": [
+        "E-SOP-01"
+      ],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-002",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-05",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "C-REVIEW-01"
+      ],
+      "reason": "Effectiveness is claimed without a locally applicable reviewed evaluation containing defined method, outcome and denominator.",
+      "requiredAction": "Obtain and independently appraise control-specific detection/effectiveness evidence.",
+      "evidenceIds": [
+        "E-OUH-01",
+        "E-SUPPLIER-01",
+        "E-WALKTHROUGH-01"
+      ],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-003",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "H-DOC-01"
+      ],
+      "reason": "The claimed risk assessment lacks an applicable reviewed and versioned organisational method reference.",
+      "requiredAction": "Supply the applicable approved methodology and criteria; review the actual document.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-004",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "H-DOC-01"
+      ],
+      "reason": "Initial or residual assessment category and its rationale are incomplete.",
+      "requiredAction": "Record both risk assessments under the relevant approved method; do not invent a category.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-005",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "identified-inconsistency",
+      "subjectIds": [
+        "H-DOC-01",
+        "C-REVIEW-01"
+      ],
+      "reason": "A reduction is claimed without explaining which risk component changes and why.",
+      "requiredAction": "Specify the claimed likelihood/severity effect and its hazard-specific rationale.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-006",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "H-DOC-01",
+        "C-REVIEW-01"
+      ],
+      "reason": "The claimed risk reduction lacks linked and applicable local effectiveness evidence for this specific safeguard.",
+      "requiredAction": "Do not credit a quantified risk reduction until the evidence and its relevance are reviewed.",
+      "evidenceIds": [
+        "E-OUH-01",
+        "E-SUPPLIER-01",
+        "E-WALKTHROUGH-01"
+      ],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-007",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "H-TRANSFER-02"
+      ],
+      "reason": "The claimed risk assessment lacks an applicable reviewed and versioned organisational method reference.",
+      "requiredAction": "Supply the applicable approved methodology and criteria; review the actual document.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-008",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-07",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "H-TRANSFER-02"
+      ],
+      "reason": "Initial or residual assessment category and its rationale are incomplete.",
+      "requiredAction": "Record both risk assessments under the relevant approved method; do not invent a category.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-009",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-08",
+      "status": "requires-qualified-review",
+      "subjectIds": [
+        "Clinical Safety Officer review"
+      ],
+      "reason": "Clinical Safety Officer review lacks a named authority/reviewer or a relevant, reviewed decision record.",
+      "requiredAction": "Obtain documentary confirmation of scope and actual delegated authority; do not infer an approval.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-010",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-08",
+      "status": "requires-qualified-review",
+      "subjectIds": [
+        "Organisation risk acceptance"
+      ],
+      "reason": "Organisation risk acceptance lacks a named authority/reviewer or a relevant, reviewed decision record.",
+      "requiredAction": "Obtain documentary confirmation of scope and actual delegated authority; do not infer an approval.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-011",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-08",
+      "status": "requires-qualified-review",
+      "subjectIds": [
+        "Deployment authorisation"
+      ],
+      "reason": "Deployment authorisation lacks a named authority/reviewer or a relevant, reviewed decision record.",
+      "requiredAction": "Obtain documentary confirmation of scope and actual delegated authority; do not infer an approval.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-012",
+      "reviewerDisposition": null
+    },
+    {
+      "criterionId": "SDC-08",
+      "status": "evidence-insufficient",
+      "subjectIds": [
+        "monitoring-plan"
+      ],
+      "reason": "No dated, reviewed monitoring-plan reference is documented.",
+      "requiredAction": "Specify monitoring, escalation and stop/reassessment conditions under accountable governance.",
+      "evidenceIds": [],
+      "uncertainty": "Documented links and assertions have been checked only. Actual applicability, clinical materiality, control effectiveness and authority require qualified review.",
+      "id": "V02-F-013",
+      "reviewerDisposition": null
+    }
+  ]
+}

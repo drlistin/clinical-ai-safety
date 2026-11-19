@@ -1,0 +1,34 @@
+{
+  "sourceCaseId": "OUH-PROSPECTIVE-SDC-001",
+  "sourceCaseVersion": "0.1.0",
+  "asOfDate": "2026-11-18",
+  "engineRuleSetVersion": "0.2.0-proposal",
+  "ruleCoverage": [
+    "SDC-01",
+    "SDC-03",
+    "SDC-04",
+    "SDC-05",
+    "SDC-06",
+    "SDC-07",
+    "SDC-08",
+    "SDC-09",
+    "SDC-10"
+  ],
+  "unimplementedCriteria": [
+    "SDC-02-independent-hazard-discovery"
+  ],
+  "sourceHazardsSuppliedToEngine": 2,
+  "sourceControlsSuppliedToEngine": 2,
+  "candidateFindingCount": 13,
+  "findingCountsByCriterion": {
+    "SDC-01": 1,
+    "SDC-04": 1,
+    "SDC-05": 1,
+    "SDC-07": 6,
+    "SDC-08": 4
+  },
+  "reviewStatus": "unadjudicated",
+  "deploymentApproval": "not-assessed",
+  "residualRiskClassification": "not-determined",
+  "clinicalValidityNotEstablished": true
+}
