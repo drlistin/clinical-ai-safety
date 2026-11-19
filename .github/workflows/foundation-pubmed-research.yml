@@ -1,0 +1,36 @@
+# One-off research-only retrieval on draft PR. No scheduled execution or production use.
+name: Foundation PubMed ESearch (research only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/foundation-pubmed-research.yml'
+      - 'research/foundation/run_pubmed_esearch.py'
+      - 'research/foundation/pubmed-queries-v1.1.json'
+
+permissions:
+  contents: read
+
+jobs:
+  retrieve-pubmed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run exact frozen PubMed search via NCBI ESearch
+        run: |
+          python3 research/foundation/run_pubmed_esearch.py --output-dir pubmed-research-results > pubmed-search-output.txt 2>&1
+          cat pubmed-search-output.txt
+      - name: Preserve source responses and audit even if retrieval fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: foundation-pubmed-esearch-audit
+          path: |
+            pubmed-research-results/
+            pubmed-search-output.txt
+          if-no-files-found: warn
+          retention-days: 30
