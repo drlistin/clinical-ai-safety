@@ -10,7 +10,7 @@ Northbridge Acute Trust (fictional) asks its Digital Assurance Group to consider
 
 The project team considers its listed risk controls proportionate to the proposed documentation-only purpose and recommends that the expansion be authorised subject to routine monitoring and the usual Trust governance process. A final deployment decision has **not** been recorded.
 
-Please assess whether the **submitted safety reasoning and evidence** are sufficient for that decision and identify any material additional information, safeguards or governance action required. You may agree, disagree or qualify any claim. Do not infer that the document is complete merely because it supplies a named control or risk category.
+Please assess whether the **submitted safety reasoning and evidence** are sufficient for that decision and identify any material additional information, safeguards or governance action required. You may agree, disagree or qualify any claim. 
 
 ## A. Intended use and clinical workflow
 
@@ -47,7 +47,7 @@ The proposed scope does not include emergency departments, inpatient ward rounds
 | G-04 | Governance and monitoring proposal, 17 Nov 2026 (synthetic) | Proposes weekly safety sampling, an AVT incident flag in the local reporting system, supplier change notifications, four-week and eight-week reviews, and immediate escalation of serious concerns. |
 | E-01 | Published Oxford University Hospitals and TheHill AVT evaluation, February 2026 (real external source) | Four products across heterogeneous acute services; **398 logged uses**, with **37.3%** recording accuracy edits. The report also describes reported time savings and staff-wellbeing benefits. |
 
-The synthetic documents are summarised as supplied to the decision-maker, not independently authenticated records. A reviewer may request their fuller methods, raw observations, signatures, or version history.
+The synthetic documents are summarised as supplied to the decision-maker. **See the companion document extracts** in `CAS-SDC-AVT-02 | Submitted documentary extracts` for study methods, SOP steps, transfer sampling and risk-method context. A reviewer may request further underlying materials.
 
 **Real external source E-01:** TheHill and Oxford University Hospitals NHS Foundation Trust, *Ambient Voice Technology in Acute Services: An Evaluation*, February 2026. https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf (especially printed pp. 5, 12 and 25).
 
