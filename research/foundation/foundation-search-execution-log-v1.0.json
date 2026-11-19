@@ -187,7 +187,7 @@
       "id": "S3-COCHRANE-CDSR",
       "name": "Cochrane Database of Systematic Reviews: targeted synthesis search",
       "platform": "Cochrane Library",
-      "status": "not-executed-under-v1.1-protocol-access-not-tested",
+      "status": "not-executed-publisher-search-access-403",
       "queryFamily": "S3C",
       "completedAtUTC": null,
       "exactQueryUsed": null,
@@ -198,7 +198,7 @@
       "id": "S3-COCHRANE-CENTRAL",
       "name": "CENTRAL: targeted controlled-study discovery",
       "platform": "Cochrane Library",
-      "status": "not-executed-under-v1.1-protocol-access-not-tested",
+      "status": "not-executed-publisher-search-access-403",
       "queryFamily": "S3C",
       "completedAtUTC": null,
       "exactQueryUsed": null,
@@ -209,7 +209,7 @@
       "id": "S2-IEEE",
       "name": "Safety-engineering and software-assurance conference/journal literature",
       "platform": "IEEE Xplore Command/Advanced Search",
-      "status": "not-executed-under-v1.1-protocol-access-not-tested",
+      "status": "not-executed-publisher-search-access-418",
       "queryFamily": "S2A",
       "completedAtUTC": null,
       "exactQueryUsed": null,
@@ -220,7 +220,7 @@
       "id": "S2-ACM",
       "name": "Human factors, safety engineering and clinical software",
       "platform": "ACM Digital Library Guide/Full Text collection",
-      "status": "not-executed-under-v1.1-protocol-access-not-tested",
+      "status": "not-executed-publisher-search-inaccessible",
       "queryFamily": "S2B",
       "completedAtUTC": null,
       "exactQueryUsed": null,
@@ -539,7 +539,8 @@
     "Cochrane CDSR/CENTRAL, IEEE Xplore, ACM Digital Library, and Scopus/Web of Science were added to planned coverage only. No result counts or exports were generated from them.",
     "v1.1 PubMed MeSH/free-text and Cochrane, Ovid Embase, engineering and citation-index query strings are candidate strategies and require platform validation and known-study recall checks before formal use.",
     "On 19 Nov 2026 NCBI, PubMed and Europe PMC direct endpoints were blocked by available outbound network routes. A runnable NCBI ESearch export utility and frozen two primary S3A queries have been added but not executed. Formal search result counts remain unknown.",
-    "NCBI MeSH headings were checked via publicly indexed official NLM MeSH pages, but the configured combined query has not received a PubMed QueryTranslation response; controlled-vocabulary mapping still requires live validation."
+    "NCBI MeSH headings were checked via publicly indexed official NLM MeSH pages, but the configured combined query has not received a PubMed QueryTranslation response; controlled-vocabulary mapping still requires live validation.",
+    "Direct Cochrane, IEEE Xplore and ACM search-page access checks also failed (403/418/inaccessible respectively). No exact strategy was submitted to these database search interfaces, and no counts were returned."
   ],
   "platformAccessAttempts": [
     {
@@ -595,6 +596,30 @@
       "dateUTC": "2026-11-19",
       "type": "container Python requests and web open connectivity test",
       "status": "container DNS failure and web open URL inaccessible; no records retrieved",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "Cochrane Library",
+      "dateUTC": "2026-11-19",
+      "type": "publisher Search Manager / search page access check",
+      "status": "403 Forbidden through available web tool; no query executed; no hit count",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "IEEE Xplore",
+      "dateUTC": "2026-11-19",
+      "type": "publisher advanced-search access check",
+      "status": "418 response from publisher search access through web tool; no query executed; no hit count",
+      "databaseSearchExecuted": false,
+      "reportedResultCount": null
+    },
+    {
+      "platform": "ACM Digital Library",
+      "dateUTC": "2026-11-19",
+      "type": "publisher search access check",
+      "status": "URL inaccessible through web tool; no query executed; no hit count",
       "databaseSearchExecuted": false,
       "reportedResultCount": null
     }
