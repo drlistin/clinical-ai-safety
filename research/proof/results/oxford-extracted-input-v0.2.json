@@ -1,0 +1,254 @@
+{
+  "schemaVersion": "0.2",
+  "id": "OUH-PROSPECTIVE-SDC-001-EXTRACTION-1",
+  "caseType": "synthetic-research",
+  "context": {
+    "id": "CTX-OXFORD-INFORMED-001",
+    "asOfDate": "2026-11-18",
+    "deploymentOrganisation": "Fictional Acute Trust A (entirely synthetic)",
+    "productVersion": "candidate-1.0",
+    "modelVersion": "candidate-model-2026.11",
+    "careSetting": "Fictional adult general-medicine follow-up outpatient clinics, England",
+    "population": "Adult outpatient attendees, including encounters with more than one speaker",
+    "workflowId": "fictional-manual-avt-epr-copy",
+    "intendedUse": "Draft outpatient consultation notes for treating clinician review before entry into the EPR; no diagnosis, triage, prescribing or autonomous actions.",
+    "proposedDecision": "Fictional project team proposes proceeding with deployment across these clinics on the basis that mandated clinician sign-off and a local SOP sufficiently mitigate inaccurate notes, and assigns a provisional 'Low' residual-risk category.",
+    "materialContextDimensionIds": [
+      "multiple-speakers",
+      "manual-epr-transfer",
+      "review-opportunity"
+    ],
+    "contextDimensions": [
+      {
+        "id": "multiple-speakers",
+        "status": "known",
+        "description": "Some 15-minute consultations involve a relative or more than one speaker.",
+        "applicabilityReason": null
+      },
+      {
+        "id": "manual-epr-transfer",
+        "status": "known",
+        "description": "Notes are copied from a stand-alone browser after clinician editing and before EPR signing.",
+        "applicabilityReason": null
+      },
+      {
+        "id": "review-opportunity",
+        "status": "unknown",
+        "description": null,
+        "applicabilityReason": null
+      }
+    ]
+  },
+  "hazards": [
+    {
+      "id": "H-DOC-01",
+      "hazardousSituation": "An AVT-generated note may omit, misattribute or invent clinically relevant encounter details.",
+      "potentialHarm": "An undetected inaccurate signed record could influence subsequent management or safety-netting.",
+      "scenarioConditionIds": []
+    },
+    {
+      "id": "H-TRANSFER-02",
+      "hazardousSituation": "A note edited in the stand-alone AVT interface may differ from the content finally copied into and signed in the EPR.",
+      "potentialHarm": "An incorrect or outdated final record could affect downstream care.",
+      "scenarioConditionIds": []
+    }
+  ],
+  "controls": [
+    {
+      "id": "C-REVIEW-01",
+      "hazardIds": [
+        "H-DOC-01",
+        "H-TRANSFER-02"
+      ],
+      "statement": "Treating clinician reviews and signs each generated note, including comparison of clinically significant details before copying to EPR.",
+      "role": "safeguard",
+      "mechanism": "detect",
+      "mechanismExplanation": "Clinician compares clinically significant encounter details against the draft before EPR sign-off, as proposed in the case.",
+      "accountableOwner": "Fictional clinical service lead",
+      "status": "effectiveness-claimed",
+      "implementationEvidenceIds": [
+        "E-SOP-01"
+      ],
+      "effectivenessEvidenceIds": [
+        "E-OUH-01",
+        "E-SUPPLIER-01",
+        "E-WALKTHROUGH-01"
+      ],
+      "dependencyIds": [
+        "Time and opportunity to check the note",
+        "Availability of accurate encounter information",
+        "Multi-speaker attribution",
+        "Corrected note matching the EPR version"
+      ]
+    },
+    {
+      "id": "C-TRANSFER-02",
+      "hazardIds": [
+        "H-TRANSFER-02"
+      ],
+      "statement": "Manual copying of the edited note into the EPR followed by clinician sign-off.",
+      "role": "workflow-activity",
+      "mechanism": "none",
+      "mechanismExplanation": null,
+      "accountableOwner": null,
+      "status": "proposed",
+      "implementationEvidenceIds": [
+        "E-SOP-01"
+      ],
+      "effectivenessEvidenceIds": [],
+      "dependencyIds": [
+        "AVT and EPR draft versions remain aligned",
+        "Final text is the reviewed text"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-OUH-01",
+      "title": "TheHill and Oxford University Hospitals: Ambient Voice Technology in Acute Services - An Evaluation",
+      "kind": "published-evaluation",
+      "sourceId": "https://www.thehilloxford.org/wp-content/uploads/2026/02/Ambient-Voice-Technology-AVT-in-Acute-Services-An-Evaluation.pdf",
+      "sourceVersion": "February 2026 public evaluation",
+      "methodDescription": null,
+      "outcomeDefinition": null,
+      "denominatorDefinition": null,
+      "sourceDate": null,
+      "reviewerId": null,
+      "reviewedAt": null,
+      "appliesTo": {
+        "productVersion": null,
+        "modelVersion": null,
+        "careSetting": null,
+        "population": null,
+        "workflowId": null
+      },
+      "limitations": [
+        "Service evaluation; no randomisation or control group",
+        "Self-reported, heterogeneous and not designed for systematic patient-outcome or error tracking",
+        "Editing frequency is not patient-harm frequency or local clinician-review sensitivity",
+        "Reported reason categories may overlap; source calls 24/398 6.2% although this ratio does not exactly equal 6.2%"
+      ]
+    },
+    {
+      "id": "E-SOP-01",
+      "title": "Fictional proposed note-review SOP (not a reviewed real document)",
+      "kind": "assumption",
+      "sourceId": "SYNTHETIC:E-SOP-01",
+      "sourceVersion": "draft-0.1",
+      "methodDescription": null,
+      "outcomeDefinition": null,
+      "denominatorDefinition": null,
+      "sourceDate": "2026-11-18",
+      "reviewerId": null,
+      "reviewedAt": null,
+      "appliesTo": {
+        "productVersion": null,
+        "modelVersion": null,
+        "careSetting": null,
+        "population": null,
+        "workflowId": null
+      },
+      "limitations": [
+        "Fabricated for methodological challenge; not a genuine trust policy"
+      ]
+    },
+    {
+      "id": "E-SUPPLIER-01",
+      "title": "Fictional supplier accuracy assertion",
+      "kind": "supplier-assertion",
+      "sourceId": "SYNTHETIC:E-SUPPLIER-01",
+      "sourceVersion": "unspecified",
+      "methodDescription": null,
+      "outcomeDefinition": null,
+      "denominatorDefinition": null,
+      "sourceDate": null,
+      "reviewerId": null,
+      "reviewedAt": null,
+      "appliesTo": {
+        "productVersion": null,
+        "modelVersion": null,
+        "careSetting": null,
+        "population": null,
+        "workflowId": null
+      },
+      "limitations": [
+        "Synthetic placeholder, not a real manufacturer claim or evaluation"
+      ]
+    },
+    {
+      "id": "E-WALKTHROUGH-01",
+      "title": "Fictional six-user feasibility walkthrough description",
+      "kind": "assumption",
+      "sourceId": "SYNTHETIC:E-WALKTHROUGH-01",
+      "sourceVersion": "draft-0.1",
+      "methodDescription": null,
+      "outcomeDefinition": null,
+      "denominatorDefinition": null,
+      "sourceDate": "2026-11-18",
+      "reviewerId": null,
+      "reviewedAt": null,
+      "appliesTo": {
+        "productVersion": null,
+        "modelVersion": null,
+        "careSetting": null,
+        "population": null,
+        "workflowId": null
+      },
+      "limitations": [
+        "No raw observations, adjudicated reference errors or independent reviewer evidence"
+      ]
+    }
+  ],
+  "riskArguments": [
+    {
+      "hazardId": "H-DOC-01",
+      "riskMethodEvidenceId": null,
+      "initial": {
+        "category": null,
+        "reasoning": null
+      },
+      "residual": {
+        "category": "Low (proposed, not independently substantiated)",
+        "reasoning": "The project team asserts that mandatory clinician review makes residual documentation inaccuracy risk Low. This is a synthetic claim, not a clinical risk assessment."
+      },
+      "claimedRiskChange": "reduced",
+      "controlEffects": [
+        {
+          "controlId": "C-REVIEW-01",
+          "assertedEffectOn": "none",
+          "reductionClaimed": true,
+          "rationale": "The project team asserts that mandatory clinician review makes residual documentation inaccuracy risk Low. This is a synthetic claim, not a clinical risk assessment.",
+          "effectEvidenceIds": [
+            "E-OUH-01",
+            "E-SUPPLIER-01",
+            "E-WALKTHROUGH-01"
+          ]
+        }
+      ]
+    },
+    {
+      "hazardId": "H-TRANSFER-02",
+      "riskMethodEvidenceId": null,
+      "initial": {
+        "category": null,
+        "reasoning": null
+      },
+      "residual": {
+        "category": null,
+        "reasoning": "No separately supported residual-risk category is presented for the manual AVT-to-EPR handoff."
+      },
+      "claimedRiskChange": "indeterminate",
+      "controlEffects": []
+    }
+  ],
+  "independenceClaims": [],
+  "governance": {
+    "csoIdentifier": null,
+    "csoReviewEvidenceId": null,
+    "riskAcceptanceAuthority": "Fictional digital clinical safety board (proposed)",
+    "riskAcceptanceEvidenceId": null,
+    "deploymentAuthority": null,
+    "deploymentAuthorisationEvidenceId": null,
+    "monitoringPlanEvidenceId": null
+  }
+}
