@@ -4,7 +4,8 @@ name: Oxford SDC one-case reproducibility proof
 on:
   pull_request:
     paths:
-      - 'research/proof/**'
+      - 'research/proof/run-oxford-one-case.cjs'
+      - 'research/proof/oxford-prospective-case-v0.1-frozen.json'
       - '.github/workflows/oxford-proof-research.yml'
 
 permissions:
