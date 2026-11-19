@@ -1,0 +1,33 @@
+# Fictional one-case technical demonstration only. No production environment or write token.
+name: Oxford SDC one-case reproducibility proof
+
+on:
+  pull_request:
+    paths:
+      - 'research/proof/**'
+      - '.github/workflows/oxford-proof-research.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  one-case:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Execute unchanged v0.2 decision-validity evaluator on frozen case
+        run: node research/proof/run-oxford-one-case.cjs
+      - name: Preserve extracted input, extraction decisions and raw machine output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oxford-sdc-v02-technical-proof
+          path: research/proof/output/
+          retention-days: 30
+          if-no-files-found: error
