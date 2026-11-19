@@ -1,6 +1,6 @@
 # Clinical AI Safety — Evidence Search and Selection Protocol v1.0
 
-**Date:** 19 November 2026  
+**Date:** 19 November 2026 | **Search coverage amendment v1.1:** 19 November 2026  
 **Status:** Proposed prospective **targeted evidence-map protocol**, not a completed review and not a registered systematic/scoping review  
 **Owner:** Clinical AI Safety research project  
 **Purpose:** Establish a traceable basis for a system for stress-testing clinical AI safety decisions before deployment.  
@@ -17,7 +17,7 @@ The nine sources and 18 source-anchored claims already recorded were **selected 
 
 This is a **targeted evidence map** designed to establish an initial research foundation, *not* a systematic review, meta-analysis, regulatory opinion, proof of hazard completeness, or clinical performance validation. PRISMA-S principles are used to make searches reproducible; JBI scoping-review guidance informs explicit eligibility and selection procedures. **Do not claim PRISMA-S or PRISMA-ScR compliance unless the corresponding reporting requirements have been met.**
 
-## 2. Four independent source streams
+## 2. Four thematic source streams and their database coverage
 
 | Stream | Question | Primary sources to search | Type of synthesis |
 | --- | --- | --- | --- |
@@ -27,6 +27,28 @@ This is a **targeted evidence map** designed to establish an initial research fo
 | S4 — investigated clinical IT/system failures | Which independently investigated system failures demonstrate transferable mechanisms (including non-AI failures)? | HSSIB official reports, NHS official safety notices where appropriate, equivalent reputable investigation bodies | Source observation → explicitly hypothetical mechanism → applicability test → potential decision-challenge question |
 
 **Authority is claim-dependent**: legislation and versioned standards govern specific normative statements; empirical evaluations establish observations; independent investigations establish facts within the investigated case; none alone verifies another organisation's local safety controls.
+
+
+### Database coverage amendment v1.1 (19 November 2026)
+
+The **four streams describe types of evidence**, not four databases. Search interfaces and indexed databases are different concepts:
+
+| Evidence stream | Source/database and planned role | Priority and access | Overlap or limitations |
+| --- | --- | --- | --- |
+| S1 | Publisher originals: DCB0129/DCB0160, NHS, HSSIB where normative, MHRA and applicable law | **Essential**; official open materials | Version/actor/effective-date check; no PubMed substitute for current specifications |
+| S2 + S3 | **MEDLINE searched via PubMed**, covering MEDLINE-indexed citations and additional PubMed citations | **Essential**, free interface; exact advanced search pending | **Do not count MEDLINE and PubMed as two independent databases**. Save total PubMed retrieval; record MEDLINE-status subset separately if useful |
+| S3 | **Embase via Ovid or Embase.com** | Important complementary biomedical source; licensed interface **not yet available** | Uses **Emtree**, not MeSH; capture platform-specific syntax and overlapping MEDLINE citations for deduplication |
+| S3 | **Cochrane Library: CDSR and CENTRAL** | **Targeted**, for existing systematic reviews and primary controlled-trial records | CENTRAL overlaps MEDLINE/Embase/trial registries; CDSR is synthesis, not an additional independent trial |
+| S2 | **IEEE Xplore** | **High priority** for hazard analysis, safety assurance, AI/software engineering; access to metadata depends on interface | Search Command/Advanced interface and record exact fields; conference and journal records can overlap other indexes |
+| S2 | **ACM Digital Library / ACM Guide to Computing Literature** | **High priority** for human factors, systems safety and clinical software | Different collections have different coverage; record which one was searched |
+| S2/S3 | **Scopus OR Web of Science Core Collection**, if accessible | **Supplementary** cross-disciplinary search and backward/forward citation tracking | Not required to run both for this bounded pilot; broad overlap and licence/access considerations |
+| S4 | **HSSIB and other original investigation publishers** | **Essential**; search original report repositories | Investigated non-AI systems can supply causal hypotheses, not clinical AI harm-rate estimates |
+
+**Preferred biomedical plan:** one **PubMed search (MEDLINE plus other PubMed citations)**, and one separately run **Embase** search if access permits. An *Ovid MEDLINE* search may replace or supplement the PubMed interface for methodological reasons, but it is **not a third independent biomedical evidence database**; report separately retrieved PubMed-only records and deduplicate.
+
+**Search sensitivity:** Controlled vocabulary (MeSH/Emtree) is combined with relevant free text to capture newly published or unindexed articles. Don't force an error/safety term into every search: it can omit evaluations with non-explicit safety language. Keep a wider ambient-documentation sensitivity query and a narrower safety/error query; document their union and overlaps. Do not exclude reassuring or no-effect evaluations.
+
+**Database search reporting:** Name the precise database, platform/interface, institutional coverage, exact interpreted query, subject-heading expansions, dates and filters, number of hits reported by that platform, exported records (PMID/DOI/title), download/checksum and deduplication log. Treat each database output as a distinct source set, and merge only after provenance-preserving deduplication. A **ranked web or Arca PubMed-index search is not equivalent** to a complete formal PubMed, MEDLINE or Embase search.
 
 ## 3. Eligibility criteria established before searches
 
@@ -119,6 +141,174 @@ AND
 
 If Ovid Embase is unavailable, record **not run / access unavailable**, rather than claiming zero matches. If Embase.com is used instead of Ovid, translate and save the actual executable syntax; do not label an Ovid strategy an Embase.com strategy. Consider checking synonyms, controlled vocabulary and PRESS peer review with an information specialist before formal evaluation.
 
+
+### v1.1 platform-specific search strategy revision (PROPOSED, NOT RUN)
+
+The v1.0 PubMed title/abstract query and Ovid Embase free-text translation above are **retained as historical candidates**, not presented as validated comprehensive strategies. The following replace them for any forthcoming formal execution. Each platform must first be tested using index terms, a known-paper recall set and actual platform search details. **All lines below are unexecuted.**
+
+#### S3A: PubMed including MEDLINE — clinical AI documentation sensitivity set (candidate syntax)
+
+PubMed supports \`[mh]\`/MeSH and \`[tiab]\` fields. MEDLINE is the largest component but PubMed also includes other citations; don't apply \`medline[sb]\` to the main search, or recently added/non-MEDLINE records could be lost. Check the validity and scope of the proposed MeSH descriptors in the current MeSH browser before publication of a final search.
+
+\`\`\`text
+(
+  "Artificial Intelligence"[MeSH Terms] OR
+  "Natural Language Processing"[MeSH Terms] OR
+  "Large Language Models"[MeSH Terms] OR
+  "ambient scribe"[tiab] OR "ambient scribes"[tiab] OR
+  "ambient scribing"[tiab] OR "ambient voice technology"[tiab] OR
+  "ambient documentation"[tiab] OR "ambient listening"[tiab] OR
+  "AI scribe"[tiab] OR "AI scribes"[tiab] OR
+  "digital scribe"[tiab] OR "digital scribes"[tiab] OR
+  "automated documentation"[tiab] OR
+  "generative artificial intelligence"[tiab] OR
+  "large language model"[tiab] OR "large language models"[tiab]
+)
+AND
+(
+  "Documentation"[MeSH Terms] OR
+  "Electronic Health Records"[MeSH Terms] OR
+  "Medical Records Systems, Computerized"[MeSH Terms] OR
+  "clinical documentation"[tiab] OR "clinical note"[tiab] OR
+  "clinical notes"[tiab] OR "medical note"[tiab] OR
+  "medical notes"[tiab] OR "medical record"[tiab] OR
+  "medical records"[tiab] OR "scribe"[tiab] OR "scribes"[tiab] OR
+  "transcription"[tiab] OR "consultation summary"[tiab]
+)
+\`\`\`
+
+**High-sensitivity supplement:** run the following independently and take the **union** with the above, to avoid requiring both broad MeSH concepts when an ambient-scribe record is new, unindexed, or does not say “clinical documentation” in its abstract:
+
+\`\`\`text
+"ambient scribe"[tiab] OR "ambient scribes"[tiab] OR
+"ambient scribing"[tiab] OR "ambient voice technology"[tiab] OR
+"AI scribe"[tiab] OR "AI scribes"[tiab] OR
+"ambient documentation"[tiab] OR "ambient listening"[tiab]
+\`\`\`
+
+Then classify safety/error/control-relevant records **during screening**. If an additional precision-focused safety search is run, document it as a supplementary run rather than using it to exclude records from the wider set.
+
+**S3A thematic safety supplement** (optional, to retrieve safety research beyond ambient scribes):
+
+\`\`\`text
+(
+  "Artificial Intelligence"[MeSH Terms] OR "Natural Language Processing"[MeSH Terms]
+  OR "clinical decision support"[tiab] OR "health information technology"[tiab]
+  OR "machine learning"[tiab] OR "large language model"[tiab]
+)
+AND
+(
+  "Patient Safety"[MeSH Terms] OR "Risk Management"[MeSH Terms] OR
+  "Medical Errors"[MeSH Terms] OR
+  "hazard analysis"[tiab] OR "safety case"[tiab] OR
+  "clinical risk management"[tiab] OR "safety assurance"[tiab] OR
+  "failure mode"[tiab] OR "human factors"[tiab]
+)
+\`\`\`
+
+**Required checks:** inspect Search Details and subject-heading mappings; confirm PubMed recognises the descriptors and phrases; test recall of known records such as SMART, CREOLA and the 2026 integrated AVT paper (some may require the methodological branch or citation chasing); store actual PubMed total, \`medline[sb]\` breakdown if needed, PMIDs, date, applied filters and exact search history. No results or coverage claims are asserted here.
+
+#### S3B: Embase through Ovid — free-text candidate plus Emtree mapping
+
+Embase uses **Emtree**, which must be selected by browsing that platform's thesaurus; **do not paste PubMed MeSH descriptors as if they were verified Emtree subject headings**. Ovid \`adj3\` and \`.ti,ab,kw.\` differ from Embase.com's \`NEAR/n\` and \`:ti,ab,kw\` syntax.
+
+\`\`\`text
+1. (ambient adj3 (scrib* or voice or documentation or listen*)).ti,ab,kw.
+2. ((clinical or medical) adj3 (note* or documentation or record*)).ti,ab,kw.
+3. (("large language model*" or "generative AI" or "artificial intelligence" or "digital scribe*" or transcription)).ti,ab,kw.
+4. 1 or (2 and 3)
+5. (safety or error* or hallucinat* or omission* or accuracy or review* or workflow or "human factors" or verification).ti,ab,kw.
+6. 4 and 5
+\`\`\`
+
+**Run set 4 as the broad candidate search**, and set 6 as a *supplementary precision set*, not the only records screened. Add platform-verified Emtree headings for AI, clinical documentation/electronic records and patient safety with the correct explosion choices **after thesaurus validation**. Preserve the exact resulting executed line history; if using Embase.com, translate syntax on that site. Licensed access currently unavailable.
+
+#### S3C: Cochrane Library — targeted CDSR review and CENTRAL record search
+
+Use Cochrane Search Manager and record whether searching **CDSR**, **CENTRAL**, or both. Proposed free-text set:
+
+\`\`\`text
+("ambient scribe" OR "ambient scribing" OR "ambient voice technology" OR
+ "ambient documentation" OR "AI scribe" OR "clinical documentation" OR
+ "artificial intelligence" OR "generative AI"):ti,ab,kw
+\`\`\`
+
+A second focused concept, if the broad set is noisy:
+
+\`\`\`text
+(safety OR accuracy OR omission* OR workflow OR "medical record" OR
+ documentation OR "electronic health record"):ti,ab,kw
+\`\`\`
+
+Use the union of a targeted ambient-scribe query with an AI-documentation combination; avoid an unhelpfully broad OR of all AI terminology as a claimed AVT search. Browse Cochrane MeSH separately for confirmed descriptors such as \`[mh "Artificial Intelligence"]\`, \`[mh "Electronic Health Records"]\`, \`[mh "Patient Safety"]\`; add only those validated on the current platform. **CENTRAL may include records imported from MEDLINE and Embase**; deduplicate at study/record level. This is a targeted review/controlled-study search, not the primary source of all AI safety research.
+
+#### S2A: IEEE Xplore — engineering and assurance literature
+
+Use **Command Search** or **Advanced Search**, specifying document title/abstract/metadata rather than the full-text corpus when possible. Candidate Boolean concepts (translate into the actual selected interface fields):
+
+\`\`\`text
+("hazard analysis" OR "safety case" OR "safety assurance" OR
+ "systems theoretic process analysis" OR "STPA" OR "failure mode" OR
+ "human factors" OR "assurance case")
+AND
+(healthcare OR "health information technology" OR medical OR clinical)
+AND
+("artificial intelligence" OR "machine learning" OR software OR digital OR automation)
+\`\`\`
+
+If this is too narrow, run a **two-concept** variant combining the first two groups and screen for AI/IT applicability; log both. Do not claim that this untested string automatically uses IEEE's selected search fields. Search originals/conference proceedings and identify versions/duplicate publications.
+
+#### S2B: ACM Digital Library — computer science, interaction and safety methods
+
+In **Advanced Search**, select and record **ACM Guide to Computing Literature** versus ACM Full-Text Collection. Enter:
+- Row 1, grouped alternatives: \`"hazard analysis" OR "safety assurance" OR "safety case" OR "systems theoretic" OR "human factors"\`
+- Row 2, grouped alternatives: \`healthcare OR clinical OR "health information technology" OR "medical software"\`
+- Row 3, optional technology refinement: \`"artificial intelligence" OR "machine learning" OR software OR "clinical decision support"\`
+
+Apply \`AND\` across rows, record the chosen field selectors (prefer Title, Abstract and Author Keyword; document full-text inclusion if used) and export bibliographic metadata. Rerun without optional row 3 if the search misses established engineering methods. These are **conceptual input groups**, not an untested ACM-specific command string.
+
+#### S2/S3 supplementary: Scopus OR Web of Science
+
+If licensed, choose **one first** for cross-disciplinary coverage and forward-citation tracing. Candidate Scopus advanced-search syntax:
+
+\`\`\`text
+TITLE-ABS-KEY(
+  ("hazard analysis" OR "safety case" OR "safety assurance" OR STPA OR "human factors")
+  AND (healthcare OR clinical OR "health information technology")
+  AND (software OR "artificial intelligence" OR "machine learning")
+)
+\`\`\`
+
+Web of Science Core Collection candidate translation:
+
+\`\`\`text
+TS=(
+  ("hazard analysis" OR "safety case" OR "safety assurance" OR STPA OR "human factors")
+  AND (healthcare OR clinical OR "health information technology")
+  AND (software OR "artificial intelligence" OR "machine learning")
+)
+\`\`\`
+
+Record the subscribed index coverage and field translation; these are **not** interchangeable database counts. Supplement with backward/forward citation searching of 2018 safety-case study, SMART, SEIPS 2.0, STPA and CREOLA.
+
+#### Database overlap, deduplication and bias
+
+- Store **per database-run** counts and exports *before* deduplication. Record all provenance IDs when an article appears in more than one database.
+- Primary duplicate keys: DOI, PMID and exact official report identifier; secondary matching: title, first author, year, version and sample/case identity. Avoid conflating an original research paper with a subsequent systematic review about it.
+- For a fully documented review, account for overlap and duplicate decisions in a reproducible master record. Do not add PubMed+MEDLINE counts as independent retrievals or infer Embase/CENTRAL unique yield from subscriptions unavailable to us.
+- Preserve both **adverse** and **reassuring** findings, external-site/region variation, no-effect reports, and population/workflow constraints.
+- Decide whether gaps from an unavailable licensed source prevent advancement to external review; document this explicitly rather than pretending the replacement search is equivalent.
+
+#### Official search and syntax documentation (checked as contextual methodological sources)
+
+- NLM: https://pubmed.ncbi.nlm.nih.gov/about/ and https://pubmed.ncbi.nlm.nih.gov/help/ (MEDLINE as a subset, field tags and \`medline[sb]\`).
+- Cochrane: https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-04 and https://onlinelibrary.wiley.com/cochranelibrary/search/mesh/quick (database-specific strategies, MeSH and Search Manager).
+- Elsevier: https://www.elsevier.com/en-gb/products/embase/content and https://service.elsevier.com/app/answers/detail/a_id/17875/supporthub/embase/kw/proximity/ (Embase coverage and platform syntax).
+- IEEE Xplore: https://ieeexplore.ieee.org/Xplorehelp/searching-ieee-xplore/search-tips (Command/Advanced searches).
+- ACM/UCL guide: https://library-guides.ucl.ac.uk/ACM-Digital-Library/advanced-search (collection and field selection).
+- Scopus: https://service.elsevier.com/app/answers/detail/a_id/11365/supporthub/scopus/ (TITLE-ABS-KEY).
+- Clarivate: https://webofscience.help.clarivate.com/Content/wos-core-collection/woscc-search-field-tags.htm (TS topic field).
+
 ### S4: official safety investigations — planned publisher searches
 
 - `site:hssib.org.uk patient safety investigation electronic referral worklist 180 days`
@@ -176,10 +366,10 @@ For each `include-core` source:
 
 ## 7. Pilot scope, stop conditions and next gate
 
-**Time budget proposal:** up to **8 focused researcher-hours** for first-pass retrieval of authoritative S1/S4 sources and targeted S2/S3 searches, recording each run rather than expanding indefinitely. If access barriers or substantive missing source families arise, pause and reassess scope/cost rather than claim exhaustive coverage.
+**Time budget proposal:** up to **8 focused researcher-hours** for an initial subset of S1–S4 searches, with expansion requiring an explicit scope decision. MEDLINE via PubMed and publisher-original standards are first priorities; Embase, Cochrane and engineering database runs are separately tracked as executed, pending access or not run. The eight-hour cap is a proposed effort gate, **not** evidence that all named databases have been searched. If access barriers or substantive missing source families arise, pause and reassess scope/cost rather than claim exhaustive coverage.
 
 Pilot deliverables:
-- Versioned protocol and initially empty honest execution log;
+- Versioned protocol and honest execution log (prior ranked searches are retained; formal database search gaps remain explicit);
 - Actual dated queries and search results (including database access gaps);
 - List of seed sources, their re-screening decisions and newly found material or contradictory sources;
 - Revised foundation claim register **only after verifying** the new source and its applicability;
