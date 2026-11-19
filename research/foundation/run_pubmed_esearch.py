@@ -86,8 +86,10 @@ def search_one(record: dict, outdir: pathlib.Path) -> tuple[dict, list[str]]:
         report["queryTranslation"] = result.get("querytranslation")
         report["warningList"] = result.get("warninglist")
         report["errorList"] = result.get("errorlist")
-        if result.get("errorlist"):
-            raise ValueError("PubMed query reported an error: " + str(result["errorlist"]))
+        errors = result.get("errorlist") or {}
+        nonempty_errors = any(bool(v) for v in errors.values()) if isinstance(errors, dict) else bool(errors)
+        if nonempty_errors:
+            raise ValueError("PubMed query reported an error: " + str(errors))
         count = report["reportedHitCount"]
         if count > CEILING:
             report["status"] = "reported-count-exceeds-pubmed-esearch-uid-ceiling"
